@@ -1,0 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap');
+@import "./tokens.css";
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--canvas-deep);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, p {
+  margin: 0;
+}
+
+button {
+  font-family: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+}
+
+/* Motion system — see README.md "Motion". cubic-bezier(.2,.7,.3,1) is --ease. */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes veilIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes toastRise { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
+@keyframes railIn { from { transform: translateX(-100%); } to { transform: none; } }
+@keyframes drawerIn { from { transform: translateX(100%); } to { transform: none; } }
+@keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes riseBar { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes pulseRing { 0% { box-shadow: 0 0 0 0 rgba(192,52,43,.4); } 70% { box-shadow: 0 0 0 9px rgba(192,52,43,0); } 100% { box-shadow: 0 0 0 0 rgba(192,52,43,0); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes shimmer { 0% { background-position: -420px 0; } 100% { background-position: 420px 0; } }
+
+.row-hover:hover { background: var(--surface-hover, #FAFCFB); }
+input:focus, button:focus-visible { outline: none; }
+a { color: var(--accent, #0E6B5C); text-decoration: none; }

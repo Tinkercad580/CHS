@@ -1,0 +1,123 @@
+/**
+ * Sahaj design tokens.
+ * Source: project/design_handoff_sahaj/README.md, "Design tokens".
+ * Every consumer should read var(--token, #literalFallback) so a missing
+ * variable degrades to the light value rather than the browser default.
+ */
+
+:root {
+  --surface: #FFFFFF;
+  --canvas: #F7F9F8;
+  --canvas-deep: #EFF3F1;
+  --surface-hover: #FAFCFB;
+  --subtle: #EDF1EF;
+  --border: #E3E9E6;
+  --border-soft: #F1F4F3;
+  --border-strong: #CCD6D2;
+  --ink: #0F1A17;
+  --ink-soft: #4A5B56;
+  --ink-muted: #6B7A75;
+  --ink-dim: #A8B5B0;
+  --accent: #0E6B5C;
+  --accent-ink: #0A5749;
+  --accent-wash: #E6F2EF;
+  --accent-200: #C9E4DC;
+
+  --ok: #167A3C;
+  --ok-ink: #14663A;
+  --ok-wash: #E8F5EC;
+
+  --warn: #B45309;
+  --warn-ink: #8F4A0A;
+  --warn-wash: #FDF3E7;
+  --warn-border: #F5DFBE;
+
+  --bad: #C0342B;
+  --bad-ink: #9B2B22;
+  --bad-wash: #FCEDEC;
+  --bad-border: #F6D9D6;
+
+  --info: #1D4ED8;
+  --info-ink: #12327A;
+  --info-wash: #EAF0FE;
+  --info-border: #C7D7FB;
+
+  --rail: #FFFFFF;
+  --rail-ink: #0F1A17;
+  --rail-soft: #5A6B66;
+  --rail-line: #E3E9E6;
+  --rail-hover: #F2F8F6;
+  --rail-active: #E6F2EF;
+  --rail-active-ink: #0A5749;
+  --rail-foot: #F7F9F8;
+
+  --ease: cubic-bezier(.2,.7,.3,1);
+  --ease-out: cubic-bezier(.22,1,.36,1);
+
+  --font-sans: "Figtree", "Noto Sans Devanagari", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+:root[data-theme="dark"] {
+  --surface: #151C1A;
+  --canvas: #0E1413;
+  --canvas-deep: #090E0D;
+  --surface-hover: #1B2422;
+  --subtle: #1D2624;
+  --border: #2B3532;
+  --border-soft: #222B29;
+  --border-strong: #3A453F;
+  --ink: #EEF3F1;
+  --ink-soft: #A7B8B2;
+  --ink-muted: #8A9B95;
+  --ink-dim: #6F7E79;
+  --accent: #0E6B5C;
+  --accent-ink: #5FD3B6;
+  --accent-wash: #113931;
+  --accent-200: #1A5A4C;
+
+  --ok: #1E8C48;
+  --ok-ink: #7BD69F;
+  --ok-wash: #11311E;
+
+  --warn: #C2650F;
+  --warn-ink: #F3BE79;
+  --warn-wash: #33260E;
+  --warn-border: #4A3616;
+
+  --bad: #C93F35;
+  --bad-ink: #F4A39B;
+  --bad-wash: #331916;
+  --bad-border: #4A231F;
+
+  --info: #3466E0;
+  --info-ink: #A9C2FA;
+  --info-wash: #15204A;
+  --info-border: #23306A;
+
+  --rail: #101715;
+  --rail-ink: #EEF3F1;
+  --rail-soft: #9DAFA9;
+  --rail-line: #232D2A;
+  --rail-hover: #1A2321;
+  --rail-active: #14382F;
+  --rail-active-ink: #6FDCC0;
+  --rail-foot: #0C1211;
+}
+
+/*
+ * 280ms transition on every element whose inline style references a
+ * surface/canvas/rail/subtle token, so a theme switch eases rather than snaps.
+ * Apply the `theme-transition` class from shared UI primitives that read those tokens.
+ */
+.theme-transition {
+  transition: background-color 280ms var(--ease), border-color 280ms var(--ease), color 280ms var(--ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
