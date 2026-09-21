@@ -1,0 +1,21 @@
+/** SVG path data lifted from the prototype (design-files/Gate Prototype.dc.html) for pixel-accurate glyphs. */
+export const iconPaths = {
+  shield: "M4 20V9l8-5 8 5v11M10 20v-6h4v6",
+  entryTab: "M4 20.5V3.5h9.5v17M13.5 12h6.5M17 9l3 3-3 3",
+  staffTab: "M9 11.5a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4M2.6 19.4a6.4 6.4 0 0 1 12.8 0M16.6 11.4a3 3 0 0 0 0-6M18.2 19.4a6 6 0 0 0-2.2-4.6",
+  logTab: "M4 5h16M4 12h16M4 19h10",
+  parcelsTab: "M3 8.5 12 4l9 4.5v7L12 20l-9-4.5zM3 8.5 12 13l9-4.5",
+  moreTab: "M5 12h.01M12 12h.01M19 12h.01",
+  signOut: "M9 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h3M15.5 8.5 19 12l-3.5 3.5M10 12h9",
+  alertTriangle: "M12 8.6v5M12 17v.4M10.3 3.8 2.6 17.2a1.6 1.6 0 0 0 1.4 2.4h16a1.6 1.6 0 0 0 1.4-2.4L13.7 3.8a1.6 1.6 0 0 0-3.4 0Z",
+  backChevron: "m15 5-7 7 7 7",
+  forwardChevron: "m9 5 7 7-7 7",
+  check: "m4.5 12.5 5 5 10-11",
+  cross: "M17 7 7 17M7 7l10 10",
+  clock: "M12 7.5V12l3 2",
+  parcelBox: "M3 8.5 12 4l9 4.5v7L12 20l-9-4.5z M3 8.5 12 13l9-4.5M12 13v7",
+  plus: "M12 5v14M5 12h14",
+  plate: "M5 16.5V12l1.8-4.2h10.4L19 12v4.5M5 16.5h14M7.5 16.5v1.8M16.5 16.5v1.8",
+  handover: "M4 7h16M4 12h16M4 17h9M17 15l3 2-3 2",
+  arrowUpRight: "M7 17 17 7M7 7h10v10",
+} as const;

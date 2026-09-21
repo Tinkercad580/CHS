@@ -1,0 +1,46 @@
+import React from "react";
+import { View } from "react-native";
+import { AppText } from "./AppText";
+import { Icon } from "./Icon";
+import { iconPaths } from "./iconPaths";
+import { useTheme } from "../hooks/useTheme";
+import type { AppToast } from "../state/types";
+
+/** Bottom-centre, max 3, each dismissed by its own 2.8s timer (owned by useResidentActions' toast()) — never a shared one. */
+export function ToastStack({ toasts }: { toasts: AppToast[] }) {
+  const { colors } = useTheme();
+  if (toasts.length === 0) return null;
+  return (
+    <View pointerEvents="none" style={{ position: "absolute", left: 18, right: 18, bottom: 96, zIndex: 30, gap: 8 }}>
+      {toasts.map((toast) => {
+        const bg = toast.kind === "warn" ? colors.warn : colors.ink;
+        return (
+          <View
+            key={toast.id}
+            style={{
+              borderRadius: 13,
+              backgroundColor: bg,
+              paddingHorizontal: 15,
+              paddingVertical: 13,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 11,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 14 },
+              shadowOpacity: 0.5,
+              shadowRadius: 30,
+              elevation: 6,
+            }}
+          >
+            <View style={{ width: 22, height: 22, borderRadius: 7, backgroundColor: "rgba(255,255,255,0.18)", alignItems: "center", justifyContent: "center" }}>
+              <Icon d={toast.kind === "warn" ? iconPaths.sos : iconPaths.check} size={13} color="#FFFFFF" strokeWidth={2.6} />
+            </View>
+            <AppText variant="cardTitle" color="#FFFFFF" style={{ flex: 1, fontSize: 13 }}>
+              {toast.message}
+            </AppText>
+          </View>
+        );
+      })}
+    </View>
+  );
+}

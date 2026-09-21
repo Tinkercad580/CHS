@@ -1,0 +1,17 @@
+{
+  "name": "sahaj-mobile",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "resident": "npm run start --workspace=resident-app",
+    "gate": "npm run start --workspace=gate-app",
+    "typecheck:shared": "npm run typecheck --workspace=@sahaj/shared"
+  },
+  "overrides": {
+    "react": "19.2.3",
+    "@types/react": "~19.2.2"
+  }
+}
