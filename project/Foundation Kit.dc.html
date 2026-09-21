@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --surface:#FFFFFF; --canvas:#F7F9F8; --canvas-deep:#EFF3F1; --surface-hover:#FAFCFB;
+    --subtle:#EDF1EF; --border:#E3E9E6; --border-soft:#F1F4F3; --border-strong:#CCD6D2;
+    --ink:#0F1A17; --ink-soft:#4A5B56; --ink-muted:#6B7A75; --ink-dim:#A8B5B0;
+    --accent:#0E6B5C; --accent-ink:#0A5749; --accent-wash:#E6F2EF; --accent-200:#C9E4DC;
+    --ok:#167A3C; --ok-ink:#14663A; --ok-wash:#E8F5EC;
+    --warn:#B45309; --warn-ink:#8F4A0A; --warn-wash:#FDF3E7; --warn-border:#F5DFBE;
+    --bad:#C0342B; --bad-ink:#9B2B22; --bad-wash:#FCEDEC; --bad-border:#F6D9D6;
+    --info:#1D4ED8; --info-ink:#12327A; --info-wash:#EAF0FE; --info-border:#C7D7FB;
+    --rail:#FFFFFF; --rail-ink:#0F1A17; --rail-soft:#5A6B66; --rail-line:#E3E9E6;
+    --rail-hover:#F2F8F6; --rail-active:#E6F2EF; --rail-active-ink:#0A5749; --rail-foot:#F7F9F8;
+  }
+  :root[data-theme="dark"] {
+    --surface:#151C1A; --canvas:#0E1413; --canvas-deep:#090E0D; --surface-hover:#1B2422;
+    --subtle:#1D2624; --border:#2B3532; --border-soft:#222B29; --border-strong:#3A453F;
+    --ink:#EEF3F1; --ink-soft:#A7B8B2; --ink-muted:#8A9B95; --ink-dim:#6F7E79;
+    --accent:#0E6B5C; --accent-ink:#5FD3B6; --accent-wash:#113931; --accent-200:#1A5A4C;
+    --ok:#1E8C48; --ok-ink:#7BD69F; --ok-wash:#11311E;
+    --warn:#C2650F; --warn-ink:#F3BE79; --warn-wash:#33260E; --warn-border:#4A3616;
+    --bad:#C93F35; --bad-ink:#F4A39B; --bad-wash:#331916; --bad-border:#4A231F;
+    --info:#3466E0; --info-ink:#A9C2FA; --info-wash:#15204A; --info-border:#23306A;
+    --rail:#101715; --rail-ink:#EEF3F1; --rail-soft:#9DAFA9; --rail-line:#232D2A;
+    --rail-hover:#1A2321; --rail-active:#14382F; --rail-active-ink:#6FDCC0; --rail-foot:#0C1211;
+  }
+  html { scroll-behavior: smooth; }
+  :root { --ease: cubic-bezier(.2,.7,.3,1); --ease-out: cubic-bezier(.22,1,.36,1); }
+  body { transition: background-color .3s ease; }
+  @keyframes tabIn { from { opacity: 0; transform: translate3d(0,12px,0) scale(.992); } to { opacity: 1; transform: none; } }
+  button, input, textarea, select { color: inherit; font-family: inherit; }
+  input::placeholder { color: var(--ink-muted); }
+  [style*="var(--surface"], [style*="var(--canvas"], [style*="var(--rail"], [style*="var(--subtle"] { transition: background-color .28s ease, border-color .28s ease, color .28s ease; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001ms !important; animation-delay: 0s !important; transition-duration: .001ms !important; } }
+
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--canvas-deep); -webkit-font-smoothing: antialiased; font-family: Figtree, system-ui, sans-serif; }
+  :root { --rowpad: 15px; --dur: 1; }
+  a { color: #0E6B5C; text-decoration: none; }
+  a:hover { color: #0A5749; }
+  * { box-sizing: border-box; }
+  ::selection { background: #C9E4DC; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  @keyframes shimmer { 0% { background-position: -420px 0; } 100% { background-position: 420px 0; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: none; } }
+  @keyframes modalIn { from { opacity: 0; transform: translateY(18px) scale(.975); } to { opacity: 1; transform: none; } }
+  @keyframes veilIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes drawerIn { from { transform: translateX(100%); } to { transform: none; } }
+  @keyframes pulseRing { 0% { box-shadow: 0 0 0 0 rgba(14,107,92,.35); } 70% { box-shadow: 0 0 0 10px rgba(14,107,92,0); } 100% { box-shadow: 0 0 0 0 rgba(14,107,92,0); } }
+  @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes dash { from { stroke-dashoffset: 460; } to { stroke-dashoffset: 0; } }
+  @keyframes checkPop { 0% { transform: scale(.4); opacity: 0; } 60% { transform: scale(1.12); opacity: 1; } 100% { transform: scale(1); } }
+  @keyframes floatY { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:var(--canvas,#F7F9F8);color:var(--ink,#0F1A17);font-family:Figtree,system-ui,sans-serif">
+
+  <header style="position:sticky;top:0;z-index:40;background:var(--canvas,#F7F9F8);border-bottom:1px solid var(--border,#E3E9E6)">
+    <div style="max-width:1180px;margin:0 auto;padding:14px 32px;display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:10px;margin-right:auto">
+        <div style="width:28px;height:28px;border-radius:8px;background:#0E6B5C;display:flex;align-items:center;justify-content:center">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-5 7 5v13"></path><path d="M9 21v-5h6v5"></path></svg>
+        </div>
+        <span style="font:700 15px/1 Figtree;letter-spacing:-.01em">Sahaj</span>
+        <span style="font:500 13px/1 Figtree;color:var(--ink-soft,#5A6B66)">Foundation Kit</span>
+      </div>
+      <nav style="display:flex;gap:4px;flex-wrap:wrap">
+        <a href="#color" style="padding:6px 11px;border-radius:999px;font:500 13px/1.4 Figtree;color:var(--ink-soft,#3D4A46);transition:background .18s ease,color .18s ease" style-hover="background:var(--accent-wash,#E6F2EF);color:var(--accent-ink,#0E6B5C)">Color</a>
+        <a href="#type" style="padding:6px 11px;border-radius:999px;font:500 13px/1.4 Figtree;color:var(--ink-soft,#3D4A46);transition:background .18s ease,color .18s ease" style-hover="background:var(--accent-wash,#E6F2EF);color:var(--accent-ink,#0E6B5C)">Type</a>
+        <a href="#space" style="padding:6px 11px;border-radius:999px;font:500 13px/1.4 Figtree;color:var(--ink-soft,#3D4A46);transition:background .18s ease,color .18s ease" style-hover="background:var(--accent-wash,#E6F2EF);color:var(--accent-ink,#0E6B5C)">Space</a>
+        <a href="#icons" style="padding:6px 11px;border-radius:999px;font:500 13px/1.4 Figtree;color:var(--ink-soft,#3D4A46);transition:background .18s ease,color .18s ease" style-hover="background:var(--accent-wash,#E6F2EF);color:var(--accent-ink,#0E6B5C)">Icons</a>
+        <a href="#buttons" style="padding:6px 11px;border-radius:999px;font:500 13px/1.4 Figtree;color:var(--ink-soft,#3D4A46);transition:background .18s ease,color .18s ease" style-hover="background:var(--accent-wash,#E6F2EF);color:var(--accent-ink,#0E6B5C)">Buttons</a>
+        <a href="#forms" style="padding:6px 11px;border-radius:999px;font:500 13px/1.4 Figtree;color:var(--ink-soft,#3D4A46);transition:background .18s ease,color .18s ease" style-hover="background:var(--accent-wash,#E6F2EF);color:var(--accent-ink,#0E6B5C)">Forms</a>
+        <a href="#cards" style="padding:6px 11px;border-radius:999px;font:500 13px/1.4 Figtree;color:var(--ink-soft,#3D4A46);transition:background .18s ease,color .18s ease" style-hover="background:var(--accent-wash,#E6F2EF);color:var(--accent-ink,#0E6B5C)">Cards</a>
+        <a href="#tables" style="padding:6px 11px;border-radius:999px;font:500 13px/1.4 Figtree;color:var(--ink-soft,#3D4A46);transition:background .18s ease,color .18s ease" style-hover="background:var(--accent-wash,#E6F2EF);color:var(--accent-ink,#0E6B5C)">Tables</a>
+        <a href="#overlays" style="padding:6px 11px;border-radius:999px;font:500 13px/1.4 Figtree;color:var(--ink-soft,#3D4A46);transition:background .18s ease,color .18s ease" style-hover="background:var(--accent-wash,#E6F2EF);color:var(--accent-ink,#0E6B5C)">Overlays</a>
+        <a href="#states" style="padding:6px 11px;border-radius:999px;font:500 13px/1.4 Figtree;color:var(--ink-soft,#3D4A46);transition:background .18s ease,color .18s ease" style-hover="background:var(--accent-wash,#E6F2EF);color:var(--accent-ink,#0E6B5C)">States</a>
+        <a href="#motion" style="padding:6px 11px;border-radius:999px;font:500 13px/1.4 Figtree;color:var(--ink-soft,#3D4A46);transition:background .18s ease,color .18s ease" style-hover="background:var(--accent-wash,#E6F2EF);color:var(--accent-ink,#0E6B5C)">Motion</a>
+        <button type="button" onClick="{{ toggleTheme }}" title="{{ themeLabel }}" style="margin-left:6px;height:30px;padding:0 12px;border:1px solid var(--border-strong,#CCD6D2);border-radius:999px;background:var(--surface,#fff);color:var(--ink,#0F1A17);cursor:pointer;display:inline-flex;align-items:center;gap:7px;font:600 12.5px/1 Figtree;transition:background .18s ease,border-color .18s ease" style-hover="border-color:var(--accent,#0E6B5C);background:var(--accent-wash,#F2F8F6)">{{ themeIcon }}{{ themeShort }}</button>
+      </nav>
+    </div>
+  </header>
+
+  <main style="max-width:1180px;margin:0 auto;padding:0 32px 120px">
+
+    <section style="padding:80px 0 64px">
+      <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 12px 6px 8px;border-radius:999px;background:var(--accent-wash,#E6F2EF);border:1px solid var(--accent-200,#C9E4DC);margin-bottom:28px">
+        <span style="width:7px;height:7px;border-radius:50%;background:#0E6B5C;animation:pulseRing 2.4s ease-out infinite"></span>
+        <span style="font:600 12px/1 Figtree;letter-spacing:.03em;color:var(--accent-ink,#0A5749)">v1.0 · Foundation</span>
+      </div>
+      <h1 style="margin:0 0 20px;font:800 clamp(38px,6vw,68px)/1.04 Figtree;letter-spacing:-.035em;max-width:16ch;text-wrap:balance">The design language for society management.</h1>
+      <p style="margin:0 0 40px;max-width:62ch;font:400 19px/1.62 Figtree;color:var(--ink-soft,#5A6B66);text-wrap:pretty">Every token, control and state used across the admin web app, the resident app and the gate app. Built so a volunteer treasurer can run a 500-flat society without training, and a developer can build it without guessing.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--border,#E3E9E6);border:1px solid var(--border,#E3E9E6);border-radius:16px;overflow:hidden">
+        <div style="background:var(--surface,#fff);padding:20px 22px"><div style="font:700 26px/1 Figtree;letter-spacing:-.02em;color:var(--accent-ink,#0E6B5C)">15</div><div style="margin-top:6px;font:500 13px/1.4 Figtree;color:var(--ink-muted,#6B7A75)">token groups</div></div>
+        <div style="background:var(--surface,#fff);padding:20px 22px"><div style="font:700 26px/1 Figtree;letter-spacing:-.02em;color:var(--accent-ink,#0E6B5C)">3</div><div style="margin-top:6px;font:500 13px/1.4 Figtree;color:var(--ink-muted,#6B7A75)">surfaces: web, app, gate</div></div>
+        <div style="background:var(--surface,#fff);padding:20px 22px"><div style="font:700 26px/1 Figtree;letter-spacing:-.02em;color:var(--accent-ink,#0E6B5C)">4px</div><div style="margin-top:6px;font:500 13px/1.4 Figtree;color:var(--ink-muted,#6B7A75)">spacing base unit</div></div>
+        <div style="background:var(--surface,#fff);padding:20px 22px"><div style="font:700 26px/1 Figtree;letter-spacing:-.02em;color:var(--accent-ink,#0E6B5C)">44px</div><div style="margin-top:6px;font:500 13px/1.4 Figtree;color:var(--ink-muted,#6B7A75)">minimum touch target</div></div>
+      </div>
+    </section>
+
+    <section data-reveal="1" style="padding:56px 0;border-top:1px solid var(--border,#E3E9E6)">
+      <div style="font:600 12px/1 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink,#0E6B5C);margin-bottom:14px">01 · Principles</div>
+      <h2 style="margin:0 0 14px;font:700 34px/1.15 Figtree;letter-spacing:-.025em">Nine words, and what each one costs</h2>
+      <p style="margin:0 0 36px;max-width:64ch;font:400 16px/1.65 Figtree;color:var(--ink-soft,#5A6B66)">A principle only means something if it rules a decision out. Each of these carries a rule the rest of the kit obeys.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px">
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:16px;padding:22px;transition:transform .22s cubic-bezier(.2,.7,.3,1),box-shadow .22s ease" style-hover="transform:translateY(-3px);box-shadow:0 12px 28px -12px rgba(15,26,23,.16)">
+          <div style="font:700 17px/1.3 Figtree;margin-bottom:8px">Simple</div>
+          <div style="font:400 14px/1.6 Figtree;color:var(--ink-soft,#5A6B66)">One primary action per screen. Everything else is secondary or hidden behind an overflow.</div>
+        </div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:16px;padding:22px;transition:transform .22s cubic-bezier(.2,.7,.3,1),box-shadow .22s ease" style-hover="transform:translateY(-3px);box-shadow:0 12px 28px -12px rgba(15,26,23,.16)">
+          <div style="font:700 17px/1.3 Figtree;margin-bottom:8px">Premium</div>
+          <div style="font:400 14px/1.6 Figtree;color:var(--ink-soft,#5A6B66)">Generous whitespace, one accent, no gradients or decorative colour. Restraint reads as expensive.</div>
+        </div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:16px;padding:22px;transition:transform .22s cubic-bezier(.2,.7,.3,1),box-shadow .22s ease" style-hover="transform:translateY(-3px);box-shadow:0 12px 28px -12px rgba(15,26,23,.16)">
+          <div style="font:700 17px/1.3 Figtree;margin-bottom:8px">Fast</div>
+          <div style="font:400 14px/1.6 Figtree;color:var(--ink-soft,#5A6B66)">Nothing animates longer than 320ms. Skeletons appear within 120ms, never a blocking spinner.</div>
+        </div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:16px;padding:22px;transition:transform .22s cubic-bezier(.2,.7,.3,1),box-shadow .22s ease" style-hover="transform:translateY(-3px);box-shadow:0 12px 28px -12px rgba(15,26,23,.16)">
+          <div style="font:700 17px/1.3 Figtree;margin-bottom:8px">Reliable</div>
+          <div style="font:400 14px/1.6 Figtree;color:var(--ink-soft,#5A6B66)">Money is never shown mid-flight. Amounts carry a state chip: confirmed, provisional or pending.</div>
+        </div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:16px;padding:22px;transition:transform .22s cubic-bezier(.2,.7,.3,1),box-shadow .22s ease" style-hover="transform:translateY(-3px);box-shadow:0 12px 28px -12px rgba(15,26,23,.16)">
+          <div style="font:700 17px/1.3 Figtree;margin-bottom:8px">Intelligent</div>
+          <div style="font:400 14px/1.6 Figtree;color:var(--ink-soft,#5A6B66)">Every computed number can explain itself. Bill lines show method, rate and the rule they came from.</div>
+        </div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:16px;padding:22px;transition:transform .22s cubic-bezier(.2,.7,.3,1),box-shadow .22s ease" style-hover="transform:translateY(-3px);box-shadow:0 12px 28px -12px rgba(15,26,23,.16)">
+          <div style="font:700 17px/1.3 Figtree;margin-bottom:8px">Professional</div>
+          <div style="font:400 14px/1.6 Figtree;color:var(--ink-soft,#5A6B66)">Tabular figures for all currency. Indian grouping. Never a rounded rupee where paise matter.</div>
+        </div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:16px;padding:22px;transition:transform .22s cubic-bezier(.2,.7,.3,1),box-shadow .22s ease" style-hover="transform:translateY(-3px);box-shadow:0 12px 28px -12px rgba(15,26,23,.16)">
+          <div style="font:700 17px/1.3 Figtree;margin-bottom:8px">Consistent</div>
+          <div style="font:400 14px/1.6 Figtree;color:var(--ink-soft,#5A6B66)">The same object looks the same everywhere. A unit chip in the gate app matches the one in billing.</div>
+        </div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:16px;padding:22px;transition:transform .22s cubic-bezier(.2,.7,.3,1),box-shadow .22s ease" style-hover="transform:translateY(-3px);box-shadow:0 12px 28px -12px rgba(15,26,23,.16)">
+          <div style="font:700 17px/1.3 Figtree;margin-bottom:8px">Easy to learn</div>
+          <div style="font:400 14px/1.6 Figtree;color:var(--ink-soft,#5A6B66)">Every empty state teaches the next action. No screen ends in a dead end.</div>
+        </div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:16px;padding:22px;transition:transform .22s cubic-bezier(.2,.7,.3,1),box-shadow .22s ease" style-hover="transform:translateY(-3px);box-shadow:0 12px 28px -12px rgba(15,26,23,.16)">
+          <div style="font:700 17px/1.3 Figtree;margin-bottom:8px">Pleasant</div>
+          <div style="font:400 14px/1.6 Figtree;color:var(--ink-soft,#5A6B66)">Motion confirms, it never entertains. Success gets one moment; everything else is quiet.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="color" data-reveal="1" style="padding:56px 0;border-top:1px solid var(--border,#E3E9E6);scroll-margin-top:124px">
+      <div style="font:600 12px/1 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink,#0E6B5C);margin-bottom:14px">02 · Color</div>
+      <h2 style="margin:0 0 14px;font:700 34px/1.15 Figtree;letter-spacing:-.025em">Color</h2>
+      <p style="margin:0 0 36px;max-width:64ch;font:400 16px/1.65 Figtree;color:var(--ink-soft,#5A6B66)">One accent, a neutral ramp tinted the same hue, and four semantic colours. Accent is reserved for the primary action and active state. It is never decorative.</p>
+
+      <div style="font:600 11px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft,#5A6B66);margin-bottom:12px">Accent — teal</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:34px">
+        <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border,#E3E9E6);background:var(--surface,#fff)"><div style="height:70px;background:var(--accent-wash,#F2F8F6)"></div><div style="padding:10px 12px"><div style="font:600 12px/1.3 Figtree">accent-50</div><div style="font:400 11px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">#F2F8F6</div></div></div>
+        <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border,#E3E9E6);background:var(--surface,#fff)"><div style="height:70px;background:var(--accent-wash,#E6F2EF)"></div><div style="padding:10px 12px"><div style="font:600 12px/1.3 Figtree">accent-100</div><div style="font:400 11px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">#E6F2EF</div></div></div>
+        <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border,#E3E9E6);background:var(--surface,#fff)"><div style="height:70px;background:var(--accent-200,#C9E4DC)"></div><div style="padding:10px 12px"><div style="font:600 12px/1.3 Figtree">accent-200</div><div style="font:400 11px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">#C9E4DC</div></div></div>
+        <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border,#E3E9E6);background:var(--surface,#fff)"><div style="height:70px;background:#6FB3A1"></div><div style="padding:10px 12px"><div style="font:600 12px/1.3 Figtree">accent-400</div><div style="font:400 11px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">#6FB3A1</div></div></div>
+        <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border,#E3E9E6);background:var(--surface,#fff)"><div style="height:70px;background:#0E6B5C"></div><div style="padding:10px 12px"><div style="font:600 12px/1.3 Figtree">accent-600 · base</div><div style="font:400 11px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">#0E6B5C</div></div></div>
+        <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border,#E3E9E6);background:var(--surface,#fff)"><div style="height:70px;background:#0A5749"></div><div style="padding:10px 12px"><div style="font:600 12px/1.3 Figtree">accent-700</div><div style="font:400 11px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">#0A5749</div></div></div>
+        <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border,#E3E9E6);background:var(--surface,#fff)"><div style="height:70px;background:#073F35"></div><div style="padding:10px 12px"><div style="font:600 12px/1.3 Figtree">accent-900</div><div style="font:400 11px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">#073F35</div></div></div>
+      </div>
+
+      <div style="font:600 11px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft,#5A6B66);margin-bottom:12px">Neutrals — green-tinted ink</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:34px">
+        <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border,#E3E9E6);background:var(--surface,#fff)"><div style="height:70px;background:var(--surface,#FFFFFF);border-bottom:1px solid var(--border,#E3E9E6)"></div><div style="padding:10px 12px"><div style="font:600 12px/1.3 Figtree">surface</div><div style="font:400 11px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">#FFFFFF</div></div></div>
+        <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border,#E3E9E6);background:var(--surface,#fff)"><div style="height:70px;background:var(--canvas,#F7F9F8)"></div><div style="padding:10px 12px"><div style="font:600 12px/1.3 Figtree">canvas</div><div style="font:400 11px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">#F7F9F8</div></div></div>
+        <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border,#E3E9E6);background:var(--surface,#fff)"><div style="height:70px;background:var(--subtle,#EDF1EF)"></div><div style="padding:10px 12px"><div style="font:600 12px/1.3 Figtree">subtle</div><div style="font:400 11px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">#EDF1EF</div></div></div>
+        <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border,#E3E9E6);background:var(--surface,#fff)"><div style="height:70px;background:var(--border,#E3E9E6)"></div><div style="padding:10px 12px"><div style="font:600 12px/1.3 Figtree">border</div><div style="font:400 11px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">#E3E9E6</div></div></div>
+        <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border,#E3E9E6);background:var(--surface,#fff)"><div style="height:70px;background:#8A9995"></div><div style="padding:10px 12px"><div style="font:600 12px/1.3 Figtree">ink-muted</div><div style="font:400 11px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">#8A9995</div></div></div>
+        <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border,#E3E9E6);background:var(--surface,#fff)"><div style="height:70px;background:#5A6B66"></div><div style="padding:10px 12px"><div style="font:600 12px/1.3 Figtree">ink-soft</div><div style="font:400 11px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">#5A6B66</div></div></div>
+        <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border,#E3E9E6);background:var(--surface,#fff)"><div style="height:70px;background:#0F1A17"></div><div style="padding:10px 12px"><div style="font:600 12px/1.3 Figtree">ink</div><div style="font:400 11px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">#0F1A17</div></div></div>
+      </div>
+
+      <div style="font:600 11px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft,#5A6B66);margin-bottom:12px">Semantic</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:14px;padding:16px;display:flex;gap:14px;align-items:flex-start">
+          <div style="width:40px;height:40px;border-radius:11px;background:#167A3C;flex:none"></div>
+          <div><div style="font:600 14px/1.3 Figtree">Success</div><div style="font:400 11px/1.5 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">#167A3C · bg #E8F5EC</div><div style="margin-top:5px;font:400 13px/1.5 Figtree;color:var(--ink-soft,#5A6B66)">Payment cleared, ticket resolved</div></div>
+        </div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:14px;padding:16px;display:flex;gap:14px;align-items:flex-start">
+          <div style="width:40px;height:40px;border-radius:11px;background:#B45309;flex:none"></div>
+          <div><div style="font:600 14px/1.3 Figtree">Warning</div><div style="font:400 11px/1.5 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">#B45309 · bg #FDF3E7</div><div style="margin-top:5px;font:400 13px/1.5 Figtree;color:var(--ink-soft,#5A6B66)">Due soon, SLA at risk, expiring</div></div>
+        </div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:14px;padding:16px;display:flex;gap:14px;align-items:flex-start">
+          <div style="width:40px;height:40px;border-radius:11px;background:#C0342B;flex:none"></div>
+          <div><div style="font:600 14px/1.3 Figtree">Danger</div><div style="font:400 11px/1.5 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">#C0342B · bg #FCEDEC</div><div style="margin-top:5px;font:400 13px/1.5 Figtree;color:var(--ink-soft,#5A6B66)">Overdue, breached, failed, blocked</div></div>
+        </div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:14px;padding:16px;display:flex;gap:14px;align-items:flex-start">
+          <div style="width:40px;height:40px;border-radius:11px;background:#1D4ED8;flex:none"></div>
+          <div><div style="font:600 14px/1.3 Figtree">Info</div><div style="font:400 11px/1.5 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">#1D4ED8 · bg #EAF0FE</div><div style="margin-top:5px;font:400 13px/1.5 Figtree;color:var(--ink-soft,#5A6B66)">Statutory note, system advisory</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="type" data-reveal="1" style="padding:56px 0;border-top:1px solid var(--border,#E3E9E6);scroll-margin-top:124px">
+      <div style="font:600 12px/1 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink,#0E6B5C);margin-bottom:14px">03 · Typography</div>
+      <h2 style="margin:0 0 14px;font:700 34px/1.15 Figtree;letter-spacing:-.025em">Typography</h2>
+      <p style="margin:0 0 36px;max-width:64ch;font:400 16px/1.65 Figtree;color:var(--ink-soft,#5A6B66)">Figtree for everything on screen. IBM Plex Mono for identifiers a human may have to read aloud or type back: bill numbers, UTRs, unit codes, token names.</p>
+      <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:16px;overflow:hidden">
+        <div style="display:flex;gap:24px;align-items:baseline;padding:20px 24px;border-bottom:1px solid var(--border-soft,#EDF1EF);flex-wrap:wrap">
+          <div style="width:120px;flex:none;font:400 11px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">display / 800</div>
+          <div style="font:800 44px/1.06 Figtree;letter-spacing:-.035em">₹12,84,600 collected</div>
+        </div>
+        <div style="display:flex;gap:24px;align-items:baseline;padding:20px 24px;border-bottom:1px solid var(--border-soft,#EDF1EF);flex-wrap:wrap">
+          <div style="width:120px;flex:none;font:400 11px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">h1 / 700 · 32</div>
+          <div style="font:700 32px/1.16 Figtree;letter-spacing:-.025em">Bill run — September 2026</div>
+        </div>
+        <div style="display:flex;gap:24px;align-items:baseline;padding:20px 24px;border-bottom:1px solid var(--border-soft,#EDF1EF);flex-wrap:wrap">
+          <div style="width:120px;flex:none;font:400 11px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">h2 / 700 · 22</div>
+          <div style="font:700 22px/1.25 Figtree;letter-spacing:-.018em">Head-wise breakup</div>
+        </div>
+        <div style="display:flex;gap:24px;align-items:baseline;padding:20px 24px;border-bottom:1px solid var(--border-soft,#EDF1EF);flex-wrap:wrap">
+          <div style="width:120px;flex:none;font:400 11px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">h3 / 600 · 17</div>
+          <div style="font:600 17px/1.35 Figtree">Non-occupancy charges</div>
+        </div>
+        <div style="display:flex;gap:24px;align-items:baseline;padding:20px 24px;border-bottom:1px solid var(--border-soft,#EDF1EF);flex-wrap:wrap">
+          <div style="width:120px;flex:none;font:400 11px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">body / 400 · 15</div>
+          <div style="font:400 15px/1.6 Figtree;max-width:56ch">Charged at 10% of this unit's service charges, because occupancy is recorded as tenanted from 01 Apr 2026.</div>
+        </div>
+        <div style="display:flex;gap:24px;align-items:baseline;padding:20px 24px;border-bottom:1px solid var(--border-soft,#EDF1EF);flex-wrap:wrap">
+          <div style="width:120px;flex:none;font:400 11px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">small / 400 · 13</div>
+          <div style="font:400 13px/1.55 Figtree;color:var(--ink-soft,#5A6B66)">Rule 106C-12(3), Chapter XI-B · verified 07 Sep 2026</div>
+        </div>
+        <div style="display:flex;gap:24px;align-items:baseline;padding:20px 24px;border-bottom:1px solid var(--border-soft,#EDF1EF);flex-wrap:wrap">
+          <div style="width:120px;flex:none;font:400 11px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">label / 600 · 11</div>
+          <div style="font:600 11px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#5A6B66)">Outstanding since</div>
+        </div>
+        <div style="display:flex;gap:24px;align-items:baseline;padding:20px 24px;flex-wrap:wrap">
+          <div style="width:120px;flex:none;font:400 11px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">mono / 500 · 13</div>
+          <div style="font:500 13px/1.5 'IBM Plex Mono',monospace">BIL/2026-27/A/00412 · UTR 402318776214</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:16px">
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:14px;padding:18px">
+          <div style="font:600 13px/1.3 Figtree;margin-bottom:6px">Currency is always tabular</div>
+          <div style="font:400 13px/1.55 Figtree;color:var(--ink-soft,#5A6B66);margin-bottom:10px"><span style="font:500 12px/1.4 'IBM Plex Mono',monospace;background:var(--subtle,#EDF1EF);padding:2px 6px;border-radius:5px">font-variant-numeric: tabular-nums</span> on every amount, so columns align.</div>
+          <div style="font-variant-numeric:tabular-nums;font:600 15px/1.7 Figtree;text-align:right;width:140px">₹&nbsp;&nbsp;4,820.00<br />₹&nbsp;12,840.50<br />₹&nbsp;&nbsp;&nbsp;&nbsp;110.00</div>
+        </div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:14px;padding:18px">
+          <div style="font:600 13px/1.3 Figtree;margin-bottom:6px">Indian grouping, never Western</div>
+          <div style="font:400 13px/1.55 Figtree;color:var(--ink-soft,#5A6B66)">₹12,84,600 — not ₹1,284,600. Formatted with <span style="font:500 12px/1.4 'IBM Plex Mono',monospace;background:var(--subtle,#EDF1EF);padding:2px 6px;border-radius:5px">en-IN</span> at the boundary, stored as integer paise.</div>
+        </div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:14px;padding:18px">
+          <div style="font:600 13px/1.3 Figtree;margin-bottom:6px">Line length caps at 68 characters</div>
+          <div style="font:400 13px/1.55 Figtree;color:var(--ink-soft,#5A6B66)">Body copy uses <span style="font:500 12px/1.4 'IBM Plex Mono',monospace;background:var(--subtle,#EDF1EF);padding:2px 6px;border-radius:5px">max-width: 64ch</span> and <span style="font:500 12px/1.4 'IBM Plex Mono',monospace;background:var(--subtle,#EDF1EF);padding:2px 6px;border-radius:5px">text-wrap: pretty</span>.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="space" data-reveal="1" style="padding:56px 0;border-top:1px solid var(--border,#E3E9E6);scroll-margin-top:124px">
+      <div style="font:600 12px/1 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink,#0E6B5C);margin-bottom:14px">04 · Space</div>
+      <h2 style="margin:0 0 14px;font:700 34px/1.15 Figtree;letter-spacing:-.025em">Spacing, radius, elevation</h2>
+      <p style="margin:0 0 36px;max-width:64ch;font:400 16px/1.65 Figtree;color:var(--ink-soft,#5A6B66)">A 4px base. Only these steps exist — an unlisted value is a bug, not a choice.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:16px;padding:22px">
+          <div style="font:600 11px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft,#5A6B66);margin-bottom:16px">Spacing scale</div>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <div style="display:flex;align-items:center;gap:12px"><span style="width:44px;font:500 12px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">4</span><span style="height:11px;width:4px;background:#0E6B5C;border-radius:2px"></span></div>
+            <div style="display:flex;align-items:center;gap:12px"><span style="width:44px;font:500 12px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">8</span><span style="height:11px;width:8px;background:#0E6B5C;border-radius:2px"></span></div>
+            <div style="display:flex;align-items:center;gap:12px"><span style="width:44px;font:500 12px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">12</span><span style="height:11px;width:12px;background:#0E6B5C;border-radius:2px"></span></div>
+            <div style="display:flex;align-items:center;gap:12px"><span style="width:44px;font:500 12px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">16</span><span style="height:11px;width:16px;background:#0E6B5C;border-radius:2px"></span></div>
+            <div style="display:flex;align-items:center;gap:12px"><span style="width:44px;font:500 12px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">24</span><span style="height:11px;width:24px;background:#0E6B5C;border-radius:2px"></span></div>
+            <div style="display:flex;align-items:center;gap:12px"><span style="width:44px;font:500 12px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">32</span><span style="height:11px;width:32px;background:#0E6B5C;border-radius:2px"></span></div>
+            <div style="display:flex;align-items:center;gap:12px"><span style="width:44px;font:500 12px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">48</span><span style="height:11px;width:48px;background:#0E6B5C;border-radius:2px"></span></div>
+            <div style="display:flex;align-items:center;gap:12px"><span style="width:44px;font:500 12px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">64</span><span style="height:11px;width:64px;background:#0E6B5C;border-radius:2px"></span></div>
+            <div style="display:flex;align-items:center;gap:12px"><span style="width:44px;font:500 12px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">96</span><span style="height:11px;width:96px;background:#0E6B5C;border-radius:2px"></span></div>
+          </div>
+        </div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:16px;padding:22px">
+          <div style="font:600 11px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft,#5A6B66);margin-bottom:16px">Radius</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <div style="text-align:center"><div style="width:58px;height:58px;background:var(--accent-wash,#E6F2EF);border:1px solid var(--accent-200,#C9E4DC);border-radius:6px"></div><div style="margin-top:7px;font:500 11px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">6 chip</div></div>
+            <div style="text-align:center"><div style="width:58px;height:58px;background:var(--accent-wash,#E6F2EF);border:1px solid var(--accent-200,#C9E4DC);border-radius:10px"></div><div style="margin-top:7px;font:500 11px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">10 input</div></div>
+            <div style="text-align:center"><div style="width:58px;height:58px;background:var(--accent-wash,#E6F2EF);border:1px solid var(--accent-200,#C9E4DC);border-radius:16px"></div><div style="margin-top:7px;font:500 11px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">16 card</div></div>
+            <div style="text-align:center"><div style="width:58px;height:58px;background:var(--accent-wash,#E6F2EF);border:1px solid var(--accent-200,#C9E4DC);border-radius:22px"></div><div style="margin-top:7px;font:500 11px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">22 sheet</div></div>
+            <div style="text-align:center"><div style="width:58px;height:58px;background:var(--accent-wash,#E6F2EF);border:1px solid var(--accent-200,#C9E4DC);border-radius:999px"></div><div style="margin-top:7px;font:500 11px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">pill</div></div>
+          </div>
+          <div style="font:600 11px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft,#5A6B66);margin:24px 0 16px">Elevation</div>
+          <div style="display:flex;gap:16px;flex-wrap:wrap">
+            <div style="text-align:center"><div style="width:76px;height:52px;background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:12px"></div><div style="margin-top:7px;font:500 11px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">flat</div></div>
+            <div style="text-align:center"><div style="width:76px;height:52px;background:var(--surface,#fff);border-radius:12px;box-shadow:0 1px 2px rgba(15,26,23,.06),0 4px 12px -6px rgba(15,26,23,.1)"></div><div style="margin-top:7px;font:500 11px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">raised</div></div>
+            <div style="text-align:center"><div style="width:76px;height:52px;background:var(--surface,#fff);border-radius:12px;box-shadow:0 8px 28px -10px rgba(15,26,23,.22)"></div><div style="margin-top:7px;font:500 11px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">overlay</div></div>
+            <div style="text-align:center"><div style="width:76px;height:52px;background:var(--surface,#fff);border-radius:12px;box-shadow:0 24px 60px -18px rgba(15,26,23,.34)"></div><div style="margin-top:7px;font:500 11px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">modal</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="icons" data-reveal="1" style="padding:56px 0;border-top:1px solid var(--border,#E3E9E6);scroll-margin-top:124px">
+      <div style="font:600 12px/1 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink,#0E6B5C);margin-bottom:14px">05 · Icons</div>
+      <h2 style="margin:0 0 14px;font:700 34px/1.15 Figtree;letter-spacing:-.025em">Icons</h2>
+      <p style="margin:0 0 36px;max-width:64ch;font:400 16px/1.65 Figtree;color:var(--ink-soft,#5A6B66)">24px grid, 1.75 stroke, round caps and joins, no fills. Icons never appear alone in the admin web app — always paired with a label — and never carry meaning by colour alone.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:1px;background:var(--border,#E3E9E6);border:1px solid var(--border,#E3E9E6);border-radius:16px;overflow:hidden">
+        <div style="background:var(--surface,#fff);padding:18px 8px;display:flex;flex-direction:column;align-items:center;gap:9px;transition:background .16s ease" style-hover="background:var(--accent-wash,#F2F8F6)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V9l7-5 7 5v12"></path><path d="M10 21v-6h4v6"></path></svg><span style="font:500 11px/1.3 Figtree;color:var(--ink-soft,#5A6B66)">home</span></div>
+        <div style="background:var(--surface,#fff);padding:18px 8px;display:flex;flex-direction:column;align-items:center;gap:9px;transition:background .16s ease" style-hover="background:var(--accent-wash,#F2F8F6)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2Z"></path><path d="M9 8h6M9 12h6"></path></svg><span style="font:500 11px/1.3 Figtree;color:var(--ink-soft,#5A6B66)">bill</span></div>
+        <div style="background:var(--surface,#fff);padding:18px 8px;display:flex;flex-direction:column;align-items:center;gap:9px;transition:background .16s ease" style-hover="background:var(--accent-wash,#F2F8F6)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="13" rx="3"></rect><path d="M2.5 10h19M16 15h2"></path></svg><span style="font:500 11px/1.3 Figtree;color:var(--ink-soft,#5A6B66)">pay</span></div>
+        <div style="background:var(--surface,#fff);padding:18px 8px;display:flex;flex-direction:column;align-items:center;gap:9px;transition:background .16s ease" style-hover="background:var(--accent-wash,#F2F8F6)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"></circle><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"></path><path d="M16 6.5a3 3 0 0 1 0 5.6M18 20c0-2.4-1-4.2-2.6-5.2"></path></svg><span style="font:500 11px/1.3 Figtree;color:var(--ink-soft,#5A6B66)">members</span></div>
+        <div style="background:var(--surface,#fff);padding:18px 8px;display:flex;flex-direction:column;align-items:center;gap:9px;transition:background .16s ease" style-hover="background:var(--accent-wash,#F2F8F6)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"></rect><path d="M8 7h2M14 7h2M8 11h2M14 11h2M8 15h2M14 15h2"></path></svg><span style="font:500 11px/1.3 Figtree;color:var(--ink-soft,#5A6B66)">building</span></div>
+        <div style="background:var(--surface,#fff);padding:18px 8px;display:flex;flex-direction:column;align-items:center;gap:9px;transition:background .16s ease" style-hover="background:var(--accent-wash,#F2F8F6)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7.5 3v6c0 4.6-3.1 8-7.5 9.5C7.6 20 4.5 16.6 4.5 12V6Z"></path><path d="M9.3 12.2l1.9 1.9 3.6-3.8"></path></svg><span style="font:500 11px/1.3 Figtree;color:var(--ink-soft,#5A6B66)">gate</span></div>
+        <div style="background:var(--surface,#fff);padding:18px 8px;display:flex;flex-direction:column;align-items:center;gap:9px;transition:background .16s ease" style-hover="background:var(--accent-wash,#F2F8F6)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h13A2.5 2.5 0 0 1 21 8.5v1.7a2 2 0 0 0 0 3.6v1.7A2.5 2.5 0 0 1 18.5 18h-13A2.5 2.5 0 0 1 3 15.5v-1.7a2 2 0 0 0 0-3.6Z"></path><path d="M14 6v12"></path></svg><span style="font:500 11px/1.3 Figtree;color:var(--ink-soft,#5A6B66)">ticket</span></div>
+        <div style="background:var(--surface,#fff);padding:18px 8px;display:flex;flex-direction:column;align-items:center;gap:9px;transition:background .16s ease" style-hover="background:var(--accent-wash,#F2F8F6)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"></path><path d="M10 19a2 2 0 0 0 4 0"></path></svg><span style="font:500 11px/1.3 Figtree;color:var(--ink-soft,#5A6B66)">bell</span></div>
+        <div style="background:var(--surface,#fff);padding:18px 8px;display:flex;flex-direction:column;align-items:center;gap:9px;transition:background .16s ease" style-hover="background:var(--accent-wash,#F2F8F6)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"></rect><path d="M3.5 10h17M8 3v4M16 3v4"></path></svg><span style="font:500 11px/1.3 Figtree;color:var(--ink-soft,#5A6B66)">meeting</span></div>
+        <div style="background:var(--surface,#fff);padding:18px 8px;display:flex;flex-direction:column;align-items:center;gap:9px;transition:background .16s ease" style-hover="background:var(--accent-wash,#F2F8F6)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"></path><path d="M14 3v5h5"></path></svg><span style="font:500 11px/1.3 Figtree;color:var(--ink-soft,#5A6B66)">document</span></div>
+        <div style="background:var(--surface,#fff);padding:18px 8px;display:flex;flex-direction:column;align-items:center;gap:9px;transition:background .16s ease" style-hover="background:var(--accent-wash,#F2F8F6)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg><span style="font:500 11px/1.3 Figtree;color:var(--ink-soft,#5A6B66)">reports</span></div>
+        <div style="background:var(--surface,#fff);padding:18px 8px;display:flex;flex-direction:column;align-items:center;gap:9px;transition:background .16s ease" style-hover="background:var(--accent-wash,#F2F8F6)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2.5v3M12 18.5v3M21.5 12h-3M5.5 12h-3M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1M18.7 18.7l-2.1-2.1M7.4 7.4 5.3 5.3"></path></svg><span style="font:500 11px/1.3 Figtree;color:var(--ink-soft,#5A6B66)">settings</span></div>
+        <div style="background:var(--surface,#fff);padding:18px 8px;display:flex;flex-direction:column;align-items:center;gap:9px;transition:background .16s ease" style-hover="background:var(--accent-wash,#F2F8F6)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"></circle><path d="m20 20-4.4-4.4"></path></svg><span style="font:500 11px/1.3 Figtree;color:var(--ink-soft,#5A6B66)">search</span></div>
+        <div style="background:var(--surface,#fff);padding:18px 8px;display:flex;flex-direction:column;align-items:center;gap:9px;transition:background .16s ease" style-hover="background:var(--accent-wash,#F2F8F6)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18l-7 8v6l-4 2v-8Z"></path></svg><span style="font:500 11px/1.3 Figtree;color:var(--ink-soft,#5A6B66)">filter</span></div>
+        <div style="background:var(--surface,#fff);padding:18px 8px;display:flex;flex-direction:column;align-items:center;gap:9px;transition:background .16s ease" style-hover="background:var(--accent-wash,#F2F8F6)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg><span style="font:500 11px/1.3 Figtree;color:var(--ink-soft,#5A6B66)">add</span></div>
+        <div style="background:var(--surface,#fff);padding:18px 8px;display:flex;flex-direction:column;align-items:center;gap:9px;transition:background .16s ease" style-hover="background:var(--accent-wash,#F2F8F6)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"></path></svg><span style="font:500 11px/1.3 Figtree;color:var(--ink-soft,#5A6B66)">check</span></div>
+        <div style="background:var(--surface,#fff);padding:18px 8px;display:flex;flex-direction:column;align-items:center;gap:9px;transition:background .16s ease" style-hover="background:var(--accent-wash,#F2F8F6)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20H2Z"></path><path d="M12 10v4M12 17h.01"></path></svg><span style="font:500 11px/1.3 Figtree;color:var(--ink-soft,#5A6B66)">alert</span></div>
+        <div style="background:var(--surface,#fff);padding:18px 8px;display:flex;flex-direction:column;align-items:center;gap:9px;transition:background .16s ease" style-hover="background:var(--accent-wash,#F2F8F6)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"></path></svg><span style="font:500 11px/1.3 Figtree;color:var(--ink-soft,#5A6B66)">close</span></div>
+        <div style="background:var(--surface,#fff);padding:18px 8px;display:flex;flex-direction:column;align-items:center;gap:9px;transition:background .16s ease" style-hover="background:var(--accent-wash,#F2F8F6)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"></path></svg><span style="font:500 11px/1.3 Figtree;color:var(--ink-soft,#5A6B66)">chevron</span></div>
+        <div style="background:var(--surface,#fff);padding:18px 8px;display:flex;flex-direction:column;align-items:center;gap:9px;transition:background .16s ease" style-hover="background:var(--accent-wash,#F2F8F6)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7.5 10.5 12 15l4.5-4.5M4 20h16"></path></svg><span style="font:500 11px/1.3 Figtree;color:var(--ink-soft,#5A6B66)">download</span></div>
+        <div style="background:var(--surface,#fff);padding:18px 8px;display:flex;flex-direction:column;align-items:center;gap:9px;transition:background .16s ease" style-hover="background:var(--accent-wash,#F2F8F6)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10.5" rx="2.5"></rect><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"></path></svg><span style="font:500 11px/1.3 Figtree;color:var(--ink-soft,#5A6B66)">lock</span></div>
+        <div style="background:var(--surface,#fff);padding:18px 8px;display:flex;flex-direction:column;align-items:center;gap:9px;transition:background .16s ease" style-hover="background:var(--accent-wash,#F2F8F6)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7v5.2l3.2 2"></path></svg><span style="font:500 11px/1.3 Figtree;color:var(--ink-soft,#5A6B66)">clock</span></div>
+        <div style="background:var(--surface,#fff);padding:18px 8px;display:flex;flex-direction:column;align-items:center;gap:9px;transition:background .16s ease" style-hover="background:var(--accent-wash,#F2F8F6)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h1.9l1.4-2h6.4l1.4 2h1.9A2.5 2.5 0 0 1 21 8.5v8A2.5 2.5 0 0 1 18.5 19h-13A2.5 2.5 0 0 1 3 16.5Z"></path><circle cx="12" cy="12.5" r="3.2"></circle></svg><span style="font:500 11px/1.3 Figtree;color:var(--ink-soft,#5A6B66)">photo</span></div>
+        <div style="background:var(--surface,#fff);padding:18px 8px;display:flex;flex-direction:column;align-items:center;gap:9px;transition:background .16s ease" style-hover="background:var(--accent-wash,#F2F8F6)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"></rect><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"></rect><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"></rect><path d="M14 14h2v2h-2zM19 14h1.5M14 19h2M19 18.5v2"></path></svg><span style="font:500 11px/1.3 Figtree;color:var(--ink-soft,#5A6B66)">qr</span></div>
+      </div>
+    </section>
+
+    <section id="buttons" data-reveal="1" style="padding:56px 0;border-top:1px solid var(--border,#E3E9E6);scroll-margin-top:124px">
+      <div style="font:600 12px/1 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink,#0E6B5C);margin-bottom:14px">06 · Buttons</div>
+      <h2 style="margin:0 0 14px;font:700 34px/1.15 Figtree;letter-spacing:-.025em">Buttons</h2>
+      <p style="margin:0 0 36px;max-width:64ch;font:400 16px/1.65 Figtree;color:var(--ink-soft,#5A6B66)">Four intents, three sizes. Press gives 1px of travel and a 120ms scale — enough to feel mechanical, short enough to never delay the next tap.</p>
+      <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:28px">
+        <div>
+          <div style="font:600 11px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft,#5A6B66);margin-bottom:14px">Intent</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+            <button type="button" style="height:42px;padding:0 20px;border:0;border-radius:10px;background:#0E6B5C;color:#fff;font:600 14px/1 Figtree;cursor:pointer;transition:background .18s ease,transform .12s cubic-bezier(.2,.7,.3,1),box-shadow .18s ease;box-shadow:0 1px 2px rgba(15,26,23,.1)" style-hover="background:#0A5749;box-shadow:0 6px 16px -6px rgba(14,107,92,.5)" style-active="transform:scale(.975)">Publish bill run</button>
+            <button type="button" style="height:42px;padding:0 20px;border:1px solid var(--border-strong,#CCD6D2);border-radius:10px;background:var(--surface,#fff);color:var(--ink,#0F1A17);font:600 14px/1 Figtree;cursor:pointer;transition:background .18s ease,border-color .18s ease,transform .12s cubic-bezier(.2,.7,.3,1)" style-hover="background:var(--accent-wash,#F2F8F6);border-color:var(--accent-ink,#0E6B5C)" style-active="transform:scale(.975)">Save as draft</button>
+            <button type="button" style="height:42px;padding:0 16px;border:0;border-radius:10px;background:transparent;color:var(--accent-ink,#0E6B5C);font:600 14px/1 Figtree;cursor:pointer;transition:background .18s ease,transform .12s cubic-bezier(.2,.7,.3,1)" style-hover="background:var(--accent-wash,#E6F2EF)" style-active="transform:scale(.975)">Preview</button>
+            <button type="button" style="height:42px;padding:0 20px;border:0;border-radius:10px;background:#C0342B;color:#fff;font:600 14px/1 Figtree;cursor:pointer;transition:background .18s ease,transform .12s cubic-bezier(.2,.7,.3,1)" style-hover="background:#A32A22" style-active="transform:scale(.975)">Cancel run</button>
+          </div>
+        </div>
+        <div>
+          <div style="font:600 11px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft,#5A6B66);margin-bottom:14px">Size — 32 / 42 / 52. Mobile never uses 32.</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+            <button type="button" style="height:32px;padding:0 14px;border:0;border-radius:8px;background:#0E6B5C;color:#fff;font:600 13px/1 Figtree;cursor:pointer;transition:background .18s ease" style-hover="background:#0A5749">Small</button>
+            <button type="button" style="height:42px;padding:0 20px;border:0;border-radius:10px;background:#0E6B5C;color:#fff;font:600 14px/1 Figtree;cursor:pointer;transition:background .18s ease" style-hover="background:#0A5749">Medium</button>
+            <button type="button" style="height:52px;padding:0 26px;border:0;border-radius:12px;background:#0E6B5C;color:#fff;font:600 16px/1 Figtree;cursor:pointer;transition:background .18s ease" style-hover="background:#0A5749">Large · mobile primary</button>
+          </div>
+        </div>
+        <div>
+          <div style="font:600 11px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft,#5A6B66);margin-bottom:14px">With icon, loading, disabled, icon-only</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+            <button type="button" style="height:42px;padding:0 18px;border:0;border-radius:10px;background:#0E6B5C;color:#fff;font:600 14px/1 Figtree;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:background .18s ease" style-hover="background:#0A5749"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>Add member</button>
+            <button type="button" onClick="{{ toggleLoading }}" style="height:42px;padding:0 18px;border:1px solid var(--border-strong,#CCD6D2);border-radius:10px;background:var(--surface,#fff);color:var(--ink,#0F1A17);font:600 14px/1 Figtree;cursor:pointer;display:inline-flex;align-items:center;gap:9px;transition:background .18s ease" style-hover="background:var(--accent-wash,#F2F8F6)">
+              <sc-if value="{{ loading }}" hint-placeholder-val="{{ false }}"><span style="width:15px;height:15px;border:2px solid var(--accent-200,#C9E4DC);border-top-color:var(--accent-ink,#0E6B5C);border-radius:50%;display:inline-block;animation:spin .7s linear infinite"></span></sc-if>
+              {{ loadLabel }}
+            </button>
+            <button type="button" disabled="true" style="height:42px;padding:0 20px;border:0;border-radius:10px;background:var(--subtle,#EDF1EF);color:var(--ink-dim,#A8B5B0);font:600 14px/1 Figtree;cursor:not-allowed">Publish</button>
+            <button type="button" style="width:42px;height:42px;border:1px solid var(--border-strong,#CCD6D2);border-radius:10px;background:var(--surface,#fff);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:background .18s ease,border-color .18s ease" style-hover="background:var(--accent-wash,#F2F8F6);border-color:var(--accent-ink,#0E6B5C)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7.5 10.5 12 15l4.5-4.5M4 20h16"></path></svg></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="forms" data-reveal="1" style="padding:56px 0;border-top:1px solid var(--border,#E3E9E6);scroll-margin-top:124px">
+      <div style="font:600 12px/1 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink,#0E6B5C);margin-bottom:14px">07 · Forms</div>
+      <h2 style="margin:0 0 14px;font:700 34px/1.15 Figtree;letter-spacing:-.025em">Forms</h2>
+      <p style="margin:0 0 36px;max-width:64ch;font:400 16px/1.65 Figtree;color:var(--ink-soft,#5A6B66)">Labels sit above fields, always visible. Validation runs on blur, never on keystroke. Errors replace the helper text in place so nothing shifts.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:16px;padding:26px;display:flex;flex-direction:column;gap:20px">
+          <div style="font:600 11px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft,#5A6B66)">Text fields</div>
+          <div>
+            <label style="display:block;font:600 13px/1.4 Figtree;margin-bottom:7px">Member name</label>
+            <input type="text" placeholder="e.g. Anjali Deshpande" style="width:100%;height:44px;padding:0 14px;border:1px solid var(--border-strong,#CCD6D2);border-radius:10px;background:var(--surface,#fff);font:400 15px/1 Figtree;color:var(--ink,#0F1A17);outline:none;transition:border-color .18s ease,box-shadow .18s ease" style-focus="border-color:var(--accent-ink,#0E6B5C);box-shadow:0 0 0 3px rgba(14,107,92,.14)" />
+            <div style="margin-top:7px;font:400 12.5px/1.45 Figtree;color:var(--ink-soft,#5A6B66)">As printed on the share certificate.</div>
+          </div>
+          <div>
+            <label style="display:block;font:600 13px/1.4 Figtree;margin-bottom:7px">Mobile number <span style="color:var(--bad,#C0342B)">*</span></label>
+            <div style="display:flex;align-items:center;height:44px;border:1px solid #C0342B;border-radius:10px;background:var(--surface,#fff);box-shadow:0 0 0 3px rgba(192,52,43,.1)">
+              <span style="padding:0 12px;font:500 15px/1 Figtree;color:var(--ink-soft,#5A6B66);border-right:1px solid var(--border,#E3E9E6)">+91</span>
+              <input type="text" value="98220" style="flex:1;min-width:0;height:100%;padding:0 12px;border:0;background:transparent;font:500 15px/1 'IBM Plex Mono',monospace;color:var(--ink,#0F1A17);outline:none" />
+            </div>
+            <div style="margin-top:7px;display:flex;gap:6px;align-items:flex-start;font:500 12.5px/1.45 Figtree;color:var(--bad,#C0342B)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0342B" stroke-width="2.2" stroke-linecap="round" style="margin-top:1px;flex:none"><path d="M12 3.5 22 20H2Z"></path><path d="M12 10v4M12 17h.01"></path></svg>Enter all 10 digits. This is the login identifier.</div>
+          </div>
+          <div>
+            <label style="display:block;font:600 13px/1.4 Figtree;margin-bottom:7px">Unit</label>
+            <div style="display:flex;align-items:center;height:44px;border:1px solid #167A3C;border-radius:10px;background:var(--surface,#fff);padding:0 14px;gap:10px">
+              <input type="text" value="A-1204" style="flex:1;min-width:0;border:0;background:transparent;font:500 15px/1 'IBM Plex Mono',monospace;color:var(--ink,#0F1A17);outline:none" />
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#167A3C" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="animation:checkPop .32s cubic-bezier(.2,.7,.3,1)"><path d="m4.5 12.5 5 5 10-11"></path></svg>
+            </div>
+            <div style="margin-top:7px;font:500 12.5px/1.45 Figtree;color:var(--ok,#167A3C)">Vacant. Carpet area 842 sq ft, lift-served.</div>
+          </div>
+          <div>
+            <label style="display:block;font:600 13px/1.4 Figtree;margin-bottom:7px;color:var(--ink-dim,#A8B5B0)">Share certificate no.</label>
+            <input type="text" value="Auto-generated on approval" disabled="true" style="width:100%;height:44px;padding:0 14px;border:1px solid var(--border,#E3E9E6);border-radius:10px;background:var(--canvas,#F7F9F8);font:400 15px/1 Figtree;color:var(--ink-dim,#A8B5B0);cursor:not-allowed" />
+          </div>
+        </div>
+
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:16px;padding:26px;display:flex;flex-direction:column;gap:20px">
+          <div style="font:600 11px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft,#5A6B66)">Choice &amp; amount</div>
+          <div>
+            <label style="display:block;font:600 13px/1.4 Figtree;margin-bottom:7px">Occupancy</label>
+            <div style="display:flex;padding:3px;background:var(--subtle,#EDF1EF);border-radius:11px;gap:2px">
+              <button type="button" onClick="{{ setSegSelf }}" style="flex:1;height:36px;border:0;border-radius:9px;background:{{ segSelfBg }};color:{{ segSelfFg }};box-shadow:{{ segSelfSh }};font:600 13px/1 Figtree;cursor:pointer;transition:all .2s cubic-bezier(.2,.7,.3,1)">Self</button>
+              <button type="button" onClick="{{ setSegFam }}" style="flex:1;height:36px;border:0;border-radius:9px;background:{{ segFamBg }};color:{{ segFamFg }};box-shadow:{{ segFamSh }};font:600 13px/1 Figtree;cursor:pointer;transition:all .2s cubic-bezier(.2,.7,.3,1)">Family</button>
+              <button type="button" onClick="{{ setSegTen }}" style="flex:1;height:36px;border:0;border-radius:9px;background:{{ segTenBg }};color:{{ segTenFg }};box-shadow:{{ segTenSh }};font:600 13px/1 Figtree;cursor:pointer;transition:all .2s cubic-bezier(.2,.7,.3,1)">Tenanted</button>
+            </div>
+            <div style="margin-top:8px;font:400 12.5px/1.45 Figtree;color:var(--ink-soft,#5A6B66)">{{ segHint }}</div>
+          </div>
+          <div>
+            <label style="display:block;font:600 13px/1.4 Figtree;margin-bottom:7px">Sinking fund rate</label>
+            <div style="display:flex;align-items:center;height:44px;border:1px solid var(--border-strong,#CCD6D2);border-radius:10px;background:var(--surface,#fff);padding:0 14px;gap:8px">
+              <input type="text" value="0.25" style="flex:1;min-width:0;border:0;background:transparent;font:500 15px/1 'IBM Plex Mono',monospace;text-align:right;color:var(--ink,#0F1A17);outline:none" />
+              <span style="font:500 14px/1 Figtree;color:var(--ink-soft,#5A6B66)">% p.a.</span>
+            </div>
+            <div style="margin-top:7px;font:400 12.5px/1.45 Figtree;color:var(--ink-soft,#5A6B66)">Statutory minimum 0.25% of construction cost.</div>
+          </div>
+          <div>
+            <label style="display:block;font:600 13px/1.4 Figtree;margin-bottom:7px">Amount to pay</label>
+            <div style="display:flex;align-items:center;height:52px;border:1px solid var(--border-strong,#CCD6D2);border-radius:12px;background:var(--surface,#fff);padding:0 16px;gap:6px">
+              <span style="font:600 20px/1 Figtree;color:var(--ink-soft,#5A6B66)">₹</span>
+              <input type="text" value="12,840.50" style="flex:1;min-width:0;border:0;background:transparent;font:700 22px/1 Figtree;font-variant-numeric:tabular-nums;letter-spacing:-.01em;color:var(--ink,#0F1A17);outline:none" />
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:13px">
+            <label style="display:flex;gap:11px;align-items:flex-start;cursor:pointer">
+              <span style="width:20px;height:20px;flex:none;border-radius:6px;background:#0E6B5C;display:flex;align-items:center;justify-content:center;margin-top:1px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"></path></svg></span>
+              <span style="font:400 14px/1.45 Figtree">Send receipt on WhatsApp</span>
+            </label>
+            <label style="display:flex;gap:11px;align-items:flex-start;cursor:pointer">
+              <span style="width:20px;height:20px;flex:none;border-radius:6px;border:1.5px solid var(--border-strong,#CCD6D2);background:var(--surface,#fff);margin-top:1px"></span>
+              <span style="font:400 14px/1.45 Figtree">Save this method for next time</span>
+            </label>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:4px">
+              <span style="font:400 14px/1.45 Figtree">Auto-debit on due date</span>
+              <button type="button" onClick="{{ toggleSwitch }}" style="width:46px;height:27px;border:0;border-radius:999px;padding:3px;cursor:pointer;background:{{ switchBg }};display:flex;justify-content:{{ switchJustify }};transition:background .22s ease">
+                <span style="width:21px;height:21px;border-radius:50%;background:var(--surface,#fff);box-shadow:0 1px 3px rgba(15,26,23,.28);transition:all .22s cubic-bezier(.2,.7,.3,1)"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="cards" data-reveal="1" style="padding:56px 0;border-top:1px solid var(--border,#E3E9E6);scroll-margin-top:124px">
+      <div style="font:600 12px/1 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink,#0E6B5C);margin-bottom:14px">08 · Cards</div>
+      <h2 style="margin:0 0 14px;font:700 34px/1.15 Figtree;letter-spacing:-.025em">Cards</h2>
+      <p style="margin:0 0 36px;max-width:64ch;font:400 16px/1.65 Figtree;color:var(--ink-soft,#5A6B66)">Three kinds only: a metric card, an object card, and an action card. A card is clickable only if the whole surface navigates somewhere.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-bottom:16px">
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:16px;padding:22px">
+          <div style="font:600 11px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#5A6B66);margin-bottom:12px">Collected this month</div>
+          <div style="font:700 30px/1 Figtree;letter-spacing:-.025em;font-variant-numeric:tabular-nums">₹12,84,600</div>
+          <div style="margin-top:12px;display:flex;align-items:center;gap:8px">
+            <span style="display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:999px;background:var(--ok-wash,#E8F5EC);color:var(--ok,#167A3C);font:600 12px/1.3 Figtree">▲ 8.4%</span>
+            <span style="font:400 12.5px/1.3 Figtree;color:var(--ink-soft,#5A6B66)">vs August</span>
+          </div>
+          <div style="margin-top:16px;height:5px;border-radius:3px;background:var(--subtle,#EDF1EF);overflow:hidden"><div style="height:100%;width:78%;background:#0E6B5C;border-radius:3px;transform-origin:left;animation:grow .8s cubic-bezier(.2,.7,.3,1)"></div></div>
+          <div style="margin-top:8px;font:400 12.5px/1.3 Figtree;color:var(--ink-soft,#5A6B66)">78% of ₹16,46,000 billed</div>
+        </div>
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:16px;padding:22px">
+          <div style="font:600 11px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#5A6B66);margin-bottom:12px">Outstanding ageing</div>
+          <div style="font:700 30px/1 Figtree;letter-spacing:-.025em;font-variant-numeric:tabular-nums;color:var(--bad,#C0342B)">₹3,61,400</div>
+          <div style="margin-top:14px;display:flex;height:8px;border-radius:4px;overflow:hidden;gap:2px">
+            <div style="flex:44;background:var(--accent-200,#C9E4DC)"></div><div style="flex:26;background:#6FB3A1"></div><div style="flex:18;background:#B45309"></div><div style="flex:12;background:#C0342B"></div>
+          </div>
+          <div style="margin-top:11px;display:flex;flex-direction:column;gap:5px;font:400 12.5px/1.4 Figtree;color:var(--ink-soft,#5A6B66)">
+            <div style="display:flex;justify-content:space-between"><span>0–30 days</span><span style="font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink,#0F1A17)">₹1,59,000</span></div>
+            <div style="display:flex;justify-content:space-between"><span>90+ days</span><span style="font-variant-numeric:tabular-nums;font-weight:600;color:var(--bad,#C0342B)">₹43,400</span></div>
+          </div>
+        </div>
+        <div style="background:#0E6B5C;border-radius:16px;padding:22px;color:#fff">
+          <div style="font:600 11px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:#D6EDE6;margin-bottom:12px">Your dues · A-1204</div>
+          <div style="font:700 30px/1 Figtree;letter-spacing:-.025em;font-variant-numeric:tabular-nums">₹12,840.50</div>
+          <div style="margin-top:9px;font:400 13.5px/1.45 Figtree;color:#DCF0EA">Due 15 Sep 2026 · 4 days left</div>
+          <button type="button" style="margin-top:18px;width:100%;height:46px;border:0;border-radius:11px;background:var(--surface,#fff);color:var(--accent-ink,#0A5749);font:700 15px/1 Figtree;cursor:pointer;transition:transform .12s cubic-bezier(.2,.7,.3,1),box-shadow .2s ease" style-hover="box-shadow:0 8px 20px -8px rgba(0,0,0,.4)" style-active="transform:scale(.98)">Pay now</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:16px;padding:20px;display:flex;gap:14px;cursor:pointer;transition:border-color .2s ease,transform .22s cubic-bezier(.2,.7,.3,1),box-shadow .22s ease" style-hover="border-color:var(--accent-ink,#0E6B5C);transform:translateY(-2px);box-shadow:0 12px 26px -14px rgba(15,26,23,.2)">
+          <div style="width:44px;height:44px;flex:none;border-radius:12px;background:var(--accent-wash,#E6F2EF);display:flex;align-items:center;justify-content:center;font:700 14px/1 Figtree;color:var(--accent-ink,#0A5749)">AD</div>
+          <div style="min-width:0;flex:1">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font:600 15px/1.3 Figtree">Anjali Deshpande</span><span style="padding:2px 7px;border-radius:5px;background:var(--subtle,#EDF1EF);font:600 11px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">A-1204</span></div>
+            <div style="margin-top:5px;font:400 13px/1.45 Figtree;color:var(--ink-soft,#5A6B66)">Primary owner · Tenanted · 2 vehicles</div>
+            <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+              <span style="padding:3px 9px;border-radius:999px;background:var(--ok-wash,#E8F5EC);color:var(--ok,#167A3C);font:600 11.5px/1.4 Figtree">No dues</span>
+              <span style="padding:3px 9px;border-radius:999px;background:var(--warn-wash,#FDF3E7);color:var(--warn,#B45309);font:600 11.5px/1.4 Figtree">Tenancy expires 30 Nov</span>
+            </div>
+          </div>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A8B5B0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;align-self:center"><path d="m9 5 7 7-7 7"></path></svg>
+        </div>
+        <div style="background:var(--surface,#fff);border:1px dashed var(--border-strong,#CCD6D2);border-radius:16px;padding:20px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:border-color .2s ease,background .2s ease" style-hover="border-color:var(--accent-ink,#0E6B5C);background:var(--accent-wash,#F2F8F6)">
+          <div style="width:44px;height:44px;flex:none;border-radius:12px;border:1.5px dashed var(--border-strong,#CCD6D2);display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0E6B5C" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></div>
+          <div><div style="font:600 15px/1.3 Figtree">Add a member</div><div style="margin-top:4px;font:400 13px/1.45 Figtree;color:var(--ink-soft,#5A6B66)">Or import a whole wing from Excel</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tables" data-reveal="1" style="padding:56px 0;border-top:1px solid var(--border,#E3E9E6);scroll-margin-top:124px">
+      <div style="font:600 12px/1 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink,#0E6B5C);margin-bottom:14px">09 · Tables &amp; filters</div>
+      <h2 style="margin:0 0 14px;font:700 34px/1.15 Figtree;letter-spacing:-.025em">Tables, search and filters</h2>
+      <p style="margin:0 0 36px;max-width:64ch;font:400 16px/1.65 Figtree;color:var(--ink-soft,#5A6B66)">Live — type in the search box, toggle a filter chip, sort a column, select rows. Amounts right-align with tabular figures; the row action bar replaces the toolbar when a selection exists.</p>
+
+      <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:16px;overflow:hidden">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border-soft,#EDF1EF);display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:9px;height:40px;padding:0 14px;border:1px solid var(--border-strong,#CCD6D2);border-radius:10px;background:var(--surface,#fff);flex:1;min-width:200px;transition:border-color .18s ease" style-focus-within="border-color:var(--accent-ink,#0E6B5C)">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8A9995" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"></circle><path d="m20 20-4.4-4.4"></path></svg>
+            <input type="text" placeholder="Search unit or owner" value="{{ q }}" onChange="{{ onSearch }}" style="flex:1;min-width:0;border:0;background:transparent;font:400 14.5px/1 Figtree;color:var(--ink,#0F1A17);outline:none" />
+          </div>
+          <button type="button" onClick="{{ toggleChipOver }}" style="height:34px;padding:0 13px;border-radius:999px;border:1px solid {{ chipOverBd }};background:{{ chipOverBg }};color:{{ chipOverFg }};font:600 13px/1 Figtree;cursor:pointer;transition:all .18s ease">Overdue</button>
+          <button type="button" onClick="{{ toggleChipTen }}" style="height:34px;padding:0 13px;border-radius:999px;border:1px solid {{ chipTenBd }};background:{{ chipTenBg }};color:{{ chipTenFg }};font:600 13px/1 Figtree;cursor:pointer;transition:all .18s ease">Tenanted</button>
+          <button type="button" onClick="{{ toggleChipB }}" style="height:34px;padding:0 13px;border-radius:999px;border:1px solid {{ chipBBd }};background:{{ chipBBg }};color:{{ chipBFg }};font:600 13px/1 Figtree;cursor:pointer;transition:all .18s ease">Wing B</button>
+          <button type="button" onClick="{{ clearFilters }}" style="height:34px;padding:0 13px;border-radius:999px;border:0;background:transparent;color:var(--ink-soft,#5A6B66);font:600 13px/1 Figtree;cursor:pointer;transition:color .18s ease" style-hover="color:var(--accent-ink,#0E6B5C)">Clear</button>
+        </div>
+
+        <sc-if value="{{ hasSelection }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:11px 20px;background:var(--accent-wash,#E6F2EF);border-bottom:1px solid var(--accent-200,#C9E4DC);display:flex;align-items:center;gap:14px;flex-wrap:wrap;animation:fadeUp .22s cubic-bezier(.2,.7,.3,1)">
+            <span style="font:600 13.5px/1 Figtree;color:var(--accent-ink,#0A5749)">{{ selCount }} selected</span>
+            <button type="button" style="height:30px;padding:0 12px;border:0;border-radius:8px;background:#0E6B5C;color:#fff;font:600 12.5px/1 Figtree;cursor:pointer">Send reminder</button>
+            <button type="button" style="height:30px;padding:0 12px;border:1px solid var(--accent-200,#C9E4DC);border-radius:8px;background:var(--surface,#fff);color:var(--accent-ink,#0A5749);font:600 12.5px/1 Figtree;cursor:pointer">Generate notice</button>
+            <button type="button" onClick="{{ clearSel }}" style="margin-left:auto;height:30px;padding:0 10px;border:0;background:transparent;color:var(--accent-ink,#0A5749);font:600 12.5px/1 Figtree;cursor:pointer">Clear</button>
+          </div>
+        </sc-if>
+
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;min-width:680px">
+            <thead>
+              <tr style="background:var(--canvas,#F7F9F8)">
+                <th style="width:44px;padding:11px 0 11px 20px;text-align:left"><span style="display:inline-block;width:18px;height:18px;border-radius:5px;border:1.5px solid var(--border-strong,#CCD6D2);background:var(--surface,#fff)"></span></th>
+                <th onClick="{{ sortUnit }}" style="padding:11px 14px;text-align:left;font:600 11px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#5A6B66);cursor:pointer;user-select:none;white-space:nowrap">Unit {{ sortUnitArrow }}</th>
+                <th style="padding:11px 14px;text-align:left;font:600 11px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#5A6B66)">Owner</th>
+                <th style="padding:11px 14px;text-align:left;font:600 11px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#5A6B66)">Occupancy</th>
+                <th onClick="{{ sortDue }}" style="padding:11px 14px;text-align:right;font:600 11px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#5A6B66);cursor:pointer;user-select:none;white-space:nowrap">Outstanding {{ sortDueArrow }}</th>
+                <th style="padding:11px 20px 11px 14px;text-align:right;font:600 11px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#5A6B66)">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ rows }}" as="r" hint-placeholder-count="5">
+                <tr onClick="{{ r.toggle }}" style="border-top:1px solid var(--border-soft,#EDF1EF);cursor:pointer;background:{{ r.bg }};transition:background .15s ease">
+                  <td style="padding:0 0 0 20px"><span style="display:inline-block;width:18px;height:18px;border-radius:5px;border:1.5px solid {{ r.cbBd }};background:{{ r.cbBg }};vertical-align:middle"></span></td>
+                  <td style="padding:var(--rowpad) 14px;font:500 14px/1.4 'IBM Plex Mono',monospace">{{ r.unit }}</td>
+                  <td style="padding:var(--rowpad) 14px;font:500 14.5px/1.4 Figtree">{{ r.owner }}</td>
+                  <td style="padding:var(--rowpad) 14px;font:400 14px/1.4 Figtree;color:var(--ink-soft,#5A6B66)">{{ r.occ }}</td>
+                  <td style="padding:var(--rowpad) 14px;text-align:right;font:600 14.5px/1.4 Figtree;font-variant-numeric:tabular-nums;color:{{ r.amtFg }}">{{ r.amt }}</td>
+                  <td style="padding:var(--rowpad) 20px var(--rowpad) 14px;text-align:right"><span style="display:inline-block;padding:3px 10px;border-radius:999px;font:600 11.5px/1.5 Figtree;background:{{ r.pillBg }};color:{{ r.pillFg }}">{{ r.status }}</span></td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+
+        <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:56px 24px;text-align:center;animation:fadeUp .25s cubic-bezier(.2,.7,.3,1)">
+            <div style="width:52px;height:52px;margin:0 auto 16px;border-radius:15px;background:var(--subtle,#EDF1EF);display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8A9995" stroke-width="1.75" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"></circle><path d="m20 20-4.4-4.4"></path></svg></div>
+            <div style="font:600 16px/1.3 Figtree;margin-bottom:6px">No units match</div>
+            <div style="font:400 14px/1.5 Figtree;color:var(--ink-soft,#5A6B66)">Try a different unit number, or clear the filters.</div>
+          </div>
+        </sc-if>
+
+        <div style="padding:13px 20px;border-top:1px solid var(--border-soft,#EDF1EF);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <span style="font:400 13px/1.4 Figtree;color:var(--ink-soft,#5A6B66)">Showing {{ shownCount }} of 248 units</span>
+          <div style="display:flex;gap:6px">
+            <button type="button" style="height:32px;min-width:32px;padding:0 10px;border:1px solid var(--border,#E3E9E6);border-radius:8px;background:var(--surface,#fff);font:600 13px/1 Figtree;color:var(--ink-soft,#5A6B66);cursor:pointer">Prev</button>
+            <button type="button" style="height:32px;min-width:32px;border:0;border-radius:8px;background:#0E6B5C;color:#fff;font:600 13px/1 Figtree;cursor:pointer">1</button>
+            <button type="button" style="height:32px;min-width:32px;border:1px solid var(--border,#E3E9E6);border-radius:8px;background:var(--surface,#fff);font:600 13px/1 Figtree;cursor:pointer">2</button>
+            <button type="button" style="height:32px;min-width:32px;border:1px solid var(--border,#E3E9E6);border-radius:8px;background:var(--surface,#fff);font:600 13px/1 Figtree;cursor:pointer">3</button>
+            <button type="button" style="height:32px;min-width:32px;padding:0 10px;border:1px solid var(--border,#E3E9E6);border-radius:8px;background:var(--surface,#fff);font:600 13px/1 Figtree;cursor:pointer">Next</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="overlays" data-reveal="1" style="padding:56px 0;border-top:1px solid var(--border,#E3E9E6);scroll-margin-top:124px">
+      <div style="font:600 12px/1 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink,#0E6B5C);margin-bottom:14px">10 · Overlays</div>
+      <h2 style="margin:0 0 14px;font:700 34px/1.15 Figtree;letter-spacing:-.025em">Modals, drawers, toasts</h2>
+      <p style="margin:0 0 36px;max-width:64ch;font:400 16px/1.65 Figtree;color:var(--ink-soft,#5A6B66)">A modal interrupts and demands a decision. A drawer supplements and keeps context. A toast confirms and disappears. Never stack two of the same kind.</p>
+      <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:16px;padding:28px;display:flex;gap:12px;flex-wrap:wrap">
+        <button type="button" onClick="{{ openModal }}" style="height:42px;padding:0 20px;border:0;border-radius:10px;background:#0E6B5C;color:#fff;font:600 14px/1 Figtree;cursor:pointer;transition:background .18s ease" style-hover="background:#0A5749">Open confirm modal</button>
+        <button type="button" onClick="{{ openDrawer }}" style="height:42px;padding:0 20px;border:1px solid var(--border-strong,#CCD6D2);border-radius:10px;background:var(--surface,#fff);font:600 14px/1 Figtree;cursor:pointer;transition:background .18s ease" style-hover="background:var(--accent-wash,#F2F8F6)">Open unit drawer</button>
+        <button type="button" onClick="{{ fireSuccess }}" style="height:42px;padding:0 20px;border:1px solid var(--border-strong,#CCD6D2);border-radius:10px;background:var(--surface,#fff);font:600 14px/1 Figtree;cursor:pointer;transition:background .18s ease" style-hover="background:var(--accent-wash,#F2F8F6)">Success toast</button>
+        <button type="button" onClick="{{ fireError }}" style="height:42px;padding:0 20px;border:1px solid var(--border-strong,#CCD6D2);border-radius:10px;background:var(--surface,#fff);font:600 14px/1 Figtree;cursor:pointer;transition:background .18s ease" style-hover="background:var(--accent-wash,#F2F8F6)">Error toast</button>
+      </div>
+      <div style="margin-top:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">
+        <div style="background:var(--info-wash,#EAF0FE);border:1px solid var(--info-border,#C7D7FB);border-radius:14px;padding:16px 18px;display:flex;gap:12px">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#1D4ED8" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path></svg>
+          <div><div style="font:600 14px/1.35 Figtree;color:var(--info-ink,#12327A)">Inline banner — info</div><div style="margin-top:4px;font:400 13.5px/1.5 Figtree;color:var(--info-ink,#2B4A9E)">Rule 106C-12 applies from 30 June 2026. Review your charge heads.</div></div>
+        </div>
+        <div style="background:var(--warn-wash,#FDF3E7);border:1px solid var(--warn-border,#F5DFBE);border-radius:14px;padding:16px 18px;display:flex;gap:12px">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:1px"><path d="M12 3.5 22 20H2Z"></path><path d="M12 10v4M12 17h.01"></path></svg>
+          <div><div style="font:600 14px/1.35 Figtree;color:var(--warn-ink,#7C3D06)">Inline banner — warning</div><div style="margin-top:4px;font:400 13.5px/1.5 Figtree;color:var(--warn-ink,#8F4A0A)">Lift AMC for Wing B expires in 21 days. No renewal recorded.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="states" data-reveal="1" style="padding:56px 0;border-top:1px solid var(--border,#E3E9E6);scroll-margin-top:124px">
+      <div style="font:600 12px/1 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink,#0E6B5C);margin-bottom:14px">11 · States</div>
+      <h2 style="margin:0 0 14px;font:700 34px/1.15 Figtree;letter-spacing:-.025em">Empty, loading, error, success</h2>
+      <p style="margin:0 0 36px;max-width:64ch;font:400 16px/1.65 Figtree;color:var(--ink-soft,#5A6B66)">Four states every list, form and page must ship. Loading uses shape-matched skeletons so the layout never jumps when data arrives.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:16px;padding:32px 24px;text-align:center;display:flex;flex-direction:column;align-items:center">
+          <div style="width:56px;height:56px;border-radius:17px;background:var(--accent-wash,#E6F2EF);display:flex;align-items:center;justify-content:center;margin-bottom:16px;animation:floatY 4s ease-in-out infinite"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0E6B5C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2Z"></path><path d="M9 9h6M9 13h4"></path></svg></div>
+          <div style="font:700 17px/1.3 Figtree;margin-bottom:7px">No bills yet</div>
+          <div style="font:400 14px/1.55 Figtree;color:var(--ink-soft,#5A6B66);max-width:34ch;margin-bottom:18px">Your first bill run creates bills for all 248 units. You can preview before publishing.</div>
+          <button type="button" style="height:40px;padding:0 18px;border:0;border-radius:10px;background:#0E6B5C;color:#fff;font:600 14px/1 Figtree;cursor:pointer;transition:background .18s ease" style-hover="background:#0A5749">Start bill run</button>
+        </div>
+
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:16px;padding:24px">
+          <div style="font:600 11px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft,#5A6B66);margin-bottom:18px">Loading — skeletons</div>
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;gap:13px;align-items:center">
+              <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(90deg,#EDF1EF 25%,#F7F9F8 50%,#EDF1EF 75%);background-size:420px 100%;animation:shimmer 1.4s linear infinite"></div>
+              <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+                <div style="height:11px;width:62%;border-radius:6px;background:linear-gradient(90deg,#EDF1EF 25%,#F7F9F8 50%,#EDF1EF 75%);background-size:420px 100%;animation:shimmer 1.4s linear infinite"></div>
+                <div style="height:11px;width:38%;border-radius:6px;background:linear-gradient(90deg,#EDF1EF 25%,#F7F9F8 50%,#EDF1EF 75%);background-size:420px 100%;animation:shimmer 1.4s linear infinite"></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:13px;align-items:center">
+              <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(90deg,#EDF1EF 25%,#F7F9F8 50%,#EDF1EF 75%);background-size:420px 100%;animation:shimmer 1.4s linear infinite"></div>
+              <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+                <div style="height:11px;width:48%;border-radius:6px;background:linear-gradient(90deg,#EDF1EF 25%,#F7F9F8 50%,#EDF1EF 75%);background-size:420px 100%;animation:shimmer 1.4s linear infinite"></div>
+                <div style="height:11px;width:66%;border-radius:6px;background:linear-gradient(90deg,#EDF1EF 25%,#F7F9F8 50%,#EDF1EF 75%);background-size:420px 100%;animation:shimmer 1.4s linear infinite"></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:13px;align-items:center">
+              <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(90deg,#EDF1EF 25%,#F7F9F8 50%,#EDF1EF 75%);background-size:420px 100%;animation:shimmer 1.4s linear infinite"></div>
+              <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+                <div style="height:11px;width:70%;border-radius:6px;background:linear-gradient(90deg,#EDF1EF 25%,#F7F9F8 50%,#EDF1EF 75%);background-size:420px 100%;animation:shimmer 1.4s linear infinite"></div>
+                <div style="height:11px;width:30%;border-radius:6px;background:linear-gradient(90deg,#EDF1EF 25%,#F7F9F8 50%,#EDF1EF 75%);background-size:420px 100%;animation:shimmer 1.4s linear infinite"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:16px;padding:32px 24px;text-align:center;display:flex;flex-direction:column;align-items:center">
+          <div style="width:56px;height:56px;border-radius:17px;background:var(--bad-wash,#FCEDEC);display:flex;align-items:center;justify-content:center;margin-bottom:16px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C0342B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20H2Z"></path><path d="M12 10v4M12 17h.01"></path></svg></div>
+          <div style="font:700 17px/1.3 Figtree;margin-bottom:7px">Payment could not be confirmed</div>
+          <div style="font:400 14px/1.55 Figtree;color:var(--ink-soft,#5A6B66);max-width:36ch;margin-bottom:8px">Your bank may still have debited the amount. We check every 15 minutes for 24 hours and update this automatically.</div>
+          <div style="font:500 12px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66);margin-bottom:18px">REF PAY-2026-0918-44127</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+            <button type="button" style="height:40px;padding:0 18px;border:0;border-radius:10px;background:#0F1A17;color:#fff;font:600 14px/1 Figtree;cursor:pointer">Check again</button>
+            <button type="button" style="height:40px;padding:0 18px;border:1px solid var(--border-strong,#CCD6D2);border-radius:10px;background:var(--surface,#fff);font:600 14px/1 Figtree;cursor:pointer">Contact office</button>
+          </div>
+        </div>
+
+        <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:16px;padding:32px 24px;text-align:center;display:flex;flex-direction:column;align-items:center">
+          <div style="width:60px;height:60px;border-radius:50%;background:#167A3C;display:flex;align-items:center;justify-content:center;margin-bottom:16px;animation:checkPop .42s cubic-bezier(.2,.7,.3,1)"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"></path></svg></div>
+          <div style="font:700 17px/1.3 Figtree;margin-bottom:7px">₹12,840.50 paid</div>
+          <div style="font:400 14px/1.55 Figtree;color:var(--ink-soft,#5A6B66);max-width:32ch;margin-bottom:6px">Receipt RCP/2026-27/01188 issued. A copy is on its way to WhatsApp.</div>
+          <div style="font:500 12px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66);margin-bottom:18px">UTR 402318776214</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+            <button type="button" style="height:40px;padding:0 18px;border:0;border-radius:10px;background:#0E6B5C;color:#fff;font:600 14px/1 Figtree;cursor:pointer">Download receipt</button>
+            <button type="button" style="height:40px;padding:0 18px;border:1px solid var(--border-strong,#CCD6D2);border-radius:10px;background:var(--surface,#fff);font:600 14px/1 Figtree;cursor:pointer">Done</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="motion" data-reveal="1" style="padding:56px 0;border-top:1px solid var(--border,#E3E9E6);scroll-margin-top:124px">
+      <div style="font:600 12px/1 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink,#0E6B5C);margin-bottom:14px">12 · Motion</div>
+      <h2 style="margin:0 0 14px;font:700 34px/1.15 Figtree;letter-spacing:-.025em">Motion</h2>
+      <p style="margin:0 0 36px;max-width:64ch;font:400 16px/1.65 Figtree;color:var(--ink-soft,#5A6B66)">Three durations and two curves. Anything outside this table needs a reason. All of it is disabled under <span style="font:500 13px/1.4 'IBM Plex Mono',monospace;background:var(--subtle,#EDF1EF);padding:2px 6px;border-radius:5px">prefers-reduced-motion</span>.</p>
+      <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:16px;overflow:hidden">
+        <div style="display:grid;grid-template-columns:110px 1fr 1.4fr;gap:0;padding:12px 22px;background:var(--canvas,#F7F9F8);border-bottom:1px solid var(--border-soft,#EDF1EF)">
+          <span style="font:600 11px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#5A6B66)">Duration</span>
+          <span style="font:600 11px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#5A6B66)">Curve</span>
+          <span style="font:600 11px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#5A6B66)">Used for</span>
+        </div>
+        <div style="display:grid;grid-template-columns:110px 1fr 1.4fr;padding:15px 22px;border-bottom:1px solid var(--border-soft,#EDF1EF);align-items:center">
+          <span style="font:600 14px/1.4 'IBM Plex Mono',monospace">120ms</span>
+          <span style="font:400 13px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">cubic-bezier(.2,.7,.3,1)</span>
+          <span style="font:400 14px/1.5 Figtree;color:var(--ink-soft,#5A6B66)">Press feedback, checkbox, toggle knob</span>
+        </div>
+        <div style="display:grid;grid-template-columns:110px 1fr 1.4fr;padding:15px 22px;border-bottom:1px solid var(--border-soft,#EDF1EF);align-items:center">
+          <span style="font:600 14px/1.4 'IBM Plex Mono',monospace">180ms</span>
+          <span style="font:400 13px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">ease</span>
+          <span style="font:400 14px/1.5 Figtree;color:var(--ink-soft,#5A6B66)">Hover, focus ring, chip and pill state</span>
+        </div>
+        <div style="display:grid;grid-template-columns:110px 1fr 1.4fr;padding:15px 22px;border-bottom:1px solid var(--border-soft,#EDF1EF);align-items:center">
+          <span style="font:600 14px/1.4 'IBM Plex Mono',monospace">240ms</span>
+          <span style="font:400 13px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">cubic-bezier(.2,.7,.3,1)</span>
+          <span style="font:400 14px/1.5 Figtree;color:var(--ink-soft,#5A6B66)">Modal, drawer, toast, list reveal, tab switch</span>
+        </div>
+        <div style="display:grid;grid-template-columns:110px 1fr 1.4fr;padding:15px 22px;align-items:center">
+          <span style="font:600 14px/1.4 'IBM Plex Mono',monospace">loop</span>
+          <span style="font:400 13px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">linear</span>
+          <span style="font:400 14px/1.5 Figtree;color:var(--ink-soft,#5A6B66)">Skeleton shimmer 1.4s, spinner 0.7s only</span>
+        </div>
+      </div>
+      <div style="margin-top:16px;background:#0F1A17;border-radius:16px;padding:26px;display:flex;gap:26px;flex-wrap:wrap;align-items:center">
+        <div style="font:600 13px/1.5 Figtree;color:var(--ink-dim,#A8B5B0);max-width:26ch">Motion carries meaning: entrances rise, exits fall, and nothing crosses the screen sideways except a drawer.</div>
+        <div style="display:flex;gap:20px;flex-wrap:wrap">
+          <div style="text-align:center"><div style="width:64px;height:64px;border-radius:16px;background:#0E6B5C;animation:floatY 2.6s ease-in-out infinite"></div><div style="margin-top:9px;font:500 11px/1 'IBM Plex Mono',monospace;color:var(--ink-muted,#8A9995)">rise</div></div>
+          <div style="text-align:center"><div style="width:64px;height:64px;border-radius:50%;border:4px solid #1F3B35;border-top-color:#6FB3A1;animation:spin .7s linear infinite"></div><div style="margin-top:9px;font:500 11px/1 'IBM Plex Mono',monospace;color:var(--ink-muted,#8A9995)">spin</div></div>
+          <div style="text-align:center"><div style="width:64px;height:64px;border-radius:16px;background:linear-gradient(90deg,#1F3B35 25%,#2C544B 50%,#1F3B35 75%);background-size:420px 100%;animation:shimmer 1.4s linear infinite"></div><div style="margin-top:9px;font:500 11px/1 'IBM Plex Mono',monospace;color:var(--ink-muted,#8A9995)">shimmer</div></div>
+          <div style="text-align:center"><div style="width:64px;height:64px;border-radius:50%;background:#0E6B5C;animation:pulseRing 2.4s ease-out infinite"></div><div style="margin-top:9px;font:500 11px/1 'IBM Plex Mono',monospace;color:var(--ink-muted,#8A9995)">pulse</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section data-reveal="1" style="padding:56px 0 0;border-top:1px solid var(--border,#E3E9E6)">
+      <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:20px;padding:36px;display:flex;gap:28px;justify-content:space-between;align-items:center;flex-wrap:wrap">
+        <div style="max-width:46ch">
+          <div style="font:700 22px/1.3 Figtree;letter-spacing:-.018em;margin-bottom:8px">Next passes</div>
+          <div style="font:400 15px/1.6 Figtree;color:var(--ink-soft,#5A6B66)">Admin web shell and the money path, then the resident app, then the offline gate app. Each one reuses only what is on this page.</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px;min-width:220px">
+          <div style="display:flex;align-items:center;gap:10px;font:500 14px/1.4 Figtree"><span style="width:8px;height:8px;border-radius:50%;background:#0E6B5C"></span>Foundation kit</div>
+          <div style="display:flex;align-items:center;gap:10px;font:500 14px/1.4 Figtree;color:var(--ink-soft,#5A6B66)"><span style="width:8px;height:8px;border-radius:50%;background:var(--border-strong,#CCD6D2)"></span>Admin web · dashboard, billing, payments</div>
+          <div style="display:flex;align-items:center;gap:10px;font:500 14px/1.4 Figtree;color:var(--ink-soft,#5A6B66)"><span style="width:8px;height:8px;border-radius:50%;background:var(--border-strong,#CCD6D2)"></span>Resident app · dues, pay, helpdesk, visitors</div>
+          <div style="display:flex;align-items:center;gap:10px;font:500 14px/1.4 Figtree;color:var(--ink-soft,#5A6B66)"><span style="width:8px;height:8px;border-radius:50%;background:var(--border-strong,#CCD6D2)"></span>Gate app · offline visitor flows</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <sc-if value="{{ modal }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeModal }}" style="position:fixed;inset:0;z-index:90;background:rgba(15,26,23,.44);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px;animation:veilIn .2s ease">
+      <div onClick="{{ stop }}" style="width:100%;max-width:460px;background:var(--surface,#fff);border-radius:20px;box-shadow:0 24px 60px -18px rgba(15,26,23,.4);padding:28px;animation:modalIn .26s cubic-bezier(.2,.7,.3,1)">
+        <div style="width:46px;height:46px;border-radius:14px;background:var(--warn-wash,#FDF3E7);display:flex;align-items:center;justify-content:center;margin-bottom:18px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20H2Z"></path><path d="M12 10v4M12 17h.01"></path></svg></div>
+        <div style="font:700 20px/1.3 Figtree;letter-spacing:-.015em;margin-bottom:10px">Publish 248 bills for September?</div>
+        <div style="font:400 14.5px/1.6 Figtree;color:var(--ink-soft,#5A6B66);margin-bottom:18px">Published bills cannot be edited. Corrections after this point are made by credit note or by cancel-and-reissue, and both stay on the record.</div>
+        <div style="background:var(--canvas,#F7F9F8);border:1px solid var(--border-soft,#EDF1EF);border-radius:12px;padding:14px 16px;margin-bottom:22px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between;font:400 13.5px/1.4 Figtree;color:var(--ink-soft,#5A6B66)"><span>Total billed</span><span style="font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink,#0F1A17)">₹16,46,000.00</span></div>
+          <div style="display:flex;justify-content:space-between;font:400 13.5px/1.4 Figtree;color:var(--ink-soft,#5A6B66)"><span>Variance vs August</span><span style="font-weight:700;color:var(--warn,#B45309)">+3.1%</span></div>
+          <div style="display:flex;justify-content:space-between;font:400 13.5px/1.4 Figtree;color:var(--ink-soft,#5A6B66)"><span>Exceptions</span><span style="font-weight:700;color:var(--ink,#0F1A17)">2 units</span></div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">
+          <button type="button" onClick="{{ closeModal }}" style="height:42px;padding:0 18px;border:1px solid var(--border-strong,#CCD6D2);border-radius:10px;background:var(--surface,#fff);font:600 14px/1 Figtree;cursor:pointer;transition:background .18s ease" style-hover="background:var(--accent-wash,#F2F8F6)">Review exceptions</button>
+          <button type="button" onClick="{{ confirmPublish }}" style="height:42px;padding:0 20px;border:0;border-radius:10px;background:#0E6B5C;color:#fff;font:600 14px/1 Figtree;cursor:pointer;transition:background .18s ease" style-hover="background:#0A5749">Publish bills</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ drawer }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeDrawer }}" style="position:fixed;inset:0;z-index:90;background:rgba(15,26,23,.4);display:flex;justify-content:flex-end;animation:veilIn .2s ease">
+      <div onClick="{{ stop }}" style="width:min(430px,92vw);height:100%;background:var(--surface,#fff);box-shadow:-16px 0 50px -20px rgba(15,26,23,.36);display:flex;flex-direction:column;animation:drawerIn .28s cubic-bezier(.2,.7,.3,1)">
+        <div style="padding:22px 24px;border-bottom:1px solid var(--border-soft,#EDF1EF);display:flex;align-items:flex-start;gap:14px">
+          <div style="min-width:0;flex:1">
+            <div style="font:600 11px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#5A6B66);margin-bottom:7px">Unit 360</div>
+            <div style="font:700 21px/1.25 Figtree;letter-spacing:-.018em">A-1204 · Anjali Deshpande</div>
+          </div>
+          <button type="button" onClick="{{ closeDrawer }}" style="width:34px;height:34px;flex:none;border:0;border-radius:9px;background:var(--canvas,#F7F9F8);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .18s ease" style-hover="background:var(--subtle,#EDF1EF)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5A6B66" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+        </div>
+        <div style="padding:8px 24px 0;display:flex;gap:4px;border-bottom:1px solid var(--border-soft,#EDF1EF)">
+          <button type="button" onClick="{{ tabOverview }}" style="padding:10px 12px;border:0;background:transparent;font:600 13.5px/1 Figtree;cursor:pointer;color:{{ tabOvFg }};border-bottom:2px solid {{ tabOvBd }};transition:all .18s ease">Overview</button>
+          <button type="button" onClick="{{ tabLedger }}" style="padding:10px 12px;border:0;background:transparent;font:600 13.5px/1 Figtree;cursor:pointer;color:{{ tabLdFg }};border-bottom:2px solid {{ tabLdBd }};transition:all .18s ease">Ledger</button>
+          <button type="button" onClick="{{ tabPeople }}" style="padding:10px 12px;border:0;background:transparent;font:600 13.5px/1 Figtree;cursor:pointer;color:{{ tabPpFg }};border-bottom:2px solid {{ tabPpBd }};transition:all .18s ease">People</button>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:22px 24px">
+          <sc-for list="{{ drawerRows }}" as="d" hint-placeholder-count="4">
+            <div style="display:flex;justify-content:space-between;gap:16px;padding:13px 0;border-bottom:1px solid var(--border-soft,#F1F4F3)">
+              <span style="font:400 14px/1.5 Figtree;color:var(--ink-soft,#5A6B66)">{{ d.k }}</span>
+              <span style="font:600 14px/1.5 Figtree;text-align:right;font-variant-numeric:tabular-nums">{{ d.v }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="padding:18px 24px;border-top:1px solid var(--border-soft,#EDF1EF);display:flex;gap:10px">
+          <button type="button" style="flex:1;height:44px;border:0;border-radius:11px;background:#0E6B5C;color:#fff;font:600 14.5px/1 Figtree;cursor:pointer;transition:background .18s ease" style-hover="background:#0A5749">Record payment</button>
+          <button type="button" style="height:44px;padding:0 18px;border:1px solid var(--border-strong,#CCD6D2);border-radius:11px;background:var(--surface,#fff);font:600 14.5px/1 Figtree;cursor:pointer;transition:background .18s ease" style-hover="background:var(--accent-wash,#F2F8F6)">Ledger PDF</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <div style="position:fixed;right:24px;bottom:24px;z-index:95;display:flex;flex-direction:column;gap:10px;align-items:flex-end;pointer-events:none">
+    <sc-for list="{{ toasts }}" as="t" hint-placeholder-count="0">
+      <div style="min-width:280px;max-width:360px;background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-left:3px solid {{ t.accent }};border-radius:13px;box-shadow:0 14px 34px -14px rgba(15,26,23,.3);padding:14px 16px;display:flex;gap:12px;align-items:flex-start;animation:toastIn .26s cubic-bezier(.2,.7,.3,1);pointer-events:auto">
+        <span style="width:22px;height:22px;flex:none;border-radius:7px;background:{{ t.iconBg }};display:flex;align-items:center;justify-content:center;font:700 13px/1 Figtree;color:{{ t.accent }}">{{ t.glyph }}</span>
+        <div style="min-width:0;flex:1">
+          <div style="font:600 14px/1.35 Figtree">{{ t.title }}</div>
+          <div style="margin-top:3px;font:400 13px/1.5 Figtree;color:var(--ink-soft,#5A6B66)">{{ t.body }}</div>
+        </div>
+        <button type="button" onClick="{{ t.dismiss }}" style="width:22px;height:22px;flex:none;border:0;background:transparent;cursor:pointer;padding:0;color:var(--ink-dim,#A8B5B0);font:400 16px/1 Figtree">×</button>
+      </div>
+    </sc-for>
+  </div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const DATA = [
+  { unit: "A-0203", owner: "Rohit Kulkarni", occ: "Self-occupied", amt: 0, status: "Paid", wing: "A", ten: false },
+  { unit: "A-1204", owner: "Anjali Deshpande", occ: "Tenanted", amt: 1284050, status: "Due", wing: "A", ten: true },
+  { unit: "B-0407", owner: "Farhan Shaikh", occ: "Tenanted", amt: 4318000, status: "Overdue 94d", wing: "B", ten: true },
+  { unit: "B-0902", owner: "Meera Joshi", occ: "Family", amt: 962500, status: "Due", wing: "B", ten: false },
+  { unit: "C-0101", owner: "Sunita Rane", occ: "Vacant", amt: 0, status: "Paid", wing: "C", ten: false },
+  { unit: "C-1508", owner: "Vikram Nair", occ: "Self-occupied", amt: 2140000, status: "Overdue 41d", wing: "C", ten: false }
+];
+
+const inr = (p) => "\u20B9" + (p / 100).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+class Component extends DCLogic {
+  state = {
+    modal: false, drawer: false, loading: false, toasts: [],
+    seg: "TEN", sw: true, tab: "ov",
+    q: "", chips: { over: false, ten: false, b: false },
+    sel: {}, sortKey: "unit", sortDir: "asc"
+  };
+
+  componentDidMount() {
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const els = document.querySelectorAll("[data-reveal]");
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        e.target.style.animation = "fadeUp .5s cubic-bezier(.2,.7,.3,1) both";
+        io.unobserve(e.target);
+      });
+    }, { rootMargin: "0px 0px -8% 0px", threshold: 0.05 });
+    els.forEach((el) => { el.style.opacity = "0"; io.observe(el); });
+    this._esc = (ev) => { if (ev.key === "Escape") this.setState({ modal: false, drawer: false }); };
+    window.addEventListener("keydown", this._esc);
+  }
+
+  componentWillUnmount() { if (this._esc) window.removeEventListener("keydown", this._esc); }
+
+  toast(t) {
+    const id = Math.random().toString(36).slice(2);
+    this.setState((s) => ({ toasts: [...s.toasts, { ...t, id }] }));
+    setTimeout(() => this.setState((s) => ({ toasts: s.toasts.filter((x) => x.id !== id) })), 4200);
+  }
+
+  renderVals() {
+    const st = this.state;
+    const dark = !!st.dark;
+    const seg = (k) => st.seg === k;
+    const on = "#fff", off = "transparent";
+
+    const q = st.q.trim().toLowerCase();
+    let rows = DATA.filter((r) => {
+      if (q && !(r.unit.toLowerCase().includes(q) || r.owner.toLowerCase().includes(q))) return false;
+      if (st.chips.over && r.amt === 0) return false;
+      if (st.chips.ten && !r.ten) return false;
+      if (st.chips.b && r.wing !== "B") return false;
+      return true;
+    });
+    const dir = st.sortDir === "asc" ? 1 : -1;
+    rows = rows.slice().sort((a, b) => st.sortKey === "amt" ? (a.amt - b.amt) * dir : a.unit.localeCompare(b.unit) * dir);
+
+    const selCount = Object.keys(st.sel).filter((k) => st.sel[k]).length;
+
+    const pill = (s) => s === "Paid"
+      ? { bg: "#E8F5EC", fg: "#167A3C" }
+      : s.startsWith("Overdue") ? { bg: "#FCEDEC", fg: "#C0342B" } : { bg: "#FDF3E7", fg: "#B45309" };
+
+    const chip = (active) => active
+      ? { bg: "#0E6B5C", fg: "#ffffff", bd: "#0E6B5C" }
+      : { bg: "#ffffff", fg: "#3D4A46", bd: "#CCD6D2" };
+    const co = chip(st.chips.over), ct = chip(st.chips.ten), cb = chip(st.chips.b);
+
+    const tab = (k) => st.tab === k
+      ? { fg: "#0E6B5C", bd: "#0E6B5C" }
+      : { fg: "#8A9995", bd: "transparent" };
+    const tOv = tab("ov"), tLd = tab("ledger"), tPp = tab("people");
+
+    const drawerSets = {
+      ov: [
+        { k: "Carpet area", v: "842 sq ft" }, { k: "Occupancy", v: "Tenanted since 01 Apr 2026" },
+        { k: "Lift served", v: "Yes · Wing A" }, { k: "Parking", v: "2 slots · P1-14, P1-15" },
+        { k: "Share certificate", v: "SC/0412" }, { k: "Outstanding", v: inr(1284050) }
+      ],
+      ledger: [
+        { k: "Sep 2026 bill", v: inr(1284050) }, { k: "Aug 2026 receipt", v: "-" + inr(1245000) },
+        { k: "Aug 2026 bill", v: inr(1245000) }, { k: "Interest accrued", v: inr(0) },
+        { k: "Closing balance", v: inr(1284050) }
+      ],
+      people: [
+        { k: "Primary owner", v: "Anjali Deshpande" }, { k: "Tenant", v: "Kiran Patil" },
+        { k: "Bill payer", v: "Owner" }, { k: "Family members", v: "3" },
+        { k: "Domestic help", v: "1 verified" }
+      ]
+    };
+
+    return {
+      themeLabel: dark ? "Switch to light" : "Switch to dark",
+      themeShort: dark ? "Light" : "Dark",
+      themeIcon: dark
+        ? React.createElement("svg", { width: 16, height: 16, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" },
+            React.createElement("circle", { cx: 12, cy: 12, r: 4.2 }),
+            React.createElement("path", { d: "M12 2.6v2.4M12 19v2.4M21.4 12H19M5 12H2.6M18.6 5.4 16.9 7.1M7.1 16.9 5.4 18.6M18.6 18.6 16.9 16.9M7.1 7.1 5.4 5.4" }))
+        : React.createElement("svg", { width: 16, height: 16, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round" },
+            React.createElement("path", { d: "M20.5 14.3A8.6 8.6 0 0 1 9.7 3.5 8.8 8.8 0 1 0 20.5 14.3Z" })),
+      toggleTheme: () => {
+        document.documentElement.setAttribute("data-theme", dark ? "light" : "dark");
+        this.setState({ dark: !dark });
+      },
+      loading: st.loading,
+      loadLabel: st.loading ? "Generating\u2026" : "Generate PDF",
+      toggleLoading: () => {
+        if (st.loading) return;
+        this.setState({ loading: true });
+        setTimeout(() => {
+          this.setState({ loading: false });
+          this.toast({ glyph: "\u2713", accent: "#167A3C", iconBg: "#E8F5EC", title: "Ledger PDF ready", body: "248 units \u00b7 1.4 MB" });
+        }, 1600);
+      },
+
+      segSelfBg: seg("SELF") ? on : off, segSelfFg: seg("SELF") ? "#0F1A17" : "#5A6B66", segSelfSh: seg("SELF") ? "0 1px 3px rgba(15,26,23,.12)" : "none",
+      segFamBg: seg("FAM") ? on : off, segFamFg: seg("FAM") ? "#0F1A17" : "#5A6B66", segFamSh: seg("FAM") ? "0 1px 3px rgba(15,26,23,.12)" : "none",
+      segTenBg: seg("TEN") ? on : off, segTenFg: seg("TEN") ? "#0F1A17" : "#5A6B66", segTenSh: seg("TEN") ? "0 1px 3px rgba(15,26,23,.12)" : "none",
+      setSegSelf: () => this.setState({ seg: "SELF" }),
+      setSegFam: () => this.setState({ seg: "FAM" }),
+      setSegTen: () => this.setState({ seg: "TEN" }),
+      segHint: st.seg === "TEN"
+        ? "Non-occupancy charge applies \u2014 10% of this unit's service charges."
+        : st.seg === "FAM"
+          ? "Family-occupied. Non-occupancy does not apply even if the owner lives elsewhere."
+          : "Owner resides here. No non-occupancy charge.",
+
+      switchBg: st.sw ? "#0E6B5C" : "#CCD6D2",
+      switchJustify: st.sw ? "flex-end" : "flex-start",
+      toggleSwitch: () => this.setState((s) => ({ sw: !s.sw })),
+
+      q: st.q,
+      onSearch: (e) => this.setState({ q: e.target.value }),
+      toggleChipOver: () => this.setState((s) => ({ chips: { ...s.chips, over: !s.chips.over } })),
+      toggleChipTen: () => this.setState((s) => ({ chips: { ...s.chips, ten: !s.chips.ten } })),
+      toggleChipB: () => this.setState((s) => ({ chips: { ...s.chips, b: !s.chips.b } })),
+      clearFilters: () => this.setState({ chips: { over: false, ten: false, b: false }, q: "" }),
+      chipOverBg: co.bg, chipOverFg: co.fg, chipOverBd: co.bd,
+      chipTenBg: ct.bg, chipTenFg: ct.fg, chipTenBd: ct.bd,
+      chipBBg: cb.bg, chipBFg: cb.fg, chipBBd: cb.bd,
+
+      sortUnit: () => this.setState((s) => ({ sortKey: "unit", sortDir: s.sortKey === "unit" && s.sortDir === "asc" ? "desc" : "asc" })),
+      sortDue: () => this.setState((s) => ({ sortKey: "amt", sortDir: s.sortKey === "amt" && s.sortDir === "asc" ? "desc" : "asc" })),
+      sortUnitArrow: st.sortKey === "unit" ? (st.sortDir === "asc" ? "\u2191" : "\u2193") : "",
+      sortDueArrow: st.sortKey === "amt" ? (st.sortDir === "asc" ? "\u2191" : "\u2193") : "",
+
+      rows: rows.map((r) => {
+        const p = pill(r.status), on2 = !!st.sel[r.unit];
+        return {
+          unit: r.unit, owner: r.owner, occ: r.occ,
+          amt: r.amt === 0 ? "\u2014" : inr(r.amt),
+          amtFg: r.amt === 0 ? "#A8B5B0" : (r.status.startsWith("Overdue") ? "#C0342B" : "#0F1A17"),
+          status: r.status, pillBg: p.bg, pillFg: p.fg,
+          bg: on2 ? "#F2F8F6" : "#ffffff",
+          cbBd: on2 ? "#0E6B5C" : "#CCD6D2",
+          cbBg: on2 ? "#0E6B5C" : "#ffffff",
+          toggle: () => this.setState((s) => ({ sel: { ...s.sel, [r.unit]: !s.sel[r.unit] } }))
+        };
+      }),
+      noResults: rows.length === 0,
+      shownCount: rows.length,
+      hasSelection: selCount > 0,
+      selCount: selCount,
+      clearSel: () => this.setState({ sel: {} }),
+
+      modal: st.modal,
+      openModal: () => this.setState({ modal: true }),
+      closeModal: () => this.setState({ modal: false }),
+      confirmPublish: () => {
+        this.setState({ modal: false });
+        this.toast({ glyph: "\u2713", accent: "#167A3C", iconBg: "#E8F5EC", title: "248 bills published", body: "Notifications queued on push, WhatsApp and SMS." });
+      },
+      drawer: st.drawer,
+      openDrawer: () => this.setState({ drawer: true }),
+      closeDrawer: () => this.setState({ drawer: false }),
+      stop: (e) => e.stopPropagation(),
+
+      tabOverview: () => this.setState({ tab: "ov" }),
+      tabLedger: () => this.setState({ tab: "ledger" }),
+      tabPeople: () => this.setState({ tab: "people" }),
+      tabOvFg: tOv.fg, tabOvBd: tOv.bd, tabLdFg: tLd.fg, tabLdBd: tLd.bd, tabPpFg: tPp.fg, tabPpBd: tPp.bd,
+      drawerRows: drawerSets[st.tab],
+
+      fireSuccess: () => this.toast({ glyph: "\u2713", accent: "#167A3C", iconBg: "#E8F5EC", title: "Receipt RCP/2026-27/01188", body: "\u20B912,840.50 recorded against A-1204." }),
+      fireError: () => this.toast({ glyph: "!", accent: "#C0342B", iconBg: "#FCEDEC", title: "Reminder not sent", body: "WhatsApp template rejected. Falling back to SMS." }),
+
+      toasts: st.toasts.map((t) => ({
+        ...t,
+        dismiss: () => this.setState((s) => ({ toasts: s.toasts.filter((x) => x.id !== t.id) }))
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

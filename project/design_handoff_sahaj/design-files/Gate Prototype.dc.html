@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --surface:#FFFFFF; --canvas:#F7F9F8; --canvas-deep:#EFF3F1;
+    --subtle:#EDF1EF; --border:#E3E9E6; --border-soft:#F1F4F3; --border-strong:#CCD6D2;
+    --ink:#0F1A17; --ink-soft:#4A5B56; --ink-muted:#6B7A75; --ink-dim:#A8B5B0;
+    --accent:#0E6B5C; --accent-ink:#0A5749; --accent-wash:#E6F2EF; --accent-200:#C9E4DC;
+    --ok:#167A3C; --ok-ink:#14663A; --ok-wash:#E8F5EC;
+    --warn:#B45309; --warn-ink:#8F4A0A; --warn-wash:#FDF3E7;
+    --bad:#C0342B; --bad-ink:#9B2B22; --bad-wash:#FCEDEC; --bad-border:#F6D9D6;
+    --info:#1D4ED8; --info-ink:#12327A; --info-wash:#EAF0FE;
+    --ease: cubic-bezier(.2,.7,.3,1); --ease-out: cubic-bezier(.22,1,.36,1);
+    --g-bg:#0A1512; --g-card:#122320; --g-card-2:#18302B; --g-line:#21403A;
+    --g-ink:#EAF5F1; --g-soft:#8FB0A6; --g-dim:#6A8B81; --g-go:#19B888; --g-stop:#E04A3C; --g-hold:#E8A33D;
+  }
+  :root[data-theme="dark"] {
+    --surface:#151C1A; --canvas:#0E1413; --canvas-deep:#090E0D;
+    --subtle:#1D2624; --border:#2B3532; --border-soft:#222B29; --border-strong:#3A453F;
+    --ink:#EEF3F1; --ink-soft:#A7B8B2; --ink-muted:#8A9B95; --ink-dim:#6F7E79;
+    --accent:#0E6B5C; --accent-ink:#5FD3B6; --accent-wash:#113931; --accent-200:#1A5A4C;
+    --ok:#1E8C48; --ok-ink:#7BD69F; --ok-wash:#11311E;
+    --warn:#C2650F; --warn-ink:#F3BE79; --warn-wash:#33260E;
+    --bad:#C93F35; --bad-ink:#F4A39B; --bad-wash:#331916; --bad-border:#4A231F;
+    --info:#3466E0; --info-ink:#A9C2FA; --info-wash:#15204A;
+    --g-bg:#06100D; --g-card:#0D1B18; --g-card-2:#132824; --g-line:#1B3630;
+  }
+  body { margin: 0; background: var(--canvas-deep); -webkit-font-smoothing: antialiased; font-family: Figtree, system-ui, sans-serif; }
+  * { box-sizing: border-box; }
+  a { color: #0E6B5C; text-decoration: none; }
+  a:hover { color: #0A5749; }
+  html { scroll-behavior: smooth; }
+  button, input, textarea, select { color: inherit; font-family: inherit; }
+  #gscroll { scrollbar-width: none; }
+  #gscroll::-webkit-scrollbar { display: none; }
+  @keyframes gIn { from { opacity: 0; transform: translate3d(0,10px,0) scale(.985); } to { opacity: 1; transform: none; } }
+  @keyframes gPop { 0% { transform: scale(.55); opacity: 0; } 62% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes sheetUp { from { transform: translateY(102%); } to { transform: none; } }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes alarm { 0%,100% { background:#E04A3C; } 50% { background:#B8362A; } }
+  @keyframes pulseGo { 0% { box-shadow: 0 0 0 0 rgba(25,184,136,.4); } 70% { box-shadow: 0 0 0 14px rgba(25,184,136,0); } 100% { box-shadow: 0 0 0 0 rgba(25,184,136,0); } }
+  [style*="var(--surface"], [style*="var(--canvas"], [style*="var(--subtle"] { transition: background-color .28s ease, border-color .28s ease, color .28s ease; }
+  @keyframes cardIn { from { opacity: 0; transform: translate3d(0,18px,0) scale(.965); } to { opacity: 1; transform: none; } }
+  #gscroll > div > * { animation: gIn .5s var(--ease-out) both; }
+  #gscroll > div > *:nth-child(1) { animation-delay: 0s; }
+  #gscroll > div > *:nth-child(2) { animation-delay: 0.075s; }
+  #gscroll > div > *:nth-child(3) { animation-delay: 0.15s; }
+  #gscroll > div > *:nth-child(4) { animation-delay: 0.22499999999999998s; }
+  #gscroll > div > *:nth-child(5) { animation-delay: 0.3s; }
+  #gscroll > div > *:nth-child(6) { animation-delay: 0.375s; }
+  #gscroll > div > *:nth-child(7) { animation-delay: 0.44999999999999996s; }
+  #gscroll > div > *:nth-child(8) { animation-delay: 0.525s; }
+  #gscroll > div > *:nth-child(9) { animation-delay: 0.6s; }
+  #gscroll > div > *:nth-child(10) { animation-delay: 0.6749999999999999s; }
+  #gscroll > div > *:nth-child(11) { animation-delay: 0.75s; }
+  #gscroll > div > *:nth-child(12) { animation-delay: 0.825s; }
+  #gscroll > div > *:nth-child(n+13) { animation-delay: .9s; }
+  #gscroll > div > * div[style*="flex-direction:column"] > *, #gscroll > div > * div[style*="grid-template-columns"] > *, #gscroll > div div[style*="flex-direction:column"] > * { animation: gIn .46s var(--ease-out) both; }
+  #gscroll > div > * div[style*="flex-direction:column"] > *:nth-child(1), #gscroll > div > * div[style*="grid-template-columns"] > *:nth-child(1) { animation-delay: 0.140s; }
+  #gscroll > div > * div[style*="flex-direction:column"] > *:nth-child(2), #gscroll > div > * div[style*="grid-template-columns"] > *:nth-child(2) { animation-delay: 0.205s; }
+  #gscroll > div > * div[style*="flex-direction:column"] > *:nth-child(3), #gscroll > div > * div[style*="grid-template-columns"] > *:nth-child(3) { animation-delay: 0.270s; }
+  #gscroll > div > * div[style*="flex-direction:column"] > *:nth-child(4), #gscroll > div > * div[style*="grid-template-columns"] > *:nth-child(4) { animation-delay: 0.335s; }
+  #gscroll > div > * div[style*="flex-direction:column"] > *:nth-child(5), #gscroll > div > * div[style*="grid-template-columns"] > *:nth-child(5) { animation-delay: 0.400s; }
+  #gscroll > div > * div[style*="flex-direction:column"] > *:nth-child(6), #gscroll > div > * div[style*="grid-template-columns"] > *:nth-child(6) { animation-delay: 0.465s; }
+  #gscroll > div > * div[style*="flex-direction:column"] > *:nth-child(7), #gscroll > div > * div[style*="grid-template-columns"] > *:nth-child(7) { animation-delay: 0.530s; }
+  #gscroll > div > * div[style*="flex-direction:column"] > *:nth-child(8), #gscroll > div > * div[style*="grid-template-columns"] > *:nth-child(8) { animation-delay: 0.595s; }
+  #gscroll > div > * div[style*="flex-direction:column"] > *:nth-child(9), #gscroll > div > * div[style*="grid-template-columns"] > *:nth-child(9) { animation-delay: 0.660s; }
+  #gscroll > div > * div[style*="flex-direction:column"] > *:nth-child(10), #gscroll > div > * div[style*="grid-template-columns"] > *:nth-child(10) { animation-delay: 0.725s; }
+  #gscroll > div > * div[style*="flex-direction:column"] > *:nth-child(n+11), #gscroll > div > * div[style*="grid-template-columns"] > *:nth-child(n+11) { animation-delay: .78s; }
+  #gscroll [data-card] { animation: cardIn .56s var(--ease-out) both; }
+  #gscroll [data-card]:nth-child(1) { animation-delay: 0.100s; }
+  #gscroll [data-card]:nth-child(2) { animation-delay: 0.185s; }
+  #gscroll [data-card]:nth-child(3) { animation-delay: 0.270s; }
+  #gscroll [data-card]:nth-child(4) { animation-delay: 0.355s; }
+  #gscroll [data-card]:nth-child(5) { animation-delay: 0.440s; }
+  #gscroll [data-card]:nth-child(6) { animation-delay: 0.525s; }
+  #gscroll [data-card]:nth-child(7) { animation-delay: 0.610s; }
+  #gscroll [data-card]:nth-child(8) { animation-delay: 0.695s; }
+  #gscroll [data-card]:nth-child(n+9) { animation-delay: .78s; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001ms !important; animation-delay: 0s !important; transition-duration: .001ms !important; } }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:var(--canvas-deep,#EFF3F1);color:var(--ink,#0F1A17);font-family:Figtree,system-ui,sans-serif;padding:40px 28px 80px">
+
+  <div style="max-width:1240px;margin:0 auto 34px">
+    <div style="display:inline-flex;align-items:center;gap:9px;padding:6px 13px 6px 8px;border-radius:999px;background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);margin-bottom:20px">
+      <span style="width:22px;height:22px;border-radius:7px;background:var(--accent,#0E6B5C);display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V9l8-5 8 5v11"></path><path d="M10 20v-6h4v6"></path></svg></span>
+      <span style="font:600 12.5px/1 Figtree;color:var(--accent-ink,#0A5749)">Sahaj · Gate app · live prototype</span>
+    </div>
+    <h1 style="margin:0 0 12px;font:800 clamp(28px,4vw,42px)/1.08 Figtree;letter-spacing:-.03em;max-width:24ch;text-wrap:balance">One glove, one thumb, one decision.</h1>
+    <p style="margin:0;max-width:64ch;font:400 16px/1.6 Figtree;color:var(--ink-soft,#4A5B56);text-wrap:pretty">Punch in a code and the guard gets a verdict in under a second. Allow someone in and they move to the live log. Everything here responds — including the alert hold and the offline queue.</p>
+  </div>
+
+  <div style="max-width:1240px;margin:0 auto;display:flex;gap:34px;align-items:flex-start;flex-wrap:wrap">
+
+    <div style="flex:none;display:flex;flex-direction:column;gap:14px;align-items:center">
+      <div style="width:406px;height:860px;background:#05100D;border-radius:46px;padding:8px;box-shadow:0 34px 70px -30px rgba(15,26,23,.55);position:relative">
+        <div style="width:100%;height:100%;background:var(--g-bg,#0A1512);border-radius:38px;overflow:hidden;display:flex;flex-direction:column;position:relative;color:var(--g-ink,#EAF5F1)">
+
+          <div style="flex:none;height:44px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 24px 7px;position:relative;z-index:6">
+            <span style="font:700 13px/1 Figtree;color:var(--g-ink,#EAF5F1)">{{ clock }}</span>
+            <div style="display:flex;align-items:center;gap:6px;color:var(--g-soft,#8FB0A6)">
+              <sc-if value="{{ offline }}" hint-placeholder-val="{{ false }}">
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;background:rgba(232,163,61,.18);font:700 9.5px/1.4 Figtree;letter-spacing:.06em;color:var(--g-hold,#E8A33D)">OFFLINE</span>
+              </sc-if>
+              <svg width="15" height="11" viewBox="0 0 18 13" fill="currentColor"><rect x="0" y="8" width="3" height="5" rx="1"></rect><rect x="5" y="5" width="3" height="8" rx="1"></rect><rect x="10" y="2.5" width="3" height="10.5" rx="1"></rect><rect x="15" y="0" width="3" height="13" rx="1" opacity=".35"></rect></svg>
+              <span style="width:19px;height:10px;border:1.4px solid currentColor;border-radius:3px;display:inline-flex;align-items:center;padding:1.4px"><span style="width:64%;height:100%;background:currentColor;border-radius:1px"></span></span>
+            </div>
+          </div>
+
+          <sc-if value="{{ onDuty }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:none;padding:4px 20px 14px;display:flex;align-items:center;gap:12px">
+            <span style="width:38px;height:38px;flex:none;border-radius:12px;background:var(--g-card-2,#18302B);display:flex;align-items:center;justify-content:center;font:700 13px/1 Figtree;color:var(--g-go,#19B888)">{{ guardInitials }}</span>
+            <div style="flex:1;min-width:0">
+              <div style="font:600 14px/1.25 Figtree;color:var(--g-ink,#EAF5F1)">{{ guardName }}</div>
+              <div style="font:400 11.5px/1.35 Figtree;color:var(--g-soft,#8FB0A6)">{{ shiftLine }}</div>
+            </div>
+            <button type="button" onClick="{{ signOut }}" title="Sign out" style="width:38px;height:38px;flex:none;border:1px solid var(--g-line,#21403A);border-radius:12px;background:var(--g-card,#122320);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .18s ease" style-hover="border-color:var(--g-stop,#E04A3C)">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--g-soft,#8FB0A6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h3M15.5 8.5 19 12l-3.5 3.5M10 12h9"></path></svg>
+            </button>
+            <button type="button" onClick="{{ goAlert }}" style="width:38px;height:38px;flex:none;border:1px solid var(--g-line,#21403A);border-radius:12px;background:var(--g-card,#122320);cursor:pointer;display:flex;align-items:center;justify-content:center">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--g-stop,#E04A3C)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8.6v5M12 17v.4"></path><path d="M10.3 3.8 2.6 17.2a1.6 1.6 0 0 0 1.4 2.4h16a1.6 1.6 0 0 0 1.4-2.4L13.7 3.8a1.6 1.6 0 0 0-3.4 0Z"></path></svg>
+            </button>
+          </div>
+          </sc-if>
+
+          <div id="gscroll" style="flex:1;min-height:0;overflow-y:auto;overflow-x:hidden">
+
+            <sc-if value="{{ offDuty }}" hint-placeholder-val="{{ true }}">
+              <div style="padding:26px 22px 30px;min-height:100%;display:flex;flex-direction:column">
+                <div style="width:46px;height:46px;border-radius:14px;background:var(--g-go,#19B888);display:flex;align-items:center;justify-content:center;margin-bottom:26px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#04231B" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V9l8-5 8 5v11"></path><path d="M10 20v-6h4v6"></path></svg></div>
+                <div style="font:700 26px/1.14 Figtree;letter-spacing:-.028em;color:var(--g-ink,#EAF5F1);margin-bottom:8px">Sign in to start your shift</div>
+                <div style="font:400 13.5px/1.55 Figtree;color:var(--g-soft,#8FB0A6);margin-bottom:24px">The handset is locked until a guard on the roster signs in. Everything you do is recorded against your name.</div>
+                <div style="border:1px solid var(--g-line,#21403A);border-radius:16px;background:var(--g-card,#122320);padding:15px;display:flex;align-items:center;gap:13px;margin-bottom:20px">
+                  <span style="width:42px;height:42px;flex:none;border-radius:13px;background:var(--g-card-2,#18302B);display:flex;align-items:center;justify-content:center;font:700 14px/1 Figtree;color:var(--g-go,#19B888)">{{ guardInitials }}</span>
+                  <div style="flex:1;min-width:0">
+                    <div style="font:600 14.5px/1.3 Figtree;color:var(--g-ink,#EAF5F1);margin-bottom:2px">{{ guardName }}</div>
+                    <div style="font:400 12px/1.4 Figtree;color:var(--g-soft,#8FB0A6)">On the roster for {{ shiftLine }}</div>
+                  </div>
+                </div>
+                <div style="font:600 12px/1 Figtree;color:var(--g-soft,#8FB0A6);margin-bottom:10px">Duty PIN</div>
+                <div style="display:flex;gap:11px;margin-bottom:8px">
+                  <sc-for list="{{ pinBoxes }}" as="b" hint-placeholder-count="4">
+                    <span style="flex:1;height:64px;border:2px solid {{ b.bd }};border-radius:14px;background:{{ b.bg }};display:flex;align-items:center;justify-content:center;font:700 26px/1 'IBM Plex Mono',monospace;color:var(--g-ink,#EAF5F1);transition:border-color .18s ease">{{ b.char }}</span>
+                  </sc-for>
+                </div>
+                <div style="font:500 12px/1.6 Figtree;color:{{ pinHintFg }};min-height:20px;margin-bottom:14px">{{ pinHint }}</div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+                  <sc-for list="{{ pinKeys }}" as="k" hint-placeholder-count="12">
+                    <button type="button" onClick="{{ k.go }}" style="height:58px;border:1px solid var(--g-line,#21403A);border-radius:15px;background:{{ k.bg }};color:{{ k.fg }};font:600 22px/1 'IBM Plex Mono',monospace;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .12s var(--ease-out)" style-active="transform:scale(.94)">{{ k.label }}</button>
+                  </sc-for>
+                </div>
+                <button type="button" onClick="{{ startShift }}" style="width:100%;height:56px;border:0;border-radius:15px;background:{{ startBg }};color:{{ startFg }};font:700 16.5px/1 Figtree;cursor:pointer;transition:background .2s ease">{{ startLabel }}</button>
+                <div style="margin-top:14px;text-align:center;font:400 11.5px/1.5 Figtree;color:var(--g-dim,#6A8B81)">Forgot it? The security desk can reset your PIN over the intercom.</div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isVerify }}" hint-placeholder-val="{{ true }}">
+              <div style="padding:0 20px 24px">
+                <div style="font:700 25px/1.16 Figtree;letter-spacing:-.026em;margin-bottom:6px;color:var(--g-ink,#EAF5F1)">Verify a visitor</div>
+                <div style="font:400 13px/1.5 Figtree;color:var(--g-soft,#8FB0A6);margin-bottom:20px">Type the four digits the resident shared, or search a name.</div>
+
+                <div style="border:1px solid var(--g-line,#21403A);border-radius:18px;background:var(--g-card,#122320);padding:20px;margin-bottom:16px">
+                  <div style="display:flex;gap:11px;justify-content:center;margin-bottom:6px">
+                    <sc-for list="{{ codeBoxes }}" as="b" hint-placeholder-count="4">
+                      <span style="width:60px;height:72px;border:2px solid {{ b.bd }};border-radius:15px;background:{{ b.bg }};display:flex;align-items:center;justify-content:center;font:700 30px/1 'IBM Plex Mono',monospace;color:var(--g-ink,#EAF5F1);transition:border-color .18s ease,background .18s ease">{{ b.char }}</span>
+                    </sc-for>
+                  </div>
+                  <div style="text-align:center;font:500 12px/1.6 Figtree;color:{{ hintFg }};min-height:20px">{{ codeHint }}</div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+                  <sc-for list="{{ keys }}" as="k" hint-placeholder-count="12">
+                    <button type="button" onClick="{{ k.go }}" style="height:62px;border:1px solid var(--g-line,#21403A);border-radius:16px;background:{{ k.bg }};color:{{ k.fg }};font:600 24px/1 'IBM Plex Mono',monospace;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .12s var(--ease),background .16s ease" style-active="transform:scale(.94)">{{ k.label }}</button>
+                  </sc-for>
+                </div>
+
+                <button type="button" onClick="{{ goWalkin }}" style="margin-top:12px;width:100%;height:48px;border:1px solid var(--g-line,#21403A);border-radius:14px;background:var(--g-card,#122320);color:var(--g-ink,#EAF5F1);font:600 14px/1 Figtree;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;transition:background .16s ease" style-hover="background:var(--g-card-2,#18302B)">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--g-soft,#8FB0A6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20.5V3.5h9.5v17M13.5 12h6.5M17 9l3 3-3 3"></path></svg>
+                  No code? Log a walk-in
+                </button>
+                <button type="button" onClick="{{ submitCode }}" style="margin-top:14px;width:100%;height:58px;border:0;border-radius:16px;background:{{ verifyBg }};color:{{ verifyFg }};font:700 17px/1 Figtree;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:background .2s ease,transform .14s var(--ease)" style-active="transform:scale(.98)">{{ verifyLabel }}</button>
+
+                <div style="margin-top:22px;display:flex;align-items:center;justify-content:space-between;margin-bottom:11px">
+                  <span style="font:600 12.5px/1 Figtree;color:var(--g-soft,#8FB0A6)">Expected in the next hour</span>
+                  <span style="font:600 11.5px/1 'IBM Plex Mono',monospace;color:var(--g-dim,#6A8B81)">{{ expectedCount }}</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:9px">
+                  <sc-for list="{{ expected }}" as="e" hint-placeholder-count="3">
+                    <button type="button" onClick="{{ e.go }}" style="width:100%;text-align:left;border:1px solid var(--g-line,#21403A);border-radius:15px;background:var(--g-card,#122320);padding:14px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:background .16s ease" style-hover="background:var(--g-card-2,#18302B)">
+                      <span style="width:38px;height:38px;flex:none;border-radius:12px;background:var(--g-card-2,#18302B);display:flex;align-items:center;justify-content:center;font:700 13px/1 Figtree;color:var(--g-soft,#8FB0A6)">{{ e.initials }}</span>
+                      <div style="flex:1;min-width:0">
+                        <div style="font:600 14px/1.3 Figtree;color:var(--g-ink,#EAF5F1)">{{ e.name }}</div>
+                        <div style="font:400 12px/1.4 Figtree;color:var(--g-soft,#8FB0A6)">{{ e.meta }}</div>
+                      </div>
+                      <span style="flex:none;font:700 14px/1 'IBM Plex Mono',monospace;letter-spacing:.12em;padding:6px 10px;border-radius:9px;background:var(--g-card-2,#18302B);color:var(--g-go,#19B888)">{{ e.code }}</span>
+                    </button>
+                  </sc-for>
+                </div>
+                <sc-if value="{{ noExpected }}" hint-placeholder-val="{{ false }}">
+                  <div style="border:1px dashed var(--g-line,#21403A);border-radius:16px;padding:28px 18px;text-align:center">
+                    <div style="font:600 14px/1.3 Figtree;color:var(--g-ink,#EAF5F1);margin-bottom:5px">Nobody expected right now</div>
+                    <div style="font:400 12.5px/1.5 Figtree;color:var(--g-soft,#8FB0A6)">Walk-ins still work. Punch the flat number and call the resident.</div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+
+            <sc-if value="{{ isStaff }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:0 20px 24px">
+                <div style="font:700 25px/1.16 Figtree;letter-spacing:-.026em;margin-bottom:6px;color:var(--g-ink,#EAF5F1)">Daily staff</div>
+                <div style="font:400 13px/1.5 Figtree;color:var(--g-soft,#8FB0A6);margin-bottom:18px">{{ staffSummary }}</div>
+                <div style="display:flex;gap:8px;margin-bottom:16px">
+                  <sc-for list="{{ staffFilters }}" as="f" hint-placeholder-count="3">
+                    <button type="button" onClick="{{ f.go }}" style="height:36px;padding:0 14px;border:1px solid {{ f.bd }};border-radius:999px;background:{{ f.bg }};color:{{ f.fg }};font:600 12.5px/1 Figtree;cursor:pointer">{{ f.label }}</button>
+                  </sc-for>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:9px">
+                  <sc-for list="{{ staffList }}" as="p" hint-placeholder-count="4">
+                    <div data-card="staff" style="border:1px solid var(--g-line,#21403A);border-left:3px solid {{ p.edge }};border-radius:15px;background:var(--g-card,#122320);padding:14px">
+                      <div style="display:flex;align-items:center;gap:12px;margin-bottom:11px">
+                        <span style="width:40px;height:40px;flex:none;border-radius:13px;background:var(--g-card-2,#18302B);display:flex;align-items:center;justify-content:center;font:700 13px/1 Figtree;color:var(--g-soft,#8FB0A6)">{{ p.initials }}</span>
+                        <div style="flex:1;min-width:0">
+                          <div style="font:600 14.5px/1.3 Figtree;color:var(--g-ink,#EAF5F1);margin-bottom:2px">{{ p.name }}</div>
+                          <div style="font:400 12px/1.4 Figtree;color:var(--g-soft,#8FB0A6)">{{ p.role }} · {{ p.pass }}</div>
+                        </div>
+                        <span style="flex:none;padding:4px 9px;border-radius:8px;background:{{ p.stateBg }};font:700 10.5px/1.3 Figtree;color:{{ p.stateFg }}">{{ p.state }}</span>
+                      </div>
+                      <div style="font:400 11.5px/1.5 Figtree;color:var(--g-dim,#6A8B81);margin-bottom:11px">Works at {{ p.flats }} · {{ p.since }}</div>
+                      <button type="button" onClick="{{ p.toggle }}" style="width:100%;height:44px;border:0;border-radius:12px;background:{{ p.btnBg }};color:{{ p.btnFg }};font:700 13.5px/1 Figtree;cursor:pointer;transition:transform .14s var(--ease-out)" style-active="transform:scale(.98)">{{ p.btnLabel }}</button>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isWalkin }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:0 20px 24px">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
+                  <button type="button" onClick="{{ backToVerify }}" style="width:40px;height:40px;flex:none;border:1px solid var(--g-line,#21403A);border-radius:12px;background:var(--g-card,#122320);cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--g-ink,#EAF5F1)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"></path></svg></button>
+                  <span style="font:700 19px/1.2 Figtree;letter-spacing:-.02em;color:var(--g-ink,#EAF5F1)">Walk-in</span>
+                </div>
+                <sc-if value="{{ walkinForm }}" hint-placeholder-val="{{ true }}">
+                  <div style="font:400 13px/1.5 Figtree;color:var(--g-soft,#8FB0A6);margin-bottom:18px">No code and no standing pass. Ask the flat before anyone goes up.</div>
+                  <div style="font:600 12px/1 Figtree;color:var(--g-soft,#8FB0A6);margin-bottom:8px">Who is at the gate?</div>
+                  <input type="text" value="{{ walkinName }}" onChange="{{ setWalkinName }}" placeholder="Name as stated" style="width:100%;height:52px;padding:0 15px;border:1px solid var(--g-line,#21403A);border-radius:13px;background:var(--g-card-2,#18302B);color:var(--g-ink,#EAF5F1);font:500 15px/1 Figtree;outline:none;margin-bottom:16px" />
+                  <div style="font:600 12px/1 Figtree;color:var(--g-soft,#8FB0A6);margin-bottom:8px">Which flat?</div>
+                  <input type="text" value="{{ walkinUnit }}" onChange="{{ setWalkinUnit }}" placeholder="A-1204" style="width:100%;height:52px;padding:0 15px;border:1px solid var(--g-line,#21403A);border-radius:13px;background:var(--g-card-2,#18302B);color:var(--g-ink,#EAF5F1);font:600 16px/1 'IBM Plex Mono',monospace;outline:none;margin-bottom:16px" />
+                  <div style="font:600 12px/1 Figtree;color:var(--g-soft,#8FB0A6);margin-bottom:8px">Purpose</div>
+                  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:22px">
+                    <sc-for list="{{ walkinPurposes }}" as="x" hint-placeholder-count="5">
+                      <button type="button" onClick="{{ x.go }}" style="height:44px;border:1px solid {{ x.bd }};border-radius:12px;background:{{ x.bg }};color:{{ x.fg }};font:600 12.5px/1 Figtree;cursor:pointer">{{ x.label }}</button>
+                    </sc-for>
+                  </div>
+                  <button type="button" onClick="{{ askResident }}" style="width:100%;height:56px;border:0;border-radius:15px;background:var(--g-go,#19B888);color:#04231B;font:700 16.5px/1 Figtree;cursor:pointer">Ask the resident</button>
+                </sc-if>
+                <sc-if value="{{ walkinWaiting }}" hint-placeholder-val="{{ false }}">
+                  <div style="border:1px solid var(--g-line,#21403A);border-radius:18px;background:var(--g-card,#122320);padding:26px 20px;text-align:center">
+                    <span style="width:56px;height:56px;border:3px solid var(--g-line,#21403A);border-top-color:var(--g-go,#19B888);border-radius:50%;display:inline-block;animation:spin .9s linear infinite;margin-bottom:20px"></span>
+                    <div style="font:700 19px/1.25 Figtree;color:var(--g-ink,#EAF5F1);margin-bottom:8px">Asking {{ walkinUnitLabel }}</div>
+                    <div style="font:400 13px/1.55 Figtree;color:var(--g-soft,#8FB0A6);max-width:30ch;margin:0 auto 6px">{{ walkinName }} is waiting at the gate. The resident has been pinged on their phone.</div>
+                    <div style="font:500 12px/1 'IBM Plex Mono',monospace;color:var(--g-dim,#6A8B81)">Ringing intercom as backup</div>
+                  </div>
+                  <button type="button" onClick="{{ cancelWalkin }}" style="margin-top:16px;width:100%;height:50px;border:1px solid var(--g-line,#21403A);border-radius:14px;background:transparent;color:var(--g-ink,#EAF5F1);font:600 14.5px/1 Figtree;cursor:pointer">Cancel the request</button>
+                </sc-if>
+                <sc-if value="{{ walkinApproved }}" hint-placeholder-val="{{ false }}">
+                  <div style="border:1px solid rgba(25,184,136,.35);border-radius:18px;background:rgba(25,184,136,.1);padding:24px 20px;text-align:center;margin-bottom:16px">
+                    <span style="width:66px;height:66px;border-radius:22px;background:rgba(25,184,136,.18);display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;animation:gPop .44s var(--ease-out) both"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#19B888" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"></path></svg></span>
+                    <div style="font:700 20px/1.25 Figtree;color:var(--g-go,#19B888);margin-bottom:8px">{{ walkinUnitLabel }} approved</div>
+                    <div style="font:400 13px/1.55 Figtree;color:var(--g-soft,#8FB0A6)">{{ walkinApprovedLine }}</div>
+                  </div>
+                  <button type="button" onClick="{{ allowWalkin }}" style="width:100%;height:56px;border:0;border-radius:15px;background:var(--g-go,#19B888);color:#04231B;font:700 16.5px/1 Figtree;cursor:pointer;animation:pulseGo 2s ease infinite">Allow in and log</button>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isPlates }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:0 20px 24px">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
+                  <button type="button" onClick="{{ backToVerify }}" style="width:40px;height:40px;flex:none;border:1px solid var(--g-line,#21403A);border-radius:12px;background:var(--g-card,#122320);cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--g-ink,#EAF5F1)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"></path></svg></button>
+                  <span style="font:700 19px/1.2 Figtree;letter-spacing:-.02em;color:var(--g-ink,#EAF5F1)">Plate lookup</span>
+                </div>
+                <div style="font:400 13px/1.5 Figtree;color:var(--g-soft,#8FB0A6);margin-bottom:16px">Type any part of a number. Registered plates open the barrier.</div>
+                <input type="text" value="{{ plateQuery }}" onChange="{{ setPlateQuery }}" placeholder="4471 or MH 12" style="width:100%;height:54px;padding:0 16px;border:1px solid var(--g-line,#21403A);border-radius:14px;background:var(--g-card-2,#18302B);color:var(--g-ink,#EAF5F1);font:600 17px/1 'IBM Plex Mono',monospace;letter-spacing:.06em;outline:none;margin-bottom:16px" />
+                <div style="font:600 12px/1 Figtree;color:var(--g-soft,#8FB0A6);margin-bottom:11px">{{ plateCount }}</div>
+                <div style="display:flex;flex-direction:column;gap:9px">
+                  <sc-for list="{{ plateResults }}" as="p" hint-placeholder-count="3">
+                    <div data-card="plate" style="border:1px solid var(--g-line,#21403A);border-left:3px solid var(--g-go,#19B888);border-radius:15px;background:var(--g-card,#122320);padding:14px">
+                      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px">
+                        <span style="font:700 16px/1 'IBM Plex Mono',monospace;letter-spacing:.05em;color:var(--g-ink,#EAF5F1)">{{ p.plate }}</span>
+                        <span style="flex:none;padding:4px 9px;border-radius:8px;background:rgba(25,184,136,.16);font:700 10.5px/1.3 Figtree;color:var(--g-go,#19B888)">SLOT {{ p.slot }}</span>
+                      </div>
+                      <div style="font:400 12.5px/1.5 Figtree;color:var(--g-soft,#8FB0A6)">{{ p.who }} · {{ p.unit }} · {{ p.kind }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+                <sc-if value="{{ noPlates }}" hint-placeholder-val="{{ false }}">
+                  <div style="border:1px dashed var(--g-line,#21403A);border-radius:16px;padding:30px 18px;text-align:center">
+                    <div style="font:600 14px/1.3 Figtree;color:var(--g-ink,#EAF5F1);margin-bottom:5px">Not a registered plate</div>
+                    <div style="font:400 12.5px/1.5 Figtree;color:var(--g-soft,#8FB0A6)">Treat it as a walk-in and ask the flat.</div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isHandover }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:0 20px 24px">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
+                  <button type="button" onClick="{{ backToVerify }}" style="width:40px;height:40px;flex:none;border:1px solid var(--g-line,#21403A);border-radius:12px;background:var(--g-card,#122320);cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--g-ink,#EAF5F1)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"></path></svg></button>
+                  <span style="font:700 19px/1.2 Figtree;letter-spacing:-.02em;color:var(--g-ink,#EAF5F1)">Shift handover</span>
+                </div>
+                <div style="font:400 13px/1.5 Figtree;color:var(--g-soft,#8FB0A6);margin-bottom:18px">{{ shiftLine }} · closing at 10:00pm</div>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px">
+                  <sc-for list="{{ handoverStats }}" as="h" hint-placeholder-count="4">
+                    <div data-card="stat" style="border:1px solid var(--g-line,#21403A);border-radius:15px;background:var(--g-card,#122320);padding:15px">
+                      <div style="font:700 26px/1 'IBM Plex Mono',monospace;color:{{ h.fg }};margin-bottom:6px">{{ h.value }}</div>
+                      <div style="font:500 12px/1.35 Figtree;color:var(--g-soft,#8FB0A6)">{{ h.label }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="font:600 12px/1 Figtree;color:var(--g-soft,#8FB0A6);margin-bottom:8px">Note for the next guard</div>
+                <textarea rows="4" value="{{ handoverNote }}" onChange="{{ setHandoverNote }}" placeholder="Anything the night shift should know" style="width:100%;padding:13px 15px;border:1px solid var(--g-line,#21403A);border-radius:13px;background:var(--g-card-2,#18302B);color:var(--g-ink,#EAF5F1);font:400 14px/1.5 Figtree;outline:none;resize:none;margin-bottom:18px"></textarea>
+                <sc-if value="{{ handoverPending }}" hint-placeholder-val="{{ true }}">
+                  <button type="button" onClick="{{ completeHandover }}" style="width:100%;height:56px;border:0;border-radius:15px;background:var(--g-go,#19B888);color:#04231B;font:700 16.5px/1 Figtree;cursor:pointer">Hand over the shift</button>
+                </sc-if>
+                <sc-if value="{{ handoverDone }}" hint-placeholder-val="{{ false }}">
+                  <div style="border:1px solid rgba(25,184,136,.35);border-radius:15px;background:rgba(25,184,136,.1);padding:18px;display:flex;align-items:center;gap:13px">
+                    <span style="width:38px;height:38px;flex:none;border-radius:12px;background:rgba(25,184,136,.2);display:flex;align-items:center;justify-content:center;animation:gPop .4s var(--ease-out) both"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#19B888" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"></path></svg></span>
+                    <div>
+                      <div style="font:600 14px/1.3 Figtree;color:var(--g-go,#19B888);margin-bottom:2px">Handed to Sunil Kadam</div>
+                      <div style="font:400 12px/1.45 Figtree;color:var(--g-soft,#8FB0A6)">Summary and your note were sent to the security desk.</div>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isMore }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:0 20px 24px">
+                <div style="font:700 25px/1.16 Figtree;letter-spacing:-.026em;margin-bottom:6px;color:var(--g-ink,#EAF5F1)">More</div>
+                <div style="font:400 13px/1.5 Figtree;color:var(--g-soft,#8FB0A6);margin-bottom:18px">{{ guardName }} · {{ shiftLine }}</div>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <sc-for list="{{ moreItems }}" as="m" hint-placeholder-count="4">
+                    <button type="button" data-card="more" onClick="{{ m.go }}" style="width:100%;text-align:left;border:1px solid var(--g-line,#21403A);border-radius:16px;background:var(--g-card,#122320);padding:16px;cursor:pointer;display:flex;align-items:center;gap:14px;transition:background .16s ease,transform .18s var(--ease-out)" style-hover="background:var(--g-card-2,#18302B);transform:translateY(-2px)">
+                      <span style="width:42px;height:42px;flex:none;border-radius:13px;background:{{ m.iconBg }};display:flex;align-items:center;justify-content:center">{{ m.icon }}</span>
+                      <div style="flex:1;min-width:0">
+                        <div style="font:600 14.5px/1.3 Figtree;color:var(--g-ink,#EAF5F1);margin-bottom:2px">{{ m.label }}</div>
+                        <div style="font:400 12px/1.45 Figtree;color:var(--g-soft,#8FB0A6)">{{ m.detail }}</div>
+                      </div>
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--g-dim,#6A8B81)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="m9 5 7 7-7 7"></path></svg>
+                    </button>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isLog }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:0 20px 24px">
+                <div style="font:700 25px/1.16 Figtree;letter-spacing:-.026em;margin-bottom:6px;color:var(--g-ink,#EAF5F1)">Today at the gate</div>
+                <div style="font:400 13px/1.5 Figtree;color:var(--g-soft,#8FB0A6);margin-bottom:18px">{{ logSummary }}</div>
+                <div style="display:flex;gap:8px;margin-bottom:16px">
+                  <sc-for list="{{ logFilters }}" as="f" hint-placeholder-count="3">
+                    <button type="button" onClick="{{ f.go }}" style="height:36px;padding:0 14px;border:1px solid {{ f.bd }};border-radius:999px;background:{{ f.bg }};color:{{ f.fg }};font:600 12.5px/1 Figtree;cursor:pointer;transition:background .16s ease">{{ f.label }}</button>
+                  </sc-for>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:9px">
+                  <sc-for list="{{ entries }}" as="e" hint-placeholder-count="4">
+                    <div data-card="entry" style="border:1px solid var(--g-line,#21403A);border-left:3px solid {{ e.edge }};border-radius:15px;background:var(--g-card,#122320);padding:14px">
+                      <div style="display:flex;align-items:center;gap:10px;margin-bottom:9px">
+                        <div style="flex:1;min-width:0">
+                          <div style="font:600 14px/1.3 Figtree;color:var(--g-ink,#EAF5F1);margin-bottom:2px">{{ e.name }}</div>
+                          <div style="font:400 12px/1.4 Figtree;color:var(--g-soft,#8FB0A6)">{{ e.meta }}</div>
+                        </div>
+                        <span style="flex:none;padding:4px 9px;border-radius:8px;background:{{ e.stateBg }};font:700 10.5px/1.3 Figtree;letter-spacing:.04em;color:{{ e.stateFg }}">{{ e.state }}</span>
+                      </div>
+                      <div style="display:flex;align-items:center;gap:9px">
+                        <span style="flex:1;font:500 11.5px/1 'IBM Plex Mono',monospace;color:var(--g-dim,#6A8B81)">{{ e.stamp }}</span>
+                        <sc-if value="{{ e.canExit }}" hint-placeholder-val="{{ true }}">
+                          <button type="button" onClick="{{ e.exit }}" style="height:36px;padding:0 14px;border:1px solid var(--g-line,#21403A);border-radius:10px;background:var(--g-card-2,#18302B);color:var(--g-ink,#EAF5F1);font:600 12.5px/1 Figtree;cursor:pointer">Mark exit</button>
+                        </sc-if>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+                <sc-if value="{{ noEntries }}" hint-placeholder-val="{{ false }}">
+                  <div style="border:1px dashed var(--g-line,#21403A);border-radius:16px;padding:32px 18px;text-align:center">
+                    <div style="font:600 14px/1.3 Figtree;color:var(--g-ink,#EAF5F1);margin-bottom:5px">Nothing in this filter</div>
+                    <div style="font:400 12.5px/1.5 Figtree;color:var(--g-soft,#8FB0A6)">Verify someone and they appear here instantly.</div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isDeliveries }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:0 20px 24px">
+                <div style="font:700 25px/1.16 Figtree;letter-spacing:-.026em;margin-bottom:6px;color:var(--g-ink,#EAF5F1)">Parcels held</div>
+                <div style="font:400 13px/1.5 Figtree;color:var(--g-soft,#8FB0A6);margin-bottom:18px">{{ parcelSummary }}</div>
+                <button type="button" onClick="{{ openLogParcel }}" style="width:100%;height:52px;border:0;border-radius:15px;background:var(--g-go,#19B888);color:#04231B;font:700 15.5px/1 Figtree;cursor:pointer;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:9px">
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#04231B" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+                  Log a new parcel
+                </button>
+                <div style="display:flex;flex-direction:column;gap:9px">
+                  <sc-for list="{{ parcels }}" as="p" hint-placeholder-count="3">
+                    <div data-card="parcel" style="border:1px solid var(--g-line,#21403A);border-radius:15px;background:var(--g-card,#122320);padding:14px">
+                      <div style="display:flex;align-items:center;gap:12px;margin-bottom:11px">
+                        <span style="width:38px;height:38px;flex:none;border-radius:12px;background:var(--g-card-2,#18302B);display:flex;align-items:center;justify-content:center"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--g-soft,#8FB0A6)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5 12 4l9 4.5v7L12 20l-9-4.5z"></path><path d="M3 8.5 12 13l9-4.5M12 13v7"></path></svg></span>
+                        <div style="flex:1;min-width:0">
+                          <div style="font:600 14px/1.3 Figtree;color:var(--g-ink,#EAF5F1);margin-bottom:2px">{{ p.unit }}</div>
+                          <div style="font:400 12px/1.4 Figtree;color:var(--g-soft,#8FB0A6)">{{ p.meta }}</div>
+                          <div style="margin-top:4px;font:600 11px/1.3 Figtree;color:var(--g-hold,#E8A33D)">{{ p.pref }}</div>
+                        </div>
+                        <span style="flex:none;padding:4px 9px;border-radius:8px;background:{{ p.stateBg }};font:700 10.5px/1.3 Figtree;color:{{ p.stateFg }}">{{ p.state }}</span>
+                      </div>
+                      <sc-if value="{{ p.pending }}" hint-placeholder-val="{{ true }}">
+                        <button type="button" onClick="{{ p.collect }}" style="width:100%;height:42px;border:1px solid var(--g-line,#21403A);border-radius:11px;background:var(--g-card-2,#18302B);color:var(--g-ink,#EAF5F1);font:600 13px/1 Figtree;cursor:pointer">Handed to resident</button>
+                      </sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isAlert }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:0 20px 24px">
+                <div style="font:700 25px/1.16 Figtree;letter-spacing:-.026em;margin-bottom:6px;color:var(--g-ink,#EAF5F1)">Raise an alert</div>
+                <div style="font:400 13px/1.5 Figtree;color:var(--g-soft,#8FB0A6);margin-bottom:20px">Hold the button for two seconds. A slip of the thumb should not wake the whole society.</div>
+                <div style="font:600 12.5px/1 Figtree;color:var(--g-soft,#8FB0A6);margin-bottom:10px">What is happening?</div>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-bottom:22px">
+                  <sc-for list="{{ alertKinds }}" as="a" hint-placeholder-count="4">
+                    <button type="button" onClick="{{ a.go }}" style="min-height:56px;padding:10px;border:1px solid {{ a.bd }};border-radius:14px;background:{{ a.bg }};color:{{ a.fg }};font:600 13px/1.3 Figtree;cursor:pointer;transition:background .16s ease">{{ a.label }}</button>
+                  </sc-for>
+                </div>
+                <button type="button" onMouseDown="{{ holdStart }}" onMouseUp="{{ holdEnd }}" onMouseLeave="{{ holdEnd }}" onTouchStart="{{ holdStart }}" onTouchEnd="{{ holdEnd }}" style="width:100%;height:132px;border:0;border-radius:22px;background:{{ holdBg }};color:#fff;cursor:pointer;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px">
+                  <span style="position:absolute;left:0;top:0;bottom:0;width:{{ holdPct }};background:rgba(255,255,255,.2);transition:width .1s linear"></span>
+                  <span style="position:relative;font:700 18px/1 Figtree">{{ holdLabel }}</span>
+                  <span style="position:relative;font:500 12.5px/1 Figtree;opacity:.85">{{ holdSub }}</span>
+                </button>
+                <div style="margin-top:22px;font:600 12.5px/1 Figtree;color:var(--g-soft,#8FB0A6);margin-bottom:11px">Recent alerts</div>
+                <div style="display:flex;flex-direction:column;gap:9px">
+                  <sc-for list="{{ alerts }}" as="a" hint-placeholder-count="2">
+                    <div data-card="alert" style="border:1px solid var(--g-line,#21403A);border-radius:14px;background:var(--g-card,#122320);padding:13px">
+                      <div style="display:flex;align-items:center;gap:9px;margin-bottom:5px">
+                        <span style="width:9px;height:9px;border-radius:50%;background:{{ a.dot }};flex:none"></span>
+                        <span style="font:600 13.5px/1.3 Figtree;color:var(--g-ink,#EAF5F1);flex:1">{{ a.kind }}</span>
+                        <span style="font:500 11px/1 'IBM Plex Mono',monospace;color:var(--g-dim,#6A8B81)">{{ a.when }}</span>
+                      </div>
+                      <div style="font:400 12px/1.5 Figtree;color:var(--g-soft,#8FB0A6);padding-left:18px">{{ a.status }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+
+          </div>
+
+          <sc-if value="{{ onDuty }}" hint-placeholder-val="{{ false }}">
+          <nav style="flex:none;background:var(--g-card,#122320);border-top:1px solid var(--g-line,#21403A);padding:8px 6px 22px;display:grid;grid-template-columns:repeat(5,1fr);position:relative;z-index:5">
+            <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+              <button type="button" onClick="{{ t.go }}" style="border:0;background:transparent;cursor:pointer;padding:7px 2px 4px;display:flex;flex-direction:column;align-items:center;gap:5px;min-height:52px;position:relative">
+                <span style="display:flex;align-items:center;justify-content:center;height:22px;color:{{ t.fg }};transition:color .18s ease">{{ t.icon }}</span>
+                <span style="font:600 10.5px/1 Figtree;color:{{ t.fg }};transition:color .18s ease">{{ t.label }}</span>
+                <sc-if value="{{ t.badge }}" hint-placeholder-val="{{ false }}">
+                  <span style="position:absolute;top:5px;right:calc(50% - 18px);min-width:16px;height:17px;padding:0 4px;border-radius:999px;background:var(--g-go,#19B888);color:#04231B;font:700 10px/17px Figtree;text-align:center">{{ t.badgeText }}</span>
+                </sc-if>
+              </button>
+            </sc-for>
+          </nav>
+          </sc-if>
+
+          <sc-if value="{{ resultOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;inset:0;z-index:24;background:rgba(5,16,13,.72);display:flex;align-items:flex-end;animation:fadeIn .18s ease both">
+              <div style="width:100%;background:var(--g-card,#122320);border-radius:26px 26px 38px 38px;padding:10px 22px 28px;animation:sheetUp .3s var(--ease) both;max-height:100%;overflow-y:auto">
+                <div style="width:40px;height:4px;border-radius:999px;background:var(--g-line,#21403A);margin:0 auto 20px"></div>
+                <div style="text-align:center;margin-bottom:20px">
+                  <span style="width:78px;height:78px;border-radius:26px;background:{{ result.iconBg }};display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;animation:gPop .44s var(--ease) both">{{ result.icon }}</span>
+                  <div style="font:700 23px/1.2 Figtree;letter-spacing:-.022em;color:{{ result.titleFg }};margin-bottom:7px">{{ result.title }}</div>
+                  <div style="font:400 13.5px/1.55 Figtree;color:var(--g-soft,#8FB0A6);max-width:32ch;margin:0 auto">{{ result.blurb }}</div>
+                </div>
+                <sc-if value="{{ result.hasCard }}" hint-placeholder-val="{{ true }}">
+                  <div style="border:1px solid var(--g-line,#21403A);border-radius:16px;background:var(--g-card-2,#18302B);overflow:hidden;margin-bottom:18px">
+                    <sc-for list="{{ result.rows }}" as="r" hint-placeholder-count="4">
+                      <div style="padding:13px 15px;border-bottom:1px solid var(--g-line,#21403A);display:flex;align-items:center;justify-content:space-between;gap:12px">
+                        <span style="font:400 12.5px/1.3 Figtree;color:var(--g-soft,#8FB0A6)">{{ r.label }}</span>
+                        <span style="font:600 13px/1.3 Figtree;color:var(--g-ink,#EAF5F1);text-align:right">{{ r.value }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ result.allow }}" hint-placeholder-val="{{ true }}">
+                  <button type="button" onClick="{{ allowIn }}" style="width:100%;height:58px;border:0;border-radius:16px;background:var(--g-go,#19B888);color:#04231B;font:700 17px/1 Figtree;cursor:pointer;margin-bottom:10px;animation:pulseGo 2s ease infinite">Allow in</button>
+                  <button type="button" onClick="{{ denyIn }}" style="width:100%;height:50px;border:1px solid var(--g-line,#21403A);border-radius:14px;background:transparent;color:var(--g-stop,#E04A3C);font:600 15px/1 Figtree;cursor:pointer">Turn away</button>
+                </sc-if>
+                <sc-if value="{{ result.retry }}" hint-placeholder-val="{{ false }}">
+                  <button type="button" onClick="{{ closeResult }}" style="width:100%;height:54px;border:0;border-radius:15px;background:var(--g-card-2,#18302B);color:var(--g-ink,#EAF5F1);font:700 16px/1 Figtree;cursor:pointer;margin-bottom:10px">Try another code</button>
+                  <button type="button" onClick="{{ callResident }}" style="width:100%;height:50px;border:1px solid var(--g-line,#21403A);border-radius:14px;background:transparent;color:var(--g-ink,#EAF5F1);font:600 15px/1 Figtree;cursor:pointer">Call the flat instead</button>
+                </sc-if>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ parcelOpen }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ closeParcel }}" style="position:absolute;inset:0;z-index:24;background:rgba(5,16,13,.68);display:flex;align-items:flex-end;animation:fadeIn .18s ease both">
+              <div onClick="{{ stop }}" style="width:100%;background:var(--g-card,#122320);border-radius:26px 26px 38px 38px;padding:10px 22px 28px;animation:sheetUp .3s var(--ease) both">
+                <div style="width:40px;height:4px;border-radius:999px;background:var(--g-line,#21403A);margin:0 auto 18px"></div>
+                <div style="font:700 20px/1.25 Figtree;letter-spacing:-.02em;color:var(--g-ink,#EAF5F1);margin-bottom:18px">Log a parcel</div>
+                <div style="font:600 12px/1 Figtree;color:var(--g-soft,#8FB0A6);margin-bottom:8px">Flat number</div>
+                <input type="text" value="{{ parcelUnit }}" onChange="{{ setParcelUnit }}" placeholder="A-1204" style="width:100%;height:52px;padding:0 15px;border:1px solid var(--g-line,#21403A);border-radius:13px;background:var(--g-card-2,#18302B);color:var(--g-ink,#EAF5F1);font:600 16px/1 'IBM Plex Mono',monospace;outline:none" />
+                <sc-if value="{{ hasFlatPref }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:12px;border:1px solid rgba(232,163,61,.32);border-radius:12px;background:rgba(232,163,61,.1);padding:12px 13px;font:600 12.5px/1.45 Figtree;color:var(--g-hold,#E8A33D);animation:fadeIn .2s ease both">{{ flatPrefLine }}</div>
+                </sc-if>
+                <div style="margin-top:16px;font:600 12px/1 Figtree;color:var(--g-soft,#8FB0A6);margin-bottom:8px">Courier</div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+                  <sc-for list="{{ couriers }}" as="c" hint-placeholder-count="3">
+                    <button type="button" onClick="{{ c.go }}" style="height:44px;border:1px solid {{ c.bd }};border-radius:12px;background:{{ c.bg }};color:{{ c.fg }};font:600 12.5px/1 Figtree;cursor:pointer">{{ c.label }}</button>
+                  </sc-for>
+                </div>
+                <sc-if value="{{ parcelError }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:16px;border:1px solid rgba(224,74,60,.4);border-radius:12px;background:rgba(224,74,60,.12);padding:13px;font:500 12.5px/1.5 Figtree;color:#F7B5AE;animation:fadeIn .2s ease both">A parcel needs a flat number before it can be logged.</div>
+                </sc-if>
+                <button type="button" onClick="{{ saveParcel }}" style="margin-top:20px;width:100%;height:54px;border:0;border-radius:15px;background:var(--g-go,#19B888);color:#04231B;font:700 16px/1 Figtree;cursor:pointer">Save and notify resident</button>
+                <button type="button" onClick="{{ closeParcel }}" style="margin-top:10px;width:100%;height:48px;border:1px solid var(--g-line,#21403A);border-radius:13px;background:transparent;color:var(--g-ink,#EAF5F1);font:600 14.5px/1 Figtree;cursor:pointer">Cancel</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;left:18px;right:18px;bottom:96px;z-index:30;pointer-events:none;display:flex;flex-direction:column;gap:8px">
+              <sc-for list="{{ toasts }}" as="t" hint-placeholder-count="1">
+                <div style="border-radius:13px;background:{{ t.bg }};padding:13px 15px;display:flex;align-items:center;gap:11px;box-shadow:0 14px 30px -14px rgba(0,0,0,.6);animation:toastIn .28s var(--ease) both">
+                  <span style="width:22px;height:22px;flex:none;border-radius:7px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center">{{ t.icon }}</span>
+                  <span style="font:600 13px/1.4 Figtree;color:{{ t.fg }}">{{ t.text }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+        </div>
+      </div>
+      <div style="font:400 12.5px/1.5 Figtree;color:var(--ink-muted,#6B7A75);text-align:center;max-width:380px">{{ frameCaption }}</div>
+    </div>
+
+    <div style="flex:1;min-width:300px;display:flex;flex-direction:column;gap:16px;position:sticky;top:32px">
+      <div style="border:1px solid var(--border,#E3E9E6);border-radius:18px;background:var(--surface,#fff);padding:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px">
+          <span style="font:700 15px/1.2 Figtree">Prototype controls</span>
+          <button type="button" onClick="{{ toggleTheme }}" title="{{ themeLabel }}" style="height:32px;padding:0 12px;border:1px solid var(--border-strong,#CCD6D2);border-radius:9px;background:var(--surface,#fff);cursor:pointer;display:inline-flex;align-items:center;gap:7px;font:600 12px/1 Figtree">{{ themeIcon }}{{ themeShort }}</button>
+        </div>
+        <div style="font:600 12px/1 Figtree;color:var(--ink-muted,#6B7A75);margin-bottom:9px">Valid codes to try</div>
+        <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px">
+          <sc-for list="{{ hintCodes }}" as="c" hint-placeholder-count="3">
+            <button type="button" onClick="{{ c.go }}" style="height:34px;padding:0 12px;border:1px solid var(--border,#E3E9E6);border-radius:9px;background:var(--canvas,#F7F9F8);font:600 13px/1 'IBM Plex Mono',monospace;letter-spacing:.1em;cursor:pointer;transition:border-color .16s ease" style-hover="border-color:var(--accent,#0E6B5C)">{{ c.code }}</button>
+          </sc-for>
+          <button type="button" onClick="{{ fillBadCode }}" style="height:34px;padding:0 12px;border:1px solid var(--bad-border,#F6D9D6);border-radius:9px;background:var(--bad-wash,#FCEDEC);color:var(--bad-ink,#9B2B22);font:600 12.5px/1 Figtree;cursor:pointer">Bad code</button>
+        </div>
+        <div style="font:600 12px/1 Figtree;color:var(--ink-muted,#6B7A75);margin-bottom:9px">Try a state</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <sc-for list="{{ scenarios }}" as="s" hint-placeholder-count="4">
+            <button type="button" onClick="{{ s.go }}" style="width:100%;text-align:left;border:1px solid var(--border,#E3E9E6);border-radius:11px;background:var(--canvas,#F7F9F8);padding:11px 13px;cursor:pointer;transition:border-color .16s ease" style-hover="border-color:var(--accent,#0E6B5C)">
+              <div style="font:600 12.5px/1.3 Figtree;margin-bottom:2px">{{ s.label }}</div>
+              <div style="font:400 11.5px/1.4 Figtree;color:var(--ink-soft,#4A5B56)">{{ s.detail }}</div>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="border:1px solid var(--border,#E3E9E6);border-radius:18px;background:var(--surface,#fff);padding:20px">
+        <div style="font:700 15px/1.2 Figtree;margin-bottom:6px">What just happened</div>
+        <div style="font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56);margin-bottom:14px">Newest first. Every decision at the gate lands here.</div>
+        <sc-if value="{{ hasLog }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:0">
+            <sc-for list="{{ eventLog }}" as="l" hint-placeholder-count="3">
+              <div style="display:flex;gap:11px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border-soft,#F1F4F3)">
+                <span style="font:500 11px/1.5 'IBM Plex Mono',monospace;color:var(--ink-muted,#6B7A75);flex:none;width:52px">{{ l.time }}</span>
+                <span style="font:500 12.5px/1.5 Figtree;color:var(--ink,#0F1A17)">{{ l.text }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ noLog }}" hint-placeholder-val="{{ true }}">
+          <div style="border:1px dashed var(--border-strong,#CCD6D2);border-radius:12px;padding:22px 14px;text-align:center;font:400 12.5px/1.5 Figtree;color:var(--ink-muted,#6B7A75)">Nothing yet. Punch a code into the keypad.</div>
+        </sc-if>
+        <button type="button" onClick="{{ resetAll }}" style="margin-top:16px;width:100%;height:42px;border:1px solid var(--border-strong,#CCD6D2);border-radius:11px;background:var(--surface,#fff);font:600 13px/1 Figtree;cursor:pointer">Reset prototype</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const TABS = [
+  { k: "verify", label: "Entry", d: "M4 20.5V3.5h9.5v17M13.5 12h6.5M17 9l3 3-3 3" },
+  { k: "staff", label: "Staff", d: "M9 11.5a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4M2.6 19.4a6.4 6.4 0 0 1 12.8 0M16.6 11.4a3 3 0 0 0 0-6M18.2 19.4a6 6 0 0 0-2.2-4.6" },
+  { k: "log", label: "Log", d: "M4 5h16M4 12h16M4 19h10" },
+  { k: "deliveries", label: "Parcels", d: "M3 8.5 12 4l9 4.5v7L12 20l-9-4.5zM3 8.5 12 13l9-4.5" },
+  { k: "more", label: "More", d: "M5 12h.01M12 12h.01M19 12h.01" }
+];
+
+const START_STAFF = [
+  { id: "s1", name: "Lakshmi Bai", role: "Housekeeping", flats: "A-1204, A-903, B-702", pass: "ST-0441", inside: true, since: "7:05am" },
+  { id: "s2", name: "Ganesh Pawar", role: "Driver", flats: "A-1204", pass: "ST-0288", inside: true, since: "8:40am" },
+  { id: "s3", name: "Savita More", role: "Cook", flats: "C-405, C-108", pass: "ST-0517", inside: false, since: "Left 11:20am" },
+  { id: "s4", name: "Imran Shaikh", role: "Gardener", flats: "Common areas", pass: "ST-0102", inside: true, since: "6:30am" },
+  { id: "s5", name: "Rekha Jadhav", role: "Nanny", flats: "B-1102", pass: "ST-0630", inside: false, since: "Not in today" }
+];
+
+const PLATE_BOOK = [
+  { plate: "MH 12 KJ 4471", unit: "A-1204", who: "Anita Deshpande", kind: "Honda City · white", slot: "B-42" },
+  { plate: "MH 12 AB 9902", unit: "A-1204", who: "Anita Deshpande", kind: "Activa · grey", slot: "T-18" },
+  { plate: "MH 14 DX 7781", unit: "B-702", who: "Vikram Sethi", kind: "Baleno · blue", slot: "B-19" },
+  { plate: "MH 12 QR 3355", unit: "C-405", who: "Prakash Rao", kind: "Ertiga · silver", slot: "B-07" },
+  { plate: "MH 01 ZZ 1188", unit: "A-903", who: "Vikas Kale", kind: "Nexon · red", slot: "B-51" }
+];
+
+const FLAT_PREFS = { "A-1204": "Leave at the gate", "B-702": "Call me first", "C-405": "Leave at the gate", "C-108": "Send it up", "B-1102": "Call me first" };
+
+const WALKIN_PURPOSES = ["Guest", "Delivery", "Cab", "Service", "Broker"];
+
+const PASSES = [
+  { code: "4417", name: "Rohit Sharma", unit: "A-1204", host: "Anita Deshpande", purpose: "Guest", valid: "Until 9:00pm today", kind: "guest" },
+  { code: "9021", name: "Blue Dart", unit: "B-702", host: "Standing permission", purpose: "Delivery", valid: "Every day, 9am–8pm", kind: "delivery" },
+  { code: "7734", name: "Kiran Cabs", unit: "C-405", host: "Prakash Rao", purpose: "Cab", valid: "Next 2 hours", kind: "cab" },
+  { code: "2208", name: "Sunita Kale", unit: "A-903", host: "Vikas Kale", purpose: "Service", valid: "Expired 40 minutes ago", kind: "expired" }
+];
+
+const START_ENTRIES = [
+  { id: "e1", name: "Meera Joshi", meta: "Guest of A-1204 · code 3380", state: "INSIDE", stamp: "Entered 4:12pm", kind: "in" },
+  { id: "e2", name: "Amazon Logistics", meta: "Delivery to B-1102 · code 8890", state: "EXITED", stamp: "4:02pm – 4:09pm", kind: "out" },
+  { id: "e3", name: "Unknown walk-in", meta: "Asked for C-301 · resident did not answer", state: "TURNED AWAY", stamp: "3:46pm", kind: "denied" },
+  { id: "e4", name: "Prakash Rao", meta: "Resident · C-405", state: "EXITED", stamp: "3:20pm – 3:21pm", kind: "out" }
+];
+
+const START_PARCELS = [
+  { id: "q1", unit: "A-1204", meta: "Blue Dart · logged 2:40pm", state: "HELD", pending: true },
+  { id: "q2", unit: "B-702", meta: "Amazon · logged 1:05pm", state: "HELD", pending: true },
+  { id: "q3", unit: "C-108", meta: "Flipkart · handed over 11:20am", state: "COLLECTED", pending: false }
+];
+
+const ALERT_KINDS = ["Medical", "Fire", "Intruder", "Fight or dispute"];
+const COURIERS = ["Blue Dart", "Amazon", "Flipkart", "Swiggy", "Zomato", "Other"];
+
+const ICO = (d, color, w, sw) => React.createElement("svg", { width: w || 18, height: w || 18, viewBox: "0 0 24 24", fill: "none", stroke: color, strokeWidth: sw || 1.9, strokeLinecap: "round", strokeLinejoin: "round" }, React.createElement("path", { d }));
+
+class Component extends DCLogic {
+  state = {
+    dark: false,
+    screen: "verify",
+    code: "",
+    checking: false,
+    result: null,
+    entries: START_ENTRIES.map((e) => ({ ...e })),
+    logFilter: "All",
+    parcels: START_PARCELS.map((p) => ({ ...p })),
+    parcelOpen: false,
+    parcelUnit: "",
+    courier: "Blue Dart",
+    parcelError: false,
+    alertKind: "Medical",
+    holding: false,
+    holdPct: 0,
+    alerts: [{ id: "a1", kind: "Medical", when: "2 days ago", status: "Ambulance reached in 9 minutes. Closed by secretary.", dot: "#19B888" }],
+    onDuty: false,
+    pin: "",
+    pinError: false,
+    staff: START_STAFF.map((x) => ({ ...x })),
+    staffFilter: "All",
+    walkin: { name: "", unit: "", purpose: "Guest" },
+    walkinStage: "form",
+    plateQuery: "",
+    handoverNote: "",
+    handoverDone: false,
+    offline: false,
+    toasts: [],
+    log: [],
+    clock: "9:41"
+  };
+
+  componentDidMount() {
+    this.clockTimer = setInterval(() => {
+      const d = new Date();
+      this.setState({ clock: String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0") });
+    }, 20000);
+  }
+  componentWillUnmount() { clearInterval(this.clockTimer); clearInterval(this.holdTimer); clearTimeout(this.ct); clearTimeout(this.wt); this.clearTimers(); }
+
+  now() {
+    const d = new Date();
+    return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0") + ":" + String(d.getSeconds()).padStart(2, "0");
+  }
+  stamp() {
+    const d = new Date();
+    let h = d.getHours(), ap = h >= 12 ? "pm" : "am";
+    h = h % 12 || 12;
+    return h + ":" + String(d.getMinutes()).padStart(2, "0") + ap;
+  }
+
+  note(text) { this.setState((s) => ({ log: [{ time: this.now(), text }].concat(s.log).slice(0, 14) })); }
+
+  toast(text, kind) {
+    const id = Math.random().toString(36).slice(2);
+    this.timers = this.timers || {};
+    this.setState((s) => ({ toasts: s.toasts.concat([{ id, text, kind: kind || "ok" }]).slice(-3) }));
+    this.timers[id] = setTimeout(() => {
+      delete this.timers[id];
+      this.setState((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) }));
+    }, 2800);
+  }
+
+  clearTimers() {
+    Object.values(this.timers || {}).forEach(clearTimeout);
+    this.timers = {};
+  }
+
+  go(screen) {
+    this.setState({ screen });
+    const el = document.getElementById("gscroll");
+    if (el) el.scrollTop = 0;
+  }
+
+  check() {
+    const code = this.state.code;
+    if (code.length < 4) { this.toast("Four digits are needed.", "warn"); return; }
+    this.setState({ checking: true });
+    clearTimeout(this.ct);
+    this.ct = setTimeout(() => {
+      const hit = PASSES.find((p) => p.code === code);
+      if (!hit) {
+        this.setState({ checking: false, result: { type: "invalid", code } });
+        this.note("Code " + code + " rejected — no such pass");
+      } else if (hit.kind === "expired") {
+        this.setState({ checking: false, result: { type: "expired", pass: hit } });
+        this.note("Code " + code + " rejected — expired");
+      } else {
+        this.setState({ checking: false, result: { type: "valid", pass: hit } });
+        this.note("Code " + code + " verified — " + hit.name);
+      }
+    }, 620);
+  }
+
+  renderVals() {
+    const s = this.state;
+    const dark = s.dark;
+    const code = s.code;
+    const r = s.result;
+
+    const themeIcon = dark
+      ? React.createElement("svg", { width: 15, height: 15, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.9, strokeLinecap: "round" },
+          React.createElement("circle", { cx: 12, cy: 12, r: 4.2 }),
+          React.createElement("path", { d: "M12 2.6v2.4M12 19v2.4M21.4 12H19M5 12H2.6M18.6 5.4 16.9 7.1M7.1 16.9 5.4 18.6M18.6 18.6 16.9 16.9M7.1 7.1 5.4 5.4" }))
+      : React.createElement("svg", { width: 15, height: 15, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.9, strokeLinecap: "round", strokeLinejoin: "round" },
+          React.createElement("path", { d: "M20.5 14.3A8.6 8.6 0 0 1 9.7 3.5 8.8 8.8 0 1 0 20.5 14.3Z" }));
+
+    const entries = s.logFilter === "All" ? s.entries
+      : s.logFilter === "Inside" ? s.entries.filter((e) => e.kind === "in")
+      : s.entries.filter((e) => e.kind === "denied");
+
+    const held = s.parcels.filter((p) => p.pending).length;
+    const inside = s.entries.filter((e) => e.kind === "in").length;
+
+    let result = { hasCard: false, allow: false, retry: false, rows: [], icon: null, title: "", blurb: "", iconBg: "", titleFg: "" };
+    if (r && r.type === "valid") {
+      const p = r.pass;
+      result = {
+        title: "Pass is valid", titleFg: "var(--g-go,#19B888)", iconBg: "rgba(25,184,136,.16)",
+        icon: ICO("m4.5 12.5 5 5 10-11", "#19B888", 38, 2.6),
+        blurb: p.name + " is expected at " + p.unit + ".",
+        hasCard: true, allow: true, retry: false,
+        rows: [
+          { label: "Visitor", value: p.name },
+          { label: "Flat", value: p.unit },
+          { label: "Host", value: p.host },
+          { label: "Purpose", value: p.purpose },
+          { label: "Valid", value: p.valid }
+        ]
+      };
+    } else if (r && r.type === "expired") {
+      const p = r.pass;
+      result = {
+        title: "Pass has expired", titleFg: "var(--g-hold,#E8A33D)", iconBg: "rgba(232,163,61,.16)",
+        icon: ICO("M12 7.5V12l3 2", "#E8A33D", 38, 2.4),
+        blurb: "The code was real but its window has closed. Ring the flat before letting anyone in.",
+        hasCard: true, allow: false, retry: true,
+        rows: [
+          { label: "Visitor", value: p.name },
+          { label: "Flat", value: p.unit },
+          { label: "Host", value: p.host },
+          { label: "Status", value: p.valid }
+        ]
+      };
+    } else if (r && r.type === "invalid") {
+      result = {
+        title: "No such pass", titleFg: "var(--g-stop,#E04A3C)", iconBg: "rgba(224,74,60,.16)",
+        icon: ICO("M17 7 7 17M7 7l10 10", "#E04A3C", 38, 2.6),
+        blurb: "Code " + r.code + " does not match any live pass. Do not let this person in on the code alone.",
+        hasCard: false, allow: false, retry: true, rows: []
+      };
+    }
+
+    return {
+      themeLabel: dark ? "Switch to light" : "Switch to dark",
+      themeShort: dark ? "Light" : "Dark",
+      themeIcon,
+      toggleTheme: () => {
+        document.documentElement.setAttribute("data-theme", dark ? "light" : "dark");
+        this.setState({ dark: !dark });
+      },
+
+      clock: s.clock,
+      offline: s.offline,
+      guardName: "Ramesh Yadav",
+      guardInitials: "RY",
+      shiftLine: "Main gate · shift 2pm–10pm",
+      frameCaption: "390 × 844 · main gate handset · " + (s.offline ? "offline queue active" : "online"),
+
+      onDuty: s.onDuty,
+      offDuty: !s.onDuty,
+      pinBoxes: [0, 1, 2, 3].map((i) => ({
+        char: s.pin[i] ? "•" : "",
+        bd: s.pinError ? "var(--g-stop,#E04A3C)" : s.pin.length === i ? "var(--g-go,#19B888)" : "var(--g-line,#21403A)",
+        bg: s.pin[i] ? "var(--g-card-2,#18302B)" : "var(--g-card,#122320)"
+      })),
+      pinHint: s.pinError ? "That PIN is not on today's roster. Try 4  2  9  1." : s.pin.length === 0 ? "Four digits · yours is 4291" : s.pin.length < 4 ? (4 - s.pin.length) + " more" : "Ready to sign in",
+      pinHintFg: s.pinError ? "#F7B5AE" : "var(--g-dim,#6A8B81)",
+      pinKeys: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "clear", "0", "del"].map((k) => ({
+        label: k === "clear" ? "C" : k === "del" ? "←" : k,
+        bg: k === "clear" || k === "del" ? "transparent" : "var(--g-card,#122320)",
+        fg: k === "clear" ? "var(--g-stop,#E04A3C)" : k === "del" ? "var(--g-soft,#8FB0A6)" : "var(--g-ink,#EAF5F1)",
+        go: () => {
+          if (k === "clear") { this.setState({ pin: "", pinError: false }); return; }
+          if (k === "del") { this.setState((st) => ({ pin: st.pin.slice(0, -1), pinError: false })); return; }
+          this.setState((st) => (st.pin.length >= 4 ? null : { pin: st.pin + k, pinError: false }));
+        }
+      })),
+      startBg: s.pin.length === 4 ? "var(--g-go,#19B888)" : "var(--g-card,#122320)",
+      startFg: s.pin.length === 4 ? "#04231B" : "var(--g-dim,#6A8B81)",
+      startLabel: "Start shift",
+      startShift: () => {
+        if (s.pin.length < 4) { this.toast("Four digits are needed.", "warn"); return; }
+        if (s.pin !== "4291") { this.setState({ pinError: true, pin: "" }); this.note("Rejected a wrong duty PIN"); return; }
+        this.setState({ onDuty: true, pinError: false, screen: "verify" });
+        this.toast("Signed in. Shift started at " + this.stamp() + ".", "ok");
+        this.note("Ramesh Yadav signed in for shift 2");
+      },
+
+      isVerify: s.onDuty && s.screen === "verify",
+      isLog: s.onDuty && s.screen === "log",
+      isDeliveries: s.onDuty && s.screen === "deliveries",
+      isAlert: s.onDuty && s.screen === "alert",
+      isStaff: s.onDuty && s.screen === "staff",
+      isMore: s.onDuty && s.screen === "more",
+      isWalkin: s.onDuty && s.screen === "walkin",
+      isPlates: s.onDuty && s.screen === "plates",
+      isHandover: s.onDuty && s.screen === "handover",
+
+      codeBoxes: [0, 1, 2, 3].map((i) => ({
+        char: code[i] || "",
+        bd: code.length === i ? "var(--g-go,#19B888)" : code[i] ? "var(--g-line,#21403A)" : "var(--g-line,#21403A)",
+        bg: code[i] ? "var(--g-card-2,#18302B)" : "transparent"
+      })),
+      codeHint: s.checking ? "Checking against live passes…" : code.length === 0 ? "Four digits, from the resident" : code.length < 4 ? (4 - code.length) + " more" : "Ready to verify",
+      hintFg: s.checking ? "var(--g-go,#19B888)" : "var(--g-dim,#6A8B81)",
+
+      keys: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "clear", "0", "del"].map((k) => ({
+        label: k === "clear" ? "C" : k === "del" ? "←" : k,
+        bg: k === "clear" || k === "del" ? "transparent" : "var(--g-card,#122320)",
+        fg: k === "clear" ? "var(--g-stop,#E04A3C)" : k === "del" ? "var(--g-soft,#8FB0A6)" : "var(--g-ink,#EAF5F1)",
+        go: () => {
+          if (k === "clear") { this.setState({ code: "" }); return; }
+          if (k === "del") { this.setState((st) => ({ code: st.code.slice(0, -1) })); return; }
+          this.setState((st) => (st.code.length >= 4 ? null : { code: st.code + k }));
+        }
+      })),
+      verifyBg: code.length === 4 && !s.checking ? "var(--g-go,#19B888)" : "var(--g-card,#122320)",
+      verifyFg: code.length === 4 && !s.checking ? "#04231B" : "var(--g-dim,#6A8B81)",
+      verifyLabel: s.checking ? "Checking…" : "Verify",
+      submitCode: () => this.check(),
+
+      expectedCount: PASSES.filter((p) => p.kind !== "expired").length + " passes",
+      noExpected: false,
+      expected: PASSES.filter((p) => p.kind !== "expired").map((p) => ({
+        name: p.name, meta: p.purpose + " · " + p.unit + " · " + p.valid, code: p.code,
+        initials: p.name.split(" ").map((w) => w[0]).join("").slice(0, 2),
+        go: () => { this.setState({ code: p.code }); this.note("Tapped " + p.name + " from the expected list"); setTimeout(() => this.check(), 120); }
+      })),
+
+      logSummary: inside + " inside now · " + s.entries.length + " movements logged",
+      logFilters: ["All", "Inside", "Turned away"].map((f) => ({
+        label: f,
+        bg: s.logFilter === f ? "var(--g-go,#19B888)" : "var(--g-card,#122320)",
+        fg: s.logFilter === f ? "#04231B" : "var(--g-soft,#8FB0A6)",
+        bd: s.logFilter === f ? "var(--g-go,#19B888)" : "var(--g-line,#21403A)",
+        go: () => { this.setState({ logFilter: f }); this.note("Filtered the log by " + f.toLowerCase()); }
+      })),
+      noEntries: entries.length === 0,
+      entries: entries.map((e) => ({
+        name: e.name, meta: e.meta, state: e.state, stamp: e.stamp, canExit: e.kind === "in",
+        edge: e.kind === "in" ? "var(--g-go,#19B888)" : e.kind === "denied" ? "var(--g-stop,#E04A3C)" : "var(--g-line,#21403A)",
+        stateBg: e.kind === "in" ? "rgba(25,184,136,.16)" : e.kind === "denied" ? "rgba(224,74,60,.16)" : "rgba(143,176,166,.14)",
+        stateFg: e.kind === "in" ? "var(--g-go,#19B888)" : e.kind === "denied" ? "var(--g-stop,#E04A3C)" : "var(--g-soft,#8FB0A6)",
+        exit: () => {
+          this.setState((st) => ({ entries: st.entries.map((x) => x.id === e.id ? { ...x, kind: "out", state: "EXITED", stamp: x.stamp + " – " + this.stamp() } : x) }));
+          this.toast(e.name + " marked out.", "ok");
+          this.note("Marked exit for " + e.name);
+        }
+      })),
+
+      parcelSummary: held + " waiting for collection · " + s.parcels.length + " today",
+      parcels: s.parcels.map((p) => ({
+        unit: p.unit, meta: p.meta, state: p.state, pending: p.pending,
+        pref: FLAT_PREFS[p.unit] || "No standing preference",
+        stateBg: p.pending ? "rgba(232,163,61,.16)" : "rgba(25,184,136,.16)",
+        stateFg: p.pending ? "var(--g-hold,#E8A33D)" : "var(--g-go,#19B888)",
+        collect: () => {
+          this.setState((st) => ({ parcels: st.parcels.map((x) => x.id === p.id ? { ...x, pending: false, state: "COLLECTED", meta: x.meta.split(" · ")[0] + " · handed over " + this.stamp() } : x) }));
+          this.toast("Parcel for " + p.unit + " handed over.", "ok");
+          this.note("Handed the " + p.unit + " parcel to the resident");
+        }
+      })),
+      openLogParcel: () => { this.setState({ parcelOpen: true, parcelError: false }); this.note("Started logging a parcel"); },
+      closeParcel: () => this.setState({ parcelOpen: false }),
+      parcelOpen: s.onDuty && s.parcelOpen,
+      parcelUnit: s.parcelUnit,
+      parcelError: s.parcelError,
+      setParcelUnit: (e) => this.setState({ parcelUnit: e.target.value.toUpperCase(), parcelError: false }),
+      hasFlatPref: !!FLAT_PREFS[s.parcelUnit.trim().toUpperCase()],
+      flatPrefLine: (FLAT_PREFS[s.parcelUnit.trim().toUpperCase()] || "") + " — this flat's standing instruction",
+      couriers: COURIERS.map((c) => ({
+        label: c,
+        bg: s.courier === c ? "rgba(25,184,136,.16)" : "var(--g-card-2,#18302B)",
+        fg: s.courier === c ? "var(--g-go,#19B888)" : "var(--g-soft,#8FB0A6)",
+        bd: s.courier === c ? "var(--g-go,#19B888)" : "var(--g-line,#21403A)",
+        go: () => this.setState({ courier: c })
+      })),
+      saveParcel: () => {
+        if (!s.parcelUnit.trim()) { this.setState({ parcelError: true }); this.note("Blocked a parcel with no flat number"); return; }
+        const p = { id: "q" + Date.now(), unit: s.parcelUnit.trim().toUpperCase(), meta: s.courier + " · logged " + this.stamp(), state: "HELD", pending: true };
+        this.setState((st) => ({ parcels: [p].concat(st.parcels), parcelOpen: false, parcelUnit: "" }));
+        this.toast("Resident of " + p.unit + " was notified.", "ok");
+        this.note("Logged a " + s.courier + " parcel for " + p.unit);
+      },
+      stop: (e) => e.stopPropagation(),
+
+      alertKinds: ALERT_KINDS.map((a) => ({
+        label: a,
+        bg: s.alertKind === a ? "rgba(224,74,60,.16)" : "var(--g-card,#122320)",
+        fg: s.alertKind === a ? "#FF9C90" : "var(--g-soft,#8FB0A6)",
+        bd: s.alertKind === a ? "var(--g-stop,#E04A3C)" : "var(--g-line,#21403A)",
+        go: () => this.setState({ alertKind: a })
+      })),
+      holdBg: s.holding ? "var(--g-stop,#E04A3C)" : "rgba(224,74,60,.82)",
+      holdPct: s.holdPct + "%",
+      holdLabel: s.holding ? "Keep holding…" : "Hold to raise " + s.alertKind.toLowerCase(),
+      holdSub: s.holding ? Math.max(0, Math.ceil((100 - s.holdPct) / 50)) + " second to go" : "Two seconds. Reaches the committee and the security desk.",
+      holdStart: () => {
+        clearInterval(this.holdTimer);
+        this.holdFrom = Date.now();
+        this.setState({ holding: true, holdPct: 0 });
+        this.holdTimer = setInterval(() => {
+          const pct = Math.min(100, Math.round(((Date.now() - this.holdFrom) / 2000) * 100));
+          if (pct >= 100) {
+            clearInterval(this.holdTimer);
+            this.setState((st) => {
+              const a = { id: "a" + Date.now(), kind: st.alertKind, when: "Just now", status: "Sent to 6 committee members and the security desk.", dot: "#E04A3C" };
+              setTimeout(() => { this.toast(st.alertKind + " alert raised.", "bad"); this.note("Raised a " + st.alertKind.toLowerCase() + " alert"); }, 0);
+              return { holding: false, holdPct: 0, alerts: [a].concat(st.alerts) };
+            });
+            return;
+          }
+          this.setState({ holdPct: pct });
+        }, 60);
+      },
+      holdEnd: () => {
+        clearInterval(this.holdTimer);
+        this.setState((st) => (st.holding ? { holding: false, holdPct: 0 } : null));
+      },
+      alerts: s.alerts,
+      goAlert: () => { this.go("alert"); this.note("Opened the alert screen"); },
+      backToVerify: () => { this.go("verify"); },
+      signOut: () => {
+        clearTimeout(this.wt);
+        this.setState({ onDuty: false, pin: "", screen: "verify", code: "", result: null, parcelOpen: false, walkinStage: "form" });
+        this.toast("Signed out. Handset locked.", "warn");
+        this.note("Ended the shift");
+      },
+
+      staffSummary: s.staff.filter((x) => x.inside).length + " on the premises · " + s.staff.length + " registered",
+      staffFilters: ["All", "Inside", "Out"].map((f) => ({
+        label: f,
+        bg: s.staffFilter === f ? "var(--g-go,#19B888)" : "var(--g-card,#122320)",
+        fg: s.staffFilter === f ? "#04231B" : "var(--g-soft,#8FB0A6)",
+        bd: s.staffFilter === f ? "var(--g-go,#19B888)" : "var(--g-line,#21403A)",
+        go: () => { this.setState({ staffFilter: f }); this.note("Filtered staff by " + f.toLowerCase()); }
+      })),
+      staffList: s.staff.filter((x) => s.staffFilter === "Inside" ? x.inside : s.staffFilter === "Out" ? !x.inside : true).map((p) => ({
+        name: p.name, role: p.role, flats: p.flats, pass: p.pass, since: p.since,
+        initials: p.name.split(" ").map((w) => w[0]).join("").slice(0, 2),
+        state: p.inside ? "IN" : "OUT",
+        edge: p.inside ? "var(--g-go,#19B888)" : "var(--g-line,#21403A)",
+        stateBg: p.inside ? "rgba(25,184,136,.16)" : "rgba(143,176,166,.14)",
+        stateFg: p.inside ? "var(--g-go,#19B888)" : "var(--g-soft,#8FB0A6)",
+        btnLabel: p.inside ? "Mark out" : "Mark in",
+        btnBg: p.inside ? "var(--g-card-2,#18302B)" : "var(--g-go,#19B888)",
+        btnFg: p.inside ? "var(--g-ink,#EAF5F1)" : "#04231B",
+        toggle: () => {
+          const going = !p.inside;
+          this.setState((st) => ({ staff: st.staff.map((x) => x.id === p.id ? { ...x, inside: going, since: going ? "In " + this.stamp() : "Left " + this.stamp() } : x) }));
+          this.toast(p.name + (going ? " marked in." : " marked out."), "ok");
+          this.note(p.name + (going ? " came in" : " went out"));
+        }
+      })),
+
+      goWalkin: () => { this.setState({ walkinStage: "form" }); this.go("walkin"); this.note("Started a walk-in"); },
+      walkinForm: s.walkinStage === "form",
+      walkinWaiting: s.walkinStage === "waiting",
+      walkinApproved: s.walkinStage === "approved",
+      walkinName: s.walkin.name,
+      walkinUnit: s.walkin.unit,
+      walkinUnitLabel: s.walkin.unit ? s.walkin.unit.toUpperCase() : "the flat",
+      walkinApprovedLine: s.walkin.name + " may go up. " + s.walkin.purpose + " · approved just now.",
+      setWalkinName: (e) => this.setState((st) => ({ walkin: { ...st.walkin, name: e.target.value } })),
+      setWalkinUnit: (e) => this.setState((st) => ({ walkin: { ...st.walkin, unit: e.target.value.toUpperCase() } })),
+      walkinPurposes: WALKIN_PURPOSES.map((x) => ({
+        label: x,
+        bg: s.walkin.purpose === x ? "rgba(25,184,136,.16)" : "var(--g-card,#122320)",
+        fg: s.walkin.purpose === x ? "var(--g-go,#19B888)" : "var(--g-soft,#8FB0A6)",
+        bd: s.walkin.purpose === x ? "var(--g-go,#19B888)" : "var(--g-line,#21403A)",
+        go: () => this.setState((st) => ({ walkin: { ...st.walkin, purpose: x } }))
+      })),
+      askResident: () => {
+        if (!s.walkin.name.trim() || !s.walkin.unit.trim()) { this.toast("A name and a flat are needed.", "warn"); return; }
+        this.setState({ walkinStage: "waiting" });
+        this.note("Asked " + s.walkin.unit + " about " + s.walkin.name.trim());
+        clearTimeout(this.wt);
+        this.wt = setTimeout(() => {
+          this.setState({ walkinStage: "approved" });
+          this.toast(s.walkin.unit + " approved the walk-in.", "ok");
+          this.note(s.walkin.unit + " approved " + s.walkin.name.trim());
+        }, 2600);
+      },
+      cancelWalkin: () => { clearTimeout(this.wt); this.setState({ walkinStage: "form" }); this.toast("Request cancelled.", "warn"); this.note("Cancelled the walk-in request"); },
+      allowWalkin: () => {
+        const w = s.walkin;
+        const e = { id: "e" + Date.now(), name: w.name.trim(), meta: w.purpose + " for " + w.unit + " · walk-in, resident approved", state: "INSIDE", stamp: "Entered " + this.stamp(), kind: "in" };
+        this.setState((st) => ({ entries: [e].concat(st.entries), walkin: { name: "", unit: "", purpose: "Guest" }, walkinStage: "form" }));
+        this.toast(w.name.trim() + " allowed in.", "ok");
+        this.note("Allowed walk-in " + w.name.trim() + " in to " + w.unit);
+        this.go("log");
+      },
+
+      plateQuery: s.plateQuery,
+      setPlateQuery: (e) => this.setState({ plateQuery: e.target.value.toUpperCase() }),
+      plateResults: PLATE_BOOK.filter((p) => !s.plateQuery.trim() || p.plate.replace(/ /g, "").includes(s.plateQuery.replace(/ /g, ""))),
+      plateCount: (() => {
+        const n = PLATE_BOOK.filter((p) => !s.plateQuery.trim() || p.plate.replace(/ /g, "").includes(s.plateQuery.replace(/ /g, ""))).length;
+        return s.plateQuery.trim() ? n + " match" + (n === 1 ? "" : "es") : PLATE_BOOK.length + " plates registered";
+      })(),
+      noPlates: s.plateQuery.trim().length > 0 && PLATE_BOOK.filter((p) => p.plate.replace(/ /g, "").includes(s.plateQuery.replace(/ /g, ""))).length === 0,
+
+      handoverNote: s.handoverNote,
+      setHandoverNote: (e) => this.setState({ handoverNote: e.target.value }),
+      handoverPending: !s.handoverDone,
+      handoverDone: s.handoverDone,
+      handoverStats: [
+        { value: String(s.entries.length), label: "Movements logged", fg: "var(--g-ink,#EAF5F1)" },
+        { value: String(inside), label: "Still inside", fg: "var(--g-go,#19B888)" },
+        { value: String(held), label: "Parcels held", fg: "var(--g-hold,#E8A33D)" },
+        { value: String(s.staff.filter((x) => x.inside).length), label: "Staff on site", fg: "var(--g-ink,#EAF5F1)" }
+      ],
+      completeHandover: () => { this.setState({ handoverDone: true }); this.toast("Shift handed over.", "ok"); this.note("Completed the shift handover"); },
+
+      moreItems: [
+        { label: "Raise an alert", detail: "Medical, fire, intruder or dispute", bg: "rgba(224,74,60,.16)", d: "M12 8.6v5M12 17v.4M10.3 3.8 2.6 17.2a1.6 1.6 0 0 0 1.4 2.4h16a1.6 1.6 0 0 0 1.4-2.4L13.7 3.8a1.6 1.6 0 0 0-3.4 0Z", c: "#E04A3C", k: "alert" },
+        { label: "Plate lookup", detail: PLATE_BOOK.length + " registered vehicles", bg: "rgba(25,184,136,.14)", d: "M5 16.5V12l1.8-4.2h10.4L19 12v4.5M5 16.5h14M7.5 16.5v1.8M16.5 16.5v1.8", c: "#19B888", k: "plates" },
+        { label: "Shift handover", detail: s.handoverDone ? "Handed over" : "Closing at 10:00pm", bg: "rgba(143,176,166,.16)", d: "M4 7h16M4 12h16M4 17h9M17 15l3 2-3 2", c: "#8FB0A6", k: "handover" },
+        { label: "Walk-in entry", detail: "No code, ask the flat", bg: "rgba(232,163,61,.16)", d: "M4 20.5V3.5h9.5v17M13.5 12h6.5M17 9l3 3-3 3", c: "#E8A33D", k: "walkin" },
+        { label: "End shift and lock", detail: "Signs you out of the handset", bg: "rgba(224,74,60,.16)", d: "M9 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h3M15.5 8.5 19 12l-3.5 3.5M10 12h9", c: "#E04A3C", k: "signout" }
+      ].map((m) => ({
+        label: m.label, detail: m.detail, iconBg: m.bg,
+        icon: ICO(m.d, m.c, 20),
+        go: () => {
+          if (m.k === "signout") { this.renderVals().signOut(); return; }
+          if (m.k === "walkin") this.setState({ walkinStage: "form" });
+          this.go(m.k);
+          this.note("Opened " + m.label.toLowerCase());
+        }
+      })),
+
+      resultOpen: s.onDuty && !!r,
+      result,
+      closeResult: () => this.setState({ result: null, code: "" }),
+      callResident: () => { this.setState({ result: null, code: "" }); this.toast("Calling the flat over intercom.", "ok"); this.note("Called the flat instead of allowing entry"); },
+      allowIn: () => {
+        const p = r.pass;
+        const e = { id: "e" + Date.now(), name: p.name, meta: p.purpose + " for " + p.unit + " · code " + p.code, state: "INSIDE", stamp: "Entered " + this.stamp(), kind: "in" };
+        this.setState((st) => ({ entries: [e].concat(st.entries), result: null, code: "" }));
+        this.toast(p.name + " allowed in. " + p.unit + " was told.", "ok");
+        this.note("Allowed " + p.name + " in to " + p.unit);
+        this.go("log");
+      },
+      denyIn: () => {
+        const p = r.pass;
+        const e = { id: "e" + Date.now(), name: p.name, meta: p.purpose + " for " + p.unit + " · guard turned away", state: "TURNED AWAY", stamp: this.stamp(), kind: "denied" };
+        this.setState((st) => ({ entries: [e].concat(st.entries), result: null, code: "" }));
+        this.toast(p.name + " turned away. Logged with a reason.", "warn");
+        this.note("Turned " + p.name + " away");
+        this.go("log");
+      },
+
+      tabs: TABS.map((t) => {
+        const on = s.screen === t.k;
+        return {
+          label: t.label,
+          fg: on ? "var(--g-go,#19B888)" : "var(--g-dim,#6A8B81)",
+          badge: t.k === "deliveries" && held > 0,
+          badgeText: String(held),
+          icon: React.createElement("svg", { width: 21, height: 21, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: on ? 2.3 : 1.8, strokeLinecap: "round", strokeLinejoin: "round" }, React.createElement("path", { d: t.d })),
+          go: () => { this.go(t.k); this.note("Tapped " + t.label + " tab"); }
+        };
+      }),
+
+      hintCodes: PASSES.filter((p) => p.kind !== "expired").map((p) => ({
+        code: p.code,
+        go: () => { this.setState({ code: p.code, screen: "verify", onDuty: true }); this.note("Filled code " + p.code); }
+      })).concat([{ code: "2208", go: () => { this.setState({ code: "2208", screen: "verify" }); this.note("Filled the expired code 2208"); } }]),
+      fillBadCode: () => { this.setState({ code: "1111", screen: "verify", onDuty: true }); this.note("Filled an invalid code"); },
+
+      scenarios: [
+        { label: "Valid pass, allow in", detail: "Verifies 4417 and opens the verdict", go: () => { this.setState({ code: "4417", screen: "verify" }); setTimeout(() => this.check(), 150); this.note("Scenario: valid pass"); } },
+        { label: "Expired pass", detail: "Real code, closed window", go: () => { this.setState({ code: "2208", screen: "verify" }); setTimeout(() => this.check(), 150); this.note("Scenario: expired pass"); } },
+        { label: "Unknown code", detail: "The hard no", go: () => { this.setState({ code: "1111", screen: "verify" }); setTimeout(() => this.check(), 150); this.note("Scenario: unknown code"); } },
+        { label: s.offline ? "Go back online" : "Lose the network", detail: s.offline ? "Queued entries sync up" : "Passes still verify from cache", go: () => { const next = !s.offline; this.setState({ offline: next }); this.toast(next ? "Offline. Entries will queue and sync." : "Back online. Queue synced.", next ? "warn" : "ok"); this.note(next ? "Went offline" : "Came back online"); } },
+        { label: "Empty log", detail: "Fresh shift, nothing recorded", go: () => { this.setState({ entries: [], logFilter: "All" }); this.go("log"); this.note("Scenario: empty log"); } },
+        { label: "Walk-in, resident approves", detail: "Fills the form and asks A-1204", go: () => { this.setState({ walkin: { name: "Sameer Kulkarni", unit: "A-1204", purpose: "Broker" }, walkinStage: "form" }); this.go("walkin"); setTimeout(() => { const v = this.renderVals(); v.askResident(); }, 250); this.note("Scenario: walk-in approval"); } },
+        { label: "Plate lookup hit", detail: "Searches 4471", go: () => { this.setState({ plateQuery: "4471", onDuty: true }); this.go("plates"); this.note("Scenario: plate lookup"); } },
+        { label: s.onDuty ? "Lock the handset" : "Sign in with 4291", detail: s.onDuty ? "Back to the shift sign-in" : "Skips the keypad", go: () => { const next = !s.onDuty; this.setState({ onDuty: next, pin: "", screen: "verify" }); this.note(next ? "Signed in from the panel" : "Locked the handset"); } }
+      ],
+
+      hasToast: s.toasts.length > 0,
+      toasts: s.toasts.map((t) => ({
+        text: t.text,
+        bg: t.kind === "bad" ? "#E04A3C" : t.kind === "warn" ? "#E8A33D" : "#19B888",
+        fg: t.kind === "bad" ? "#fff" : "#04231B",
+        icon: ICO(t.kind === "ok" ? "m4.5 12.5 5 5 10-11" : "M12 8v5M12 16.5v.4", t.kind === "bad" ? "#fff" : "#04231B", 13, 2.6)
+      })),
+
+      hasLog: s.log.length > 0,
+      noLog: s.log.length === 0,
+      eventLog: s.log,
+      resetAll: () => {
+        clearInterval(this.holdTimer);
+        this.clearTimers();
+        this.setState({
+          screen: "verify", code: "", checking: false, result: null,
+          entries: START_ENTRIES.map((e) => ({ ...e })), logFilter: "All",
+          parcels: START_PARCELS.map((p) => ({ ...p })), parcelOpen: false, parcelUnit: "", courier: "Blue Dart", parcelError: false,
+          alertKind: "Medical", holding: false, holdPct: 0,
+          alerts: [{ id: "a1", kind: "Medical", when: "2 days ago", status: "Ambulance reached in 9 minutes. Closed by secretary.", dot: "#19B888" }],
+          onDuty: false,
+    pin: "",
+    pinError: false,
+    staff: START_STAFF.map((x) => ({ ...x })), staffFilter: "All",
+          walkin: { name: "", unit: "", purpose: "Guest" }, walkinStage: "form",
+          plateQuery: "", handoverNote: "", handoverDone: false,
+          onDuty: false, pin: "", pinError: false,
+          offline: false, toasts: [], log: []
+        });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

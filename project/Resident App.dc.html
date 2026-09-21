@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --surface:#FFFFFF; --canvas:#F7F9F8; --canvas-deep:#EFF3F1; --surface-hover:#FAFCFB;
+    --subtle:#EDF1EF; --border:#E3E9E6; --border-soft:#F1F4F3; --border-strong:#CCD6D2;
+    --ink:#0F1A17; --ink-soft:#4A5B56; --ink-muted:#6B7A75; --ink-dim:#A8B5B0;
+    --accent:#0E6B5C; --accent-ink:#0A5749; --accent-wash:#E6F2EF; --accent-200:#C9E4DC;
+    --ok:#167A3C; --ok-ink:#14663A; --ok-wash:#E8F5EC;
+    --warn:#B45309; --warn-ink:#8F4A0A; --warn-wash:#FDF3E7; --warn-border:#F5DFBE;
+    --bad:#C0342B; --bad-ink:#9B2B22; --bad-wash:#FCEDEC; --bad-border:#F6D9D6;
+    --info:#1D4ED8; --info-ink:#12327A; --info-wash:#EAF0FE; --info-border:#C7D7FB;
+    --rail:#FFFFFF; --rail-ink:#0F1A17; --rail-soft:#5A6B66; --rail-line:#E3E9E6;
+    --rail-hover:#F2F8F6; --rail-active:#E6F2EF; --rail-active-ink:#0A5749; --rail-foot:#F7F9F8;
+  }
+  :root[data-theme="dark"] {
+    --surface:#151C1A; --canvas:#0E1413; --canvas-deep:#090E0D; --surface-hover:#1B2422;
+    --subtle:#1D2624; --border:#2B3532; --border-soft:#222B29; --border-strong:#3A453F;
+    --ink:#EEF3F1; --ink-soft:#A7B8B2; --ink-muted:#8A9B95; --ink-dim:#6F7E79;
+    --accent:#0E6B5C; --accent-ink:#5FD3B6; --accent-wash:#113931; --accent-200:#1A5A4C;
+    --ok:#1E8C48; --ok-ink:#7BD69F; --ok-wash:#11311E;
+    --warn:#C2650F; --warn-ink:#F3BE79; --warn-wash:#33260E; --warn-border:#4A3616;
+    --bad:#C93F35; --bad-ink:#F4A39B; --bad-wash:#331916; --bad-border:#4A231F;
+    --info:#3466E0; --info-ink:#A9C2FA; --info-wash:#15204A; --info-border:#23306A;
+    --rail:#101715; --rail-ink:#EEF3F1; --rail-soft:#9DAFA9; --rail-line:#232D2A;
+    --rail-hover:#1A2321; --rail-active:#14382F; --rail-active-ink:#6FDCC0; --rail-foot:#0C1211;
+  }
+  html { scroll-behavior: smooth; }
+  :root { --ease: cubic-bezier(.2,.7,.3,1); --ease-out: cubic-bezier(.22,1,.36,1); }
+  body { transition: background-color .3s ease; }
+  @keyframes tabIn { from { opacity: 0; transform: translate3d(0,12px,0) scale(.992); } to { opacity: 1; transform: none; } }
+  button, input, textarea, select { color: inherit; font-family: inherit; }
+  input::placeholder { color: var(--ink-muted); }
+  [style*="var(--surface"], [style*="var(--canvas"], [style*="var(--rail"], [style*="var(--subtle"] { transition: background-color .28s ease, border-color .28s ease, color .28s ease; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001ms !important; animation-delay: 0s !important; transition-duration: .001ms !important; } }
+
+  body { margin: 0; background: var(--canvas-deep); -webkit-font-smoothing: antialiased; font-family: Figtree, system-ui, sans-serif; }
+  * { box-sizing: border-box; }
+  a { color: #0E6B5C; text-decoration: none; }
+  a:hover { color: #0A5749; }
+  ::selection { background: #C9E4DC; }
+  @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes checkPop { 0% { transform: scale(.4); opacity: 0; } 60% { transform: scale(1.12); opacity: 1; } 100% { transform: scale(1); } }
+  @keyframes ring { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 176; } }
+  @keyframes pulseRing { 0% { box-shadow: 0 0 0 0 rgba(14,107,92,.35); } 70% { box-shadow: 0 0 0 10px rgba(14,107,92,0); } 100% { box-shadow: 0 0 0 0 rgba(14,107,92,0); } }
+  @keyframes caret { 0%,49% { opacity: 1; } 50%,100% { opacity: 0; } }
+  @keyframes shimmer { 0% { background-position: -300px 0; } 100% { background-position: 300px 0; } }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:var(--canvas-deep,#EFF3F1);color:var(--ink,#0F1A17);font-family:Figtree,system-ui,sans-serif;padding:44px 32px 100px">
+      <button type="button" onClick="{{ toggleTheme }}" title="{{ themeLabel }}" style="position:fixed;top:20px;right:20px;z-index:300;height:40px;padding:0 15px;border:1px solid var(--border-strong,#CCD6D2);border-radius:11px;background:var(--surface,#fff);color:var(--ink,#0F1A17);cursor:pointer;display:flex;align-items:center;gap:9px;font:600 13px/1 Figtree;box-shadow:0 6px 18px -10px rgba(15,26,23,.3);transition:background .18s ease,border-color .18s ease" style-hover="border-color:var(--accent,#0E6B5C);background:var(--accent-wash,#F2F8F6)">{{ themeIcon }}{{ themeShort }}</button>
+
+  <header style="max-width:1460px;margin:0 auto 46px">
+    <div style="display:inline-flex;align-items:center;gap:9px;padding:6px 13px 6px 8px;border-radius:999px;background:var(--surface,#fff);border:1px solid var(--border,#DDE5E2);margin-bottom:24px">
+      <span style="width:22px;height:22px;border-radius:7px;background:#0E6B5C;display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-5 7 5v13"></path></svg></span>
+      <span style="font:600 12.5px/1 Figtree;color:var(--accent-ink,#0A5749)">Sahaj · Resident app · React Native</span>
+    </div>
+    <h1 style="margin:0 0 14px;font:800 clamp(32px,5vw,50px)/1.06 Figtree;letter-spacing:-.032em;max-width:19ch;text-wrap:balance">Everything a resident does, in twenty-six screens.</h1>
+    <p style="margin:0;max-width:66ch;font:400 17px/1.62 Figtree;color:var(--ink-soft,#4A5B56);text-wrap:pretty">One rule holds the app together: any number it shows, it can explain. Core tasks sit within three taps of home, hit targets never fall below 44 points, and dues, notices and passes stay readable with no network.</p>
+  </header>
+
+  <section style="max-width:1460px;margin:0 auto 52px">
+    <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:20px;flex-wrap:wrap">
+      <span style="font:600 11.5px/1 'IBM Plex Mono',monospace;letter-spacing:.13em;text-transform:uppercase;color:var(--accent-ink,#0E6B5C)">01 · Access</span>
+      <h2 style="margin:0;font:700 25px/1.2 Figtree;letter-spacing:-.022em">Getting in</h2>
+      <p style="margin:0;flex:1;min-width:260px;font:400 14.5px/1.55 Figtree;color:var(--ink-soft,#4A5B56)">Admin-provisioned, password-based, no OTP. The mobile number is the identity, and an unknown number gets one honest message.</p>
+    </div>
+    <div style="display:flex;gap:22px;flex-wrap:wrap">
+
+      <div style="width:320px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><span style="font:600 10.5px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">01</span><span style="font:600 13.5px/1.3 Figtree">Enter mobile</span></div>
+        <div style="width:320px;height:646px;background:var(--surface,#fff);border-radius:34px;border:8px solid #0B1512;box-shadow:0 20px 44px -22px rgba(15,26,23,.34);overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:30px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 20px"><span style="font:700 11px/1 Figtree">9:41</span><span style="width:15px;height:8px;border:1px solid #0F1A17;border-radius:2px"></span></div>
+          <div style="flex:1;padding:38px 26px 26px;display:flex;flex-direction:column">
+            <div style="width:46px;height:46px;border-radius:14px;background:#0E6B5C;display:flex;align-items:center;justify-content:center;margin-bottom:30px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-5 7 5v13"></path><path d="M9 21v-5h6v5"></path></svg></div>
+            <div style="font:700 27px/1.2 Figtree;letter-spacing:-.024em;margin-bottom:9px">Welcome to Sahaj</div>
+            <div style="font:400 14.5px/1.55 Figtree;color:var(--ink-soft,#4A5B56);margin-bottom:30px">Enter the mobile number registered with your society office.</div>
+            <div style="font:600 12.5px/1 Figtree;margin-bottom:8px">Mobile number</div>
+            <div style="display:flex;align-items:center;height:52px;border:1.5px solid #0E6B5C;border-radius:12px;box-shadow:0 0 0 3px rgba(14,107,92,.13)">
+              <span style="padding:0 13px;font:600 15px/1 Figtree;color:var(--ink-soft,#4A5B56);border-right:1px solid var(--border,#E3E9E6)">+91</span>
+              <span style="padding:0 13px;font:500 17px/1 'IBM Plex Mono',monospace;letter-spacing:.06em">98220 41155</span>
+            </div>
+            <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">We will never send you a one-time code. Your password is set once and stays yours.</div>
+            <button type="button" style="margin-top:auto;height:52px;border:0;border-radius:13px;background:#0E6B5C;color:#fff;font:700 16px/1 Figtree;cursor:pointer">Continue</button>
+            <div style="margin-top:16px;text-align:center;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">Not registered? Contact your society office.</div>
+          </div>
+        </div>
+        <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">One field, one action. The number is checked before a password screen is ever shown.</div>
+      </div>
+
+      <div style="width:320px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><span style="font:600 10.5px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">02</span><span style="font:600 13.5px/1.3 Figtree">Create password</span></div>
+        <div style="width:320px;height:646px;background:var(--surface,#fff);border-radius:34px;border:8px solid #0B1512;box-shadow:0 20px 44px -22px rgba(15,26,23,.34);overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:30px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 20px"><span style="font:700 11px/1 Figtree">9:41</span><span style="width:15px;height:8px;border:1px solid #0F1A17;border-radius:2px"></span></div>
+          <div style="flex:1;padding:20px 26px 26px;display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:26px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="2" stroke-linecap="round"><path d="m15 5-7 7 7 7"></path></svg><span style="font:600 14px/1 Figtree;color:var(--ink-soft,#4A5B56)">98220 41155</span></div>
+            <div style="font:700 25px/1.2 Figtree;letter-spacing:-.022em;margin-bottom:8px">Create your password</div>
+            <div style="font:400 14.5px/1.55 Figtree;color:var(--ink-soft,#4A5B56);margin-bottom:24px">Found you — A-1204, Shanti Vihar CHS. Set a password to activate the account.</div>
+            <div style="font:600 12.5px/1 Figtree;margin-bottom:8px">New password</div>
+            <div style="display:flex;align-items:center;height:50px;padding:0 14px;border:1px solid var(--border-strong,#CCD6D2);border-radius:12px;gap:10px"><span style="flex:1;font:600 16px/1 Figtree;letter-spacing:.22em">••••••••••</span><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#5A6B66" stroke-width="1.8" stroke-linecap="round"><path d="M2 12s3.8-6.5 10-6.5S22 12 22 12s-3.8 6.5-10 6.5S2 12 2 12Z"></path><circle cx="12" cy="12" r="2.6"></circle></svg></div>
+            <div style="margin-top:14px;font:600 12.5px/1 Figtree;margin-bottom:8px">Confirm password</div>
+            <div style="display:flex;align-items:center;height:50px;padding:0 14px;border:1px solid var(--border-strong,#CCD6D2);border-radius:12px"><span style="flex:1;font:600 16px/1 Figtree;letter-spacing:.22em">••••••••••</span></div>
+            <div style="margin-top:18px;display:flex;flex-direction:column;gap:9px">
+              <div style="display:flex;gap:9px;align-items:center"><span style="width:17px;height:17px;border-radius:50%;background:#167A3C;display:flex;align-items:center;justify-content:center;flex:none"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"></path></svg></span><span style="font:400 13px/1.4 Figtree;color:var(--ok-ink,#14663A)">At least 8 characters</span></div>
+              <div style="display:flex;gap:9px;align-items:center"><span style="width:17px;height:17px;border-radius:50%;background:#167A3C;display:flex;align-items:center;justify-content:center;flex:none"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"></path></svg></span><span style="font:400 13px/1.4 Figtree;color:var(--ok-ink,#14663A)">A letter and a number</span></div>
+              <div style="display:flex;gap:9px;align-items:center"><span style="width:17px;height:17px;border-radius:50%;border:1.5px solid var(--border-strong,#CCD6D2);flex:none"></span><span style="font:400 13px/1.4 Figtree;color:var(--ink-soft,#4A5B56)">Not the same as your mobile number</span></div>
+            </div>
+            <label style="margin-top:20px;display:flex;gap:10px;align-items:flex-start"><span style="width:19px;height:19px;flex:none;border-radius:6px;background:#0E6B5C;display:flex;align-items:center;justify-content:center;margin-top:1px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"></path></svg></span><span style="font:400 13px/1.45 Figtree;color:var(--ink-soft,#4A5B56)">I accept the terms of use and the society's data policy.</span></label>
+            <button type="button" style="margin-top:auto;height:52px;border:0;border-radius:13px;background:#0E6B5C;color:#fff;font:700 16px/1 Figtree;cursor:pointer">Activate account</button>
+          </div>
+        </div>
+        <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">Rules tick green as they pass. Validation on blur, never mid-typing.</div>
+      </div>
+
+      <div style="width:320px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><span style="font:600 10.5px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">03</span><span style="font:600 13.5px/1.3 Figtree">Login</span></div>
+        <div style="width:320px;height:646px;background:var(--surface,#fff);border-radius:34px;border:8px solid #0B1512;box-shadow:0 20px 44px -22px rgba(15,26,23,.34);overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:30px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 20px"><span style="font:700 11px/1 Figtree">9:41</span><span style="width:15px;height:8px;border:1px solid #0F1A17;border-radius:2px"></span></div>
+          <div style="flex:1;padding:38px 26px 26px;display:flex;flex-direction:column">
+            <div style="width:52px;height:52px;border-radius:16px;background:var(--accent-wash,#E6F2EF);display:flex;align-items:center;justify-content:center;margin-bottom:22px;font:700 17px/1 Figtree;color:var(--accent-ink,#0A5749)">AD</div>
+            <div style="font:700 25px/1.2 Figtree;letter-spacing:-.022em;margin-bottom:6px">Welcome back, Anjali</div>
+            <div style="font:400 14.5px/1.55 Figtree;color:var(--ink-soft,#4A5B56);margin-bottom:28px">A-1204 · Shanti Vihar CHS</div>
+            <div style="font:600 12.5px/1 Figtree;margin-bottom:8px">Password</div>
+            <div style="display:flex;align-items:center;height:50px;padding:0 14px;border:1.5px solid #0E6B5C;border-radius:12px;box-shadow:0 0 0 3px rgba(14,107,92,.13);gap:10px"><span style="flex:1;font:600 16px/1 Figtree;letter-spacing:.22em">•••••••</span><span style="width:1.5px;height:18px;background:#0E6B5C;animation:caret 1s steps(1) infinite"></span></div>
+            <div style="margin-top:20px;display:flex;align-items:center;justify-content:space-between"><span style="font:400 13.5px/1.4 Figtree">Keep me signed in</span><span style="width:44px;height:26px;border-radius:999px;background:#0E6B5C;padding:3px;display:flex;justify-content:flex-end"><span style="width:20px;height:20px;border-radius:50%;background:var(--surface,#fff)"></span></span></div>
+            <button type="button" style="margin-top:26px;height:52px;border:0;border-radius:13px;background:#0E6B5C;color:#fff;font:700 16px/1 Figtree;cursor:pointer">Sign in</button>
+            <div style="margin-top:auto;padding:15px 16px;border-radius:13px;background:var(--canvas,#F7F9F8);border:1px solid var(--border-soft,#EDF1EF)">
+              <div style="font:600 13px/1.4 Figtree;margin-bottom:5px">Forgot your password?</div>
+              <div style="font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56);margin-bottom:11px">There is no self-service reset. Your society office issues a one-time password valid for 24 hours.</div>
+              <div style="display:flex;gap:8px"><span style="flex:1;height:38px;border-radius:10px;border:1px solid var(--border-strong,#CCD6D2);background:var(--surface,#fff);display:flex;align-items:center;justify-content:center;font:600 13px/1 Figtree">Call office</span><span style="flex:1;height:38px;border-radius:10px;border:1px solid var(--border-strong,#CCD6D2);background:var(--surface,#fff);display:flex;align-items:center;justify-content:center;font:600 13px/1 Figtree">WhatsApp</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">Recovery is a human, so the app makes reaching that human one tap.</div>
+      </div>
+
+      <div style="width:320px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><span style="font:600 10.5px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">04</span><span style="font:600 13.5px/1.3 Figtree">Forced change</span></div>
+        <div style="width:320px;height:646px;background:var(--surface,#fff);border-radius:34px;border:8px solid #0B1512;box-shadow:0 20px 44px -22px rgba(15,26,23,.34);overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:30px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 20px"><span style="font:700 11px/1 Figtree">9:41</span><span style="width:15px;height:8px;border:1px solid #0F1A17;border-radius:2px"></span></div>
+          <div style="flex:1;padding:38px 26px 26px;display:flex;flex-direction:column">
+            <div style="width:46px;height:46px;border-radius:14px;background:var(--warn-wash,#FDF3E7);display:flex;align-items:center;justify-content:center;margin-bottom:24px"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10.5" rx="2.5"></rect><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"></path></svg></div>
+            <div style="font:700 25px/1.2 Figtree;letter-spacing:-.022em;margin-bottom:9px">Set a new password</div>
+            <div style="font:400 14.5px/1.55 Figtree;color:var(--ink-soft,#4A5B56);margin-bottom:8px">You signed in with a temporary password issued by the society office on 10 Sep.</div>
+            <div style="padding:12px 14px;border-radius:11px;background:var(--warn-wash,#FDF3E7);font:500 12.5px/1.5 Figtree;color:var(--warn-ink,#7C3D06);margin-bottom:24px">Temporary passwords work once and expire in 24 hours. You cannot reach any other screen until this is done.</div>
+            <div style="font:600 12.5px/1 Figtree;margin-bottom:8px">New password</div>
+            <div style="display:flex;align-items:center;height:50px;padding:0 14px;border:1px solid var(--border-strong,#CCD6D2);border-radius:12px"><span style="flex:1;font:600 16px/1 Figtree;letter-spacing:.22em">•••••••••</span></div>
+            <div style="margin-top:14px;font:600 12.5px/1 Figtree;margin-bottom:8px">Confirm new password</div>
+            <div style="display:flex;align-items:center;height:50px;padding:0 14px;border:1px solid var(--border-strong,#CCD6D2);border-radius:12px"><span style="flex:1;font:600 16px/1 Figtree;letter-spacing:.22em">•••••••••</span></div>
+            <div style="margin-top:16px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">Saving this signs you out of every other device.</div>
+            <button type="button" style="margin-top:auto;height:52px;border:0;border-radius:13px;background:#0E6B5C;color:#fff;font:700 16px/1 Figtree;cursor:pointer">Save and continue</button>
+          </div>
+        </div>
+        <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">A hard gate: no navigation, no dismiss, no back.</div>
+      </div>
+
+      <div style="width:320px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><span style="font:600 10.5px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">05</span><span style="font:600 13.5px/1.3 Figtree">Not registered / locked</span></div>
+        <div style="width:320px;height:646px;background:var(--surface,#fff);border-radius:34px;border:8px solid #0B1512;box-shadow:0 20px 44px -22px rgba(15,26,23,.34);overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:30px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 20px"><span style="font:700 11px/1 Figtree">9:41</span><span style="width:15px;height:8px;border:1px solid #0F1A17;border-radius:2px"></span></div>
+          <div style="flex:1;padding:38px 26px 26px;display:flex;flex-direction:column">
+            <div style="width:46px;height:46px;border-radius:14px;background:var(--bad-wash,#FCEDEC);display:flex;align-items:center;justify-content:center;margin-bottom:24px"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#C0342B" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5M12 16h.01"></path></svg></div>
+            <div style="font:700 25px/1.2 Figtree;letter-spacing:-.022em;margin-bottom:9px">This number is not registered</div>
+            <div style="font:400 14.5px/1.55 Figtree;color:var(--ink-soft,#4A5B56);margin-bottom:26px">Only numbers added by your society office can sign in. Ask the office to add 98220 41199 against your flat.</div>
+            <div style="padding:16px 17px;border-radius:14px;background:var(--canvas,#F7F9F8);border:1px solid var(--border-soft,#EDF1EF);margin-bottom:14px">
+              <div style="font:600 11px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#4A5B56);margin-bottom:11px">Shanti Vihar CHS office</div>
+              <div style="font:600 15px/1.4 Figtree;margin-bottom:3px">020 2555 4120</div>
+              <div style="font:400 13px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">Mon–Sat, 10:00 – 18:00 · Ground floor, Wing A</div>
+            </div>
+            <div style="display:flex;gap:9px"><span style="flex:1;height:46px;border-radius:12px;background:#0E6B5C;color:#fff;display:flex;align-items:center;justify-content:center;font:600 14.5px/1 Figtree">Call office</span><span style="flex:1;height:46px;border-radius:12px;border:1px solid var(--border-strong,#CCD6D2);display:flex;align-items:center;justify-content:center;font:600 14.5px/1 Figtree">WhatsApp</span></div>
+            <div style="margin-top:auto;padding:15px 16px;border-radius:13px;background:var(--bad-wash,#FCEDEC);border:1px solid var(--bad-border,#F6D9D6)">
+              <div style="font:600 13px/1.4 Figtree;color:var(--bad-ink,#9B2B22);margin-bottom:5px">Account locked variant</div>
+              <div style="font:400 12.5px/1.5 Figtree;color:var(--bad-ink,#A83A30)">Five wrong passwords locks the account for 15 minutes. The countdown is shown, and the office can unlock it sooner.</div>
+              <div style="margin-top:10px;display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:#C0342B;animation:pulseRing 2.2s ease-out infinite"></span><span style="font:600 13px/1 'IBM Plex Mono',monospace;color:var(--bad-ink,#9B2B22)">14:22 remaining</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">A dead end is never left blank — it names the next human to talk to.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <section style="max-width:1460px;margin:0 auto 52px">
+    <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:20px;flex-wrap:wrap">
+      <span style="font:600 11.5px/1 'IBM Plex Mono',monospace;letter-spacing:.13em;text-transform:uppercase;color:var(--accent-ink,#0E6B5C)">02 · Money</span>
+      <h2 style="margin:0;font:700 25px/1.2 Figtree;letter-spacing:-.022em">Dues, bills and payment</h2>
+      <p style="margin:0;flex:1;min-width:260px;font:400 14.5px/1.55 Figtree;color:var(--ink-soft,#4A5B56)">The reason most residents open the app. Every line of a bill carries the rule that produced it.</p>
+    </div>
+    <div style="display:flex;gap:22px;flex-wrap:wrap">
+
+      <div style="width:320px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><span style="font:600 10.5px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">06</span><span style="font:600 13.5px/1.3 Figtree">Home</span></div>
+        <div style="width:320px;height:646px;background:var(--canvas,#F7F9F8);border-radius:34px;border:8px solid #0B1512;box-shadow:0 20px 44px -22px rgba(15,26,23,.34);overflow:hidden;display:flex;flex-direction:column">
+          <div style="flex:none;background:#0E6B5C;padding:8px 20px 20px;color:#fff">
+            <div style="height:22px;display:flex;align-items:center;justify-content:space-between"><span style="font:700 11px/1 Figtree">9:41</span><span style="width:15px;height:8px;border:1px solid #fff;border-radius:2px"></span></div>
+            <div style="margin-top:14px;display:flex;align-items:center;gap:11px">
+              <span style="width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font:700 13px/1 Figtree">AD</span>
+              <span style="flex:1;min-width:0"><span style="display:block;font:600 15px/1.3 Figtree">Anjali Deshpande</span><span style="display:block;font:400 12.5px/1.3 Figtree;color:#C9E4DC">A-1204 · Shanti Vihar CHS</span></span>
+              <span style="position:relative;width:34px;height:34px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"></path><path d="M10 19a2 2 0 0 0 4 0"></path></svg><span style="position:absolute;top:6px;right:7px;width:7px;height:7px;border-radius:50%;background:#F5B94A;border:1.5px solid #0E6B5C"></span></span>
+            </div>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:0 16px">
+            <div style="margin-top:-8px;background:var(--surface,#fff);border-radius:18px;padding:18px;box-shadow:0 8px 22px -12px rgba(15,26,23,.2)">
+              <div style="font:600 11px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#4A5B56);margin-bottom:10px">Total due</div>
+              <div style="font:700 30px/1 Figtree;letter-spacing:-.026em;font-variant-numeric:tabular-nums">₹12,840.50</div>
+              <div style="margin-top:9px;display:flex;align-items:center;gap:8px"><span style="padding:3px 9px;border-radius:999px;background:var(--warn-wash,#FDF3E7);color:var(--warn-ink,#8F4A0A);font:600 11.5px/1.5 Figtree">Due in 4 days</span><span style="font:400 12.5px/1.3 Figtree;color:var(--ink-soft,#4A5B56)">15 Sep 2026</span></div>
+              <button type="button" style="margin-top:15px;width:100%;height:48px;border:0;border-radius:13px;background:#0E6B5C;color:#fff;font:700 15.5px/1 Figtree;cursor:pointer">Pay now</button>
+              <div style="margin-top:11px;display:flex;justify-content:space-between;font:400 12.5px/1.4 Figtree;color:var(--ink-soft,#4A5B56)"><span>Current ₹12,840.50</span><span>Arrears ₹0.00</span></div>
+            </div>
+            <div style="margin-top:14px;display:grid;grid-template-columns:repeat(4,1fr);gap:9px">
+              <div style="background:var(--surface,#fff);border-radius:14px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:7px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0E6B5C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h13A2.5 2.5 0 0 1 21 8.5v1.7a2 2 0 0 0 0 3.6v1.7A2.5 2.5 0 0 1 18.5 18h-13A2.5 2.5 0 0 1 3 15.5v-1.7a2 2 0 0 0 0-3.6Z"></path></svg><span style="font:600 10px/1.2 Figtree;text-align:center">Complaint</span></div>
+              <div style="background:var(--surface,#fff);border-radius:14px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:7px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0E6B5C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7.5 3v6c0 4.6-3.1 8-7.5 9.5C7.6 20 4.5 16.6 4.5 12V6Z"></path></svg><span style="font:600 10px/1.2 Figtree;text-align:center">Guest</span></div>
+              <div style="background:var(--surface,#fff);border-radius:14px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:7px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0E6B5C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"></rect><path d="M3.5 10h17M8 3v4M16 3v4"></path></svg><span style="font:600 10px/1.2 Figtree;text-align:center">Book</span></div>
+              <div style="background:var(--surface,#fff);border-radius:14px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:7px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0E6B5C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"></path><path d="M14 3v5h5"></path></svg><span style="font:600 10px/1.2 Figtree;text-align:center">Request</span></div>
+            </div>
+            <div style="margin-top:14px;background:var(--surface,#fff);border-radius:15px;padding:14px 15px;border-left:3px solid #C0342B">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><span style="font:600 13.5px/1.3 Figtree">Visitor at the gate</span><span style="font:600 11.5px/1 'IBM Plex Mono',monospace;color:var(--bad,#C0342B)">0:38</span></div>
+              <div style="font:400 12.5px/1.45 Figtree;color:var(--ink-soft,#4A5B56);margin-bottom:10px">Sagar D. from Amazon · delivery</div>
+              <div style="display:flex;gap:7px"><span style="flex:1;height:36px;border-radius:10px;background:#0E6B5C;color:#fff;display:flex;align-items:center;justify-content:center;font:600 12.5px/1 Figtree">Allow</span><span style="flex:1;height:36px;border-radius:10px;border:1px solid var(--border-strong,#CCD6D2);display:flex;align-items:center;justify-content:center;font:600 12.5px/1 Figtree">Deny</span><span style="flex:1;height:36px;border-radius:10px;border:1px solid var(--border-strong,#CCD6D2);display:flex;align-items:center;justify-content:center;font:600 12.5px/1 Figtree">Call</span></div>
+            </div>
+            <div style="margin-top:14px;background:var(--surface,#fff);border-radius:15px;padding:14px 15px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="padding:2px 7px;border-radius:5px;background:var(--accent-wash,#E6F2EF);color:var(--accent-ink,#0A5749);font:700 9.5px/1.6 Figtree;letter-spacing:.06em">PINNED</span><span style="font:400 11.5px/1 Figtree;color:var(--ink-soft,#4A5B56)">08 Sep</span></div>
+              <div style="font:600 13.5px/1.35 Figtree">AGM notice — 28 September 2026</div>
+              <div style="margin-top:4px;font:400 12.5px/1.45 Figtree;color:var(--ink-soft,#4A5B56)">Acknowledgement required · agenda attached</div>
+            </div>
+          </div>
+          <div style="flex:none;height:58px;border-top:1px solid var(--border,#E3E9E6);background:var(--surface,#fff);display:flex">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0E6B5C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V9l7-5 7 5v12"></path></svg><span style="font:700 9.5px/1 Figtree;color:var(--accent-ink,#0E6B5C)">Home</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8A9995" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2Z"></path></svg><span style="font:600 9.5px/1 Figtree;color:var(--ink-soft,#5A6B66)">Bills</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8A9995" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h13A2.5 2.5 0 0 1 21 8.5v7A2.5 2.5 0 0 1 18.5 18h-13A2.5 2.5 0 0 1 3 15.5Z"></path></svg><span style="font:600 9.5px/1 Figtree;color:var(--ink-soft,#5A6B66)">Help</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8A9995" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7.5 3v6c0 4.6-3.1 8-7.5 9.5C7.6 20 4.5 16.6 4.5 12V6Z"></path></svg><span style="font:600 9.5px/1 Figtree;color:var(--ink-soft,#5A6B66)">Gate</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8A9995" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"></circle><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"></path></svg><span style="font:600 9.5px/1 Figtree;color:var(--ink-soft,#5A6B66)">Me</span></div>
+          </div>
+        </div>
+        <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">Dues first, then whatever is time-critical: a waiting visitor outranks a pinned notice.</div>
+      </div>
+
+      <div style="width:320px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><span style="font:600 10.5px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">07</span><span style="font:600 13.5px/1.3 Figtree">Bills &amp; receipts</span></div>
+        <div style="width:320px;height:646px;background:var(--canvas,#F7F9F8);border-radius:34px;border:8px solid #0B1512;box-shadow:0 20px 44px -22px rgba(15,26,23,.34);overflow:hidden;display:flex;flex-direction:column">
+          <div style="flex:none;background:var(--surface,#fff);padding:8px 18px 14px;border-bottom:1px solid var(--border,#E3E9E6)">
+            <div style="height:22px;display:flex;align-items:center;justify-content:space-between"><span style="font:700 11px/1 Figtree">9:41</span><span style="width:15px;height:8px;border:1px solid #0F1A17;border-radius:2px"></span></div>
+            <div style="margin-top:12px;font:700 21px/1.2 Figtree;letter-spacing:-.02em">Bills</div>
+            <div style="margin-top:12px;display:flex;padding:3px;background:var(--subtle,#EDF1EF);border-radius:10px;gap:2px">
+              <span style="flex:1;height:32px;border-radius:8px;background:var(--surface,#fff);box-shadow:0 1px 3px rgba(15,26,23,.12);display:flex;align-items:center;justify-content:center;font:600 12.5px/1 Figtree">Bills</span>
+              <span style="flex:1;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 12.5px/1 Figtree;color:var(--ink-soft,#4A5B56)">Receipts</span>
+              <span style="flex:1;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 12.5px/1 Figtree;color:var(--ink-soft,#4A5B56)">Ledger</span>
+            </div>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:14px 16px">
+            <div style="background:var(--surface,#fff);border-radius:15px;padding:16px;border:1.5px solid #0E6B5C;margin-bottom:11px">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:9px"><div><div style="font:700 15px/1.3 Figtree">September 2026</div><div style="margin-top:3px;font:500 11.5px/1.3 'IBM Plex Mono',monospace;color:var(--ink-soft,#4A5B56)">BIL/2026-27/A/00412</div></div><span style="padding:3px 9px;border-radius:999px;background:var(--warn-wash,#FDF3E7);color:var(--warn-ink,#8F4A0A);font:600 11px/1.5 Figtree">Unpaid</span></div>
+              <div style="font:700 24px/1 Figtree;font-variant-numeric:tabular-nums;letter-spacing:-.022em">₹12,840.50</div>
+              <div style="margin-top:7px;font:400 12.5px/1.4 Figtree;color:var(--ink-soft,#4A5B56)">Due 15 Sep 2026 · 9 heads</div>
+              <div style="margin-top:13px;display:flex;gap:8px"><span style="flex:1;height:40px;border-radius:11px;background:#0E6B5C;color:#fff;display:flex;align-items:center;justify-content:center;font:600 13.5px/1 Figtree">Pay ₹12,840.50</span><span style="width:44px;height:40px;border-radius:11px;border:1px solid var(--border-strong,#CCD6D2);display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7.5 10.5 12 15l4.5-4.5M4 20h16"></path></svg></span></div>
+            </div>
+            <div style="background:var(--surface,#fff);border-radius:15px;padding:15px;margin-bottom:11px">
+              <div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font:600 14.5px/1.3 Figtree">August 2026</div><div style="margin-top:3px;font:400 12px/1.3 Figtree;color:var(--ink-soft,#4A5B56)">Paid 12 Aug · UPI</div></div><div style="text-align:right"><div style="font:600 15px/1.2 Figtree;font-variant-numeric:tabular-nums">₹12,450.00</div><span style="display:inline-block;margin-top:4px;padding:2px 8px;border-radius:999px;background:var(--ok-wash,#E8F5EC);color:var(--ok-ink,#14663A);font:600 10.5px/1.6 Figtree">Paid</span></div></div>
+            </div>
+            <div style="background:var(--surface,#fff);border-radius:15px;padding:15px;margin-bottom:11px">
+              <div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font:600 14.5px/1.3 Figtree">July 2026</div><div style="margin-top:3px;font:400 12px/1.3 Figtree;color:var(--ink-soft,#4A5B56)">Paid 09 Jul · Virtual account</div></div><div style="text-align:right"><div style="font:600 15px/1.2 Figtree;font-variant-numeric:tabular-nums">₹12,450.00</div><span style="display:inline-block;margin-top:4px;padding:2px 8px;border-radius:999px;background:var(--ok-wash,#E8F5EC);color:var(--ok-ink,#14663A);font:600 10.5px/1.6 Figtree">Paid</span></div></div>
+            </div>
+            <div style="background:var(--surface,#fff);border-radius:15px;padding:15px">
+              <div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font:600 14.5px/1.3 Figtree">June 2026 · supplementary</div><div style="margin-top:3px;font:400 12px/1.3 Figtree;color:var(--ink-soft,#4A5B56)">Terrace repair contribution</div></div><div style="text-align:right"><div style="font:600 15px/1.2 Figtree;font-variant-numeric:tabular-nums">₹4,200.00</div><span style="display:inline-block;margin-top:4px;padding:2px 8px;border-radius:999px;background:var(--ok-wash,#E8F5EC);color:var(--ok-ink,#14663A);font:600 10.5px/1.6 Figtree">Paid</span></div></div>
+            </div>
+          </div>
+          <div style="flex:none;height:58px;border-top:1px solid var(--border,#E3E9E6);background:var(--surface,#fff);display:flex;align-items:center;justify-content:space-around;font:600 9.5px/1 Figtree;color:var(--ink-soft,#5A6B66)"><span>Home</span><span style="color:var(--accent-ink,#0E6B5C);font-weight:700">Bills</span><span>Help</span><span>Gate</span><span>Me</span></div>
+        </div>
+        <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">Unpaid is the only card with a border and a button. Paid history stays quiet.</div>
+      </div>
+
+      <div style="width:320px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><span style="font:600 10.5px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">08</span><span style="font:600 13.5px/1.3 Figtree">Bill detail — why this amount</span></div>
+        <div style="width:320px;height:646px;background:var(--canvas,#F7F9F8);border-radius:34px;border:8px solid #0B1512;box-shadow:0 20px 44px -22px rgba(15,26,23,.34);overflow:hidden;display:flex;flex-direction:column">
+          <div style="flex:none;background:var(--surface,#fff);padding:8px 18px 13px;border-bottom:1px solid var(--border,#E3E9E6)">
+            <div style="height:22px;display:flex;align-items:center;justify-content:space-between"><span style="font:700 11px/1 Figtree">9:41</span><span style="width:15px;height:8px;border:1px solid #0F1A17;border-radius:2px"></span></div>
+            <div style="margin-top:12px;display:flex;align-items:center;gap:12px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="2" stroke-linecap="round"><path d="m15 5-7 7 7 7"></path></svg><span style="font:700 16px/1.2 Figtree">September 2026</span></div>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:14px 16px">
+            <div style="background:var(--surface,#fff);border-radius:15px;padding:14px 15px;margin-bottom:12px">
+              <div style="display:flex;justify-content:space-between;font:400 13px/1.6 Figtree;color:var(--ink-soft,#4A5B56)"><span>Service charges</span><span style="font-weight:600;color:var(--ink,#0F1A17);font-variant-numeric:tabular-nums">₹2,500.00</span></div>
+              <div style="display:flex;justify-content:space-between;font:400 13px/1.6 Figtree;color:var(--ink-soft,#4A5B56)"><span>Property tax</span><span style="font-weight:600;color:var(--ink,#0F1A17);font-variant-numeric:tabular-nums">₹1,548.00</span></div>
+              <div style="display:flex;justify-content:space-between;font:400 13px/1.6 Figtree;color:var(--ink-soft,#4A5B56)"><span>Water charges</span><span style="font-weight:600;color:var(--ink,#0F1A17);font-variant-numeric:tabular-nums">₹600.00</span></div>
+              <div style="display:flex;justify-content:space-between;font:400 13px/1.6 Figtree;color:var(--ink-soft,#4A5B56)"><span>Lift maintenance</span><span style="font-weight:600;color:var(--ink,#0F1A17);font-variant-numeric:tabular-nums">₹1,000.00</span></div>
+              <div style="display:flex;justify-content:space-between;font:400 13px/1.6 Figtree;color:var(--ink-soft,#4A5B56)"><span>Sinking fund</span><span style="font-weight:600;color:var(--ink,#0F1A17);font-variant-numeric:tabular-nums">₹677.00</span></div>
+              <div style="display:flex;justify-content:space-between;font:400 13px/1.6 Figtree;color:var(--ink-soft,#4A5B56)"><span>Repair &amp; maintenance</span><span style="font-weight:600;color:var(--ink,#0F1A17);font-variant-numeric:tabular-nums">₹2,032.00</span></div>
+              <div style="display:flex;justify-content:space-between;font:400 13px/1.6 Figtree;color:var(--ink-soft,#4A5B56)"><span>Parking · 2 slots</span><span style="font-weight:600;color:var(--ink,#0F1A17);font-variant-numeric:tabular-nums">₹800.00</span></div>
+              <div style="display:flex;justify-content:space-between;font:400 13px/1.6 Figtree;color:var(--ink-soft,#4A5B56)"><span>Insurance</span><span style="font-weight:600;color:var(--ink,#0F1A17);font-variant-numeric:tabular-nums">₹183.50</span></div>
+              <div style="margin-top:8px;padding-top:9px;border-top:1px solid var(--border-soft,#EDF1EF);display:flex;justify-content:space-between;font:700 15px/1.4 Figtree"><span>Total</span><span style="font-variant-numeric:tabular-nums">₹12,840.50</span></div>
+            </div>
+            <div style="background:var(--surface,#fff);border-radius:15px;padding:15px;border:1.5px solid var(--accent-200,#C9E4DC)">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px"><span style="font:600 14px/1.3 Figtree">Non-occupancy charge</span><span style="font:700 14px/1 Figtree;font-variant-numeric:tabular-nums">₹250.00</span></div>
+              <div style="padding:11px 13px;border-radius:11px;background:var(--accent-wash,#F2F8F6)">
+                <div style="font:600 11px/1 Figtree;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink,#0A5749);margin-bottom:7px">Why this amount</div>
+                <div style="font:400 12.5px/1.6 Figtree;color:var(--accent-ink,#294C44)">10% of this flat's service charges of ₹2,500, because occupancy is recorded as tenanted from 01 Apr 2026.</div>
+                <div style="margin-top:9px;font:500 11px/1.5 'IBM Plex Mono',monospace;color:var(--accent-ink,#3D6B60)">PERCENT_OF_HEAD · Rule 106C-12(3)<br />rate v4, effective 30 Jun 2026</div>
+              </div>
+              <div style="margin-top:11px;display:flex;gap:8px"><span style="flex:1;height:38px;border-radius:10px;border:1px solid var(--border-strong,#CCD6D2);display:flex;align-items:center;justify-content:center;font:600 12.5px/1 Figtree">Raise a query</span><span style="flex:1;height:38px;border-radius:10px;border:1px solid var(--border-strong,#CCD6D2);display:flex;align-items:center;justify-content:center;font:600 12.5px/1 Figtree">Bill PDF</span></div>
+            </div>
+          </div>
+          <div style="flex:none;padding:12px 16px;background:var(--surface,#fff);border-top:1px solid var(--border,#E3E9E6)"><span style="display:flex;height:48px;border-radius:13px;background:#0E6B5C;color:#fff;align-items:center;justify-content:center;font:700 15.5px/1 Figtree">Pay ₹12,840.50</span></div>
+        </div>
+        <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">Tapping any head opens the same explanation card: method, rate version, rule citation.</div>
+      </div>
+
+      <div style="width:320px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><span style="font:600 10.5px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">09</span><span style="font:600 13.5px/1.3 Figtree">Choose amount &amp; method</span></div>
+        <div style="width:320px;height:646px;background:var(--canvas,#F7F9F8);border-radius:34px;border:8px solid #0B1512;box-shadow:0 20px 44px -22px rgba(15,26,23,.34);overflow:hidden;display:flex;flex-direction:column">
+          <div style="flex:none;background:var(--surface,#fff);padding:8px 18px 13px;border-bottom:1px solid var(--border,#E3E9E6)">
+            <div style="height:22px;display:flex;align-items:center;justify-content:space-between"><span style="font:700 11px/1 Figtree">9:41</span><span style="width:15px;height:8px;border:1px solid #0F1A17;border-radius:2px"></span></div>
+            <div style="margin-top:12px;display:flex;align-items:center;gap:12px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="2" stroke-linecap="round"><path d="m15 5-7 7 7 7"></path></svg><span style="font:700 16px/1.2 Figtree">Pay</span></div>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:16px">
+            <div style="font:600 12.5px/1 Figtree;margin-bottom:9px">Amount</div>
+            <div style="display:flex;align-items:center;height:58px;padding:0 16px;background:var(--surface,#fff);border:1.5px solid #0E6B5C;border-radius:14px;gap:6px;box-shadow:0 0 0 3px rgba(14,107,92,.13)"><span style="font:600 21px/1 Figtree;color:var(--ink-soft,#4A5B56)">₹</span><span style="flex:1;font:700 25px/1 Figtree;font-variant-numeric:tabular-nums;letter-spacing:-.02em">12,840.50</span></div>
+            <div style="margin-top:10px;display:flex;gap:8px"><span style="flex:1;height:34px;border-radius:9px;background:#0E6B5C;color:#fff;display:flex;align-items:center;justify-content:center;font:600 12px/1 Figtree">Full</span><span style="flex:1;height:34px;border-radius:9px;background:var(--surface,#fff);border:1px solid var(--border-strong,#CCD6D2);display:flex;align-items:center;justify-content:center;font:600 12px/1 Figtree">Part</span><span style="flex:1;height:34px;border-radius:9px;background:var(--surface,#fff);border:1px solid var(--border-strong,#CCD6D2);display:flex;align-items:center;justify-content:center;font:600 12px/1 Figtree">Advance</span></div>
+            <div style="margin-top:20px;font:600 12.5px/1 Figtree;margin-bottom:9px">Method</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="background:var(--surface,#fff);border:1.5px solid #0E6B5C;border-radius:14px;padding:15px;display:flex;align-items:center;gap:13px"><span style="width:40px;height:40px;border-radius:11px;background:var(--accent-wash,#E6F2EF);display:flex;align-items:center;justify-content:center;flex:none"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0A5749" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"></rect><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"></rect><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"></rect><path d="M14 14h2v2h-2zM19 14h1.5M14 19h2M19 18.5v2"></path></svg></span><span style="flex:1;min-width:0"><span style="display:block;font:600 14.5px/1.3 Figtree">Pay using QR code</span><span style="display:block;margin-top:3px;font:400 12px/1.35 Figtree;color:var(--ink-soft,#4A5B56)">Scan with any UPI app, on this or another phone</span></span><span style="width:20px;height:20px;border-radius:50%;background:#0E6B5C;display:flex;align-items:center;justify-content:center;flex:none"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"></path></svg></span></div>
+              <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:14px;padding:15px;display:flex;align-items:center;gap:13px"><span style="width:40px;height:40px;border-radius:11px;background:var(--subtle,#F1F4F3);display:flex;align-items:center;justify-content:center;flex:none"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#3D4A46" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5"></rect><path d="M10.5 18.5h3"></path></svg></span><span style="flex:1;min-width:0"><span style="display:block;font:600 14.5px/1.3 Figtree">Pay using installed app</span><span style="display:block;margin-top:3px;font:400 12px/1.35 Figtree;color:var(--ink-soft,#4A5B56)">Opens your UPI app directly · 3 found</span></span><span style="width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border-strong,#CCD6D2);flex:none"></span></div>
+            </div>
+            <div style="margin-top:14px;padding:12px 14px;border-radius:12px;background:var(--accent-wash,#E6F2EF);font:400 12.5px/1.5 Figtree;color:var(--accent-ink,#294C44)">Both routes are UPI, so neither carries a convenience fee.</div>
+          </div>
+          <div style="flex:none;padding:12px 16px;background:var(--surface,#fff);border-top:1px solid var(--border,#E3E9E6)"><span style="display:flex;height:48px;border-radius:13px;background:#0E6B5C;color:#fff;align-items:center;justify-content:center;font:700 15.5px/1 Figtree">Show QR code</span></div>
+        </div>
+        <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">Two routes, both UPI. Fewer choices means fewer abandoned payments.</div>
+      </div>
+
+      <div style="width:320px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><span style="font:600 10.5px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">09b</span><span style="font:600 13.5px/1.3 Figtree">QR payment · live</span></div>
+        <div style="width:320px;height:646px;background:var(--canvas,#F7F9F8);border-radius:34px;border:8px solid #0B1512;box-shadow:0 20px 44px -22px rgba(15,26,23,.34);overflow:hidden;display:flex;flex-direction:column;position:relative">
+          <div style="flex:none;background:var(--surface,#fff);padding:8px 18px 10px;border-bottom:1px solid var(--border,#E3E9E6);opacity:.45">
+            <div style="height:22px;display:flex;align-items:center;justify-content:space-between"><span style="font:700 11px/1 Figtree">9:42</span><span style="width:15px;height:8px;border:1px solid #0F1A17;border-radius:2px"></span></div>
+          </div>
+          <div style="flex:1;background:rgba(15,26,23,.46);display:flex;align-items:flex-end">
+            <div style="width:100%;background:var(--surface,#fff);border-radius:22px 22px 0 0;padding:14px 20px 16px;box-shadow:0 -14px 40px -18px rgba(15,26,23,.4)">
+              <div style="width:38px;height:4px;border-radius:2px;background:var(--border,#DDE5E2);margin:0 auto 12px"></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px">
+                <div style="min-width:0"><div style="font:700 17px/1.25 Figtree;letter-spacing:-.016em">Scan to pay</div><div style="margin-top:3px;font:400 12.5px/1.4 Figtree;color:var(--ink-soft,#4A5B56)">Shanti Vihar CHS Ltd</div></div>
+                <div style="flex:none;display:flex;align-items:center;gap:8px;height:32px;padding:0 11px;border-radius:999px;background:var(--warn-wash,#FDF3E7)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7v5.2l3.2 2"></path></svg><span style="font:700 13px/1 'IBM Plex Mono',monospace;color:var(--warn-ink,#8F4A0A);font-variant-numeric:tabular-nums">09:41</span></div>
+              </div>
+              <div style="position:relative;width:146px;margin:0 auto 7px">
+                <div style="width:146px;height:146px;border-radius:14px;background:#0F1A17;display:grid;grid-template-columns:repeat(9,1fr);grid-template-rows:repeat(9,1fr);gap:2px;padding:11px">
+                  <span style="background:var(--surface,#fff);grid-column:1/4;grid-row:1/4;border-radius:3px"></span><span style="background:var(--surface,#fff);grid-column:7/10;grid-row:1/4;border-radius:3px"></span><span style="background:var(--surface,#fff);grid-column:1/4;grid-row:7/10;border-radius:3px"></span>
+                  <span style="background:var(--surface,#fff);grid-column:5/6;grid-row:2/3"></span><span style="background:var(--surface,#fff);grid-column:5/7;grid-row:4/5"></span><span style="background:var(--surface,#fff);grid-column:4/5;grid-row:5/7"></span><span style="background:var(--surface,#fff);grid-column:6/7;grid-row:5/6"></span><span style="background:var(--surface,#fff);grid-column:7/9;grid-row:6/7"></span><span style="background:var(--surface,#fff);grid-column:5/6;grid-row:8/9"></span><span style="background:var(--surface,#fff);grid-column:7/8;grid-row:8/10"></span><span style="background:var(--surface,#fff);grid-column:9/10;grid-row:7/8"></span><span style="background:var(--surface,#fff);grid-column:6/7;grid-row:9/10"></span>
+                </div>
+                <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:36px;height:36px;border-radius:10px;background:var(--surface,#fff);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(15,26,23,.2)"><span style="width:28px;height:28px;border-radius:8px;background:#0E6B5C;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-5 7 5v13"></path></svg></span></div>
+              </div>
+              <div style="text-align:center;font:700 24px/1 Figtree;font-variant-numeric:tabular-nums;letter-spacing:-.022em;margin-bottom:4px">₹12,840.50</div>
+              <div style="text-align:center;font:500 11.5px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66);margin-bottom:11px">shantivihar@hdfcbank · BIL/00412</div>
+              <div style="height:5px;border-radius:3px;background:var(--subtle,#EDF1EF);overflow:hidden;margin-bottom:9px"><div style="height:100%;width:96%;background:#B45309;transform-origin:left;animation:grow .7s cubic-bezier(.2,.7,.3,1)"></div></div>
+              <div style="display:flex;justify-content:space-between;font:400 12px/1.4 Figtree;color:var(--ink-soft,#4A5B56);margin-bottom:12px"><span>This QR expires in 9 min 41 s</span><span>Attempt 1 of 3</span></div>
+              <div style="display:flex;align-items:center;gap:11px;padding:12px 14px;border-radius:12px;background:var(--canvas,#F7F9F8);border:1px solid var(--border-soft,#EDF1EF);margin-bottom:12px">
+                <span style="width:22px;height:22px;border-radius:50%;border:2.5px solid var(--accent-200,#C9E4DC);border-top-color:var(--accent-ink,#0E6B5C);animation:spin .8s linear infinite;flex:none"></span>
+                <span style="min-width:0"><span style="display:block;font:600 12.5px/1.3 Figtree">Waiting for your payment</span><span style="display:block;margin-top:2px;font:400 11.5px/1.4 Figtree;color:var(--ink-soft,#4A5B56)">This screen updates on its own. Do not pay twice.</span></span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:9px">
+                <span style="height:46px;border-radius:12px;border:1px solid var(--border-strong,#CCD6D2);background:var(--surface,#fff);display:flex;align-items:center;justify-content:center;gap:8px;font:600 14px/1 Figtree"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7.5 10.5 12 15l4.5-4.5M4 20h16"></path></svg>Save QR to gallery</span>
+                <span style="height:46px;border-radius:12px;background:var(--bad-wash,#FCEDEC);display:flex;align-items:center;justify-content:center;font:600 14px/1 Figtree;color:var(--bad-ink,#9B2B22)">Cancel payment</span>
+              </div>
+              <div style="margin-top:11px;font:400 11.5px/1.45 Figtree;color:var(--ink-soft,#5A6B66);text-align:center">Cancelling now is safe. After expiry we verify with the bank for 24 hours.</div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">A sheet, not a page — the bill stays behind it. Ten-minute QR validity, live polling, and cancel always available.</div>
+      </div>
+
+      <div style="width:320px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><span style="font:600 10.5px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">10</span><span style="font:600 13.5px/1.3 Figtree">Payment states</span></div>
+        <div style="width:320px;height:646px;background:var(--surface,#fff);border-radius:34px;border:8px solid #0B1512;box-shadow:0 20px 44px -22px rgba(15,26,23,.34);overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:30px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 20px"><span style="font:700 11px/1 Figtree">9:41</span><span style="width:15px;height:8px;border:1px solid #0F1A17;border-radius:2px"></span></div>
+          <div style="flex:1;padding:26px 22px;display:flex;flex-direction:column;align-items:center;text-align:center">
+            <div style="width:64px;height:64px;border-radius:50%;background:#167A3C;display:flex;align-items:center;justify-content:center;margin-bottom:18px;animation:checkPop .45s cubic-bezier(.2,.7,.3,1)"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"></path></svg></div>
+            <div style="font:700 24px/1.2 Figtree;letter-spacing:-.022em;font-variant-numeric:tabular-nums;margin-bottom:7px">₹12,840.50 paid</div>
+            <div style="font:400 14px/1.55 Figtree;color:var(--ink-soft,#4A5B56);margin-bottom:5px">September bill settled in full.</div>
+            <div style="font:500 11.5px/1.5 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66);margin-bottom:20px">RCP/2026-27/01188 · UTR 402318776214</div>
+            <div style="width:100%;padding:14px 15px;border-radius:14px;background:var(--canvas,#F7F9F8);border:1px solid var(--border-soft,#EDF1EF);text-align:left;margin-bottom:11px">
+              <div style="display:flex;justify-content:space-between;font:400 12.5px/1.8 Figtree;color:var(--ink-soft,#4A5B56)"><span>Paid via</span><span style="font-weight:600;color:var(--ink,#0F1A17)">UPI · 09:41</span></div>
+              <div style="display:flex;justify-content:space-between;font:400 12.5px/1.8 Figtree;color:var(--ink-soft,#4A5B56)"><span>Allocated to</span><span style="font-weight:600;color:var(--ink,#0F1A17)">BIL/00412</span></div>
+              <div style="display:flex;justify-content:space-between;font:400 12.5px/1.8 Figtree;color:var(--ink-soft,#4A5B56)"><span>Balance</span><span style="font-weight:600;color:var(--ok,#167A3C)">₹0.00</span></div>
+            </div>
+            <div style="display:flex;gap:9px;width:100%;margin-bottom:22px"><span style="flex:1;height:44px;border-radius:12px;background:#0E6B5C;color:#fff;display:flex;align-items:center;justify-content:center;font:600 14px/1 Figtree">Receipt</span><span style="flex:1;height:44px;border-radius:12px;border:1px solid var(--border-strong,#CCD6D2);display:flex;align-items:center;justify-content:center;font:600 14px/1 Figtree">Share</span></div>
+            <div style="width:100%;text-align:left;padding-top:18px;border-top:1px dashed var(--border,#DDE5E2)">
+              <div style="font:600 11px/1 Figtree;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft,#4A5B56);margin-bottom:11px">Other states</div>
+              <div style="display:flex;gap:11px;align-items:center;padding:11px 13px;border-radius:12px;background:var(--canvas,#F7F9F8);margin-bottom:9px"><span style="width:22px;height:22px;border-radius:50%;border:2.5px solid var(--accent-200,#C9E4DC);border-top-color:var(--accent-ink,#0E6B5C);animation:spin .8s linear infinite;flex:none"></span><span><span style="display:block;font:600 12.5px/1.3 Figtree">Processing</span><span style="display:block;margin-top:2px;font:400 11.5px/1.4 Figtree;color:var(--ink-soft,#4A5B56)">Checked every 15 minutes for 24 hours</span></span></div>
+              <div style="display:flex;gap:11px;align-items:center;padding:11px 13px;border-radius:12px;background:var(--bad-wash,#FCEDEC)"><span style="width:22px;height:22px;border-radius:50%;background:#C0342B;display:flex;align-items:center;justify-content:center;flex:none;font:700 13px/1 Figtree;color:#fff">!</span><span><span style="display:block;font:600 12.5px/1.3 Figtree;color:var(--bad-ink,#9B2B22)">Not confirmed</span><span style="display:block;margin-top:2px;font:400 11.5px/1.4 Figtree;color:var(--bad-ink,#A83A30)">Your bank may still have debited. Do not pay twice.</span></span></div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">A receipt appears only on confirmed success. Everything else says so plainly.</div>
+      </div>
+
+      <div style="width:320px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><span style="font:600 10.5px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">11</span><span style="font:600 13.5px/1.3 Figtree">Ledger</span></div>
+        <div style="width:320px;height:646px;background:var(--canvas,#F7F9F8);border-radius:34px;border:8px solid #0B1512;box-shadow:0 20px 44px -22px rgba(15,26,23,.34);overflow:hidden;display:flex;flex-direction:column">
+          <div style="flex:none;background:var(--surface,#fff);padding:8px 18px 13px;border-bottom:1px solid var(--border,#E3E9E6)">
+            <div style="height:22px;display:flex;align-items:center;justify-content:space-between"><span style="font:700 11px/1 Figtree">9:41</span><span style="width:15px;height:8px;border:1px solid #0F1A17;border-radius:2px"></span></div>
+            <div style="margin-top:12px;display:flex;align-items:center;justify-content:space-between"><span style="font:700 18px/1.2 Figtree;letter-spacing:-.018em">My ledger</span><span style="font:600 12.5px/1 Figtree;color:var(--accent-ink,#0E6B5C)">FY 2026-27</span></div>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:14px 16px">
+            <div style="background:var(--surface,#fff);border-radius:15px;padding:16px;margin-bottom:12px">
+              <div style="display:flex;justify-content:space-between;font:400 12.5px/1.9 Figtree;color:var(--ink-soft,#4A5B56)"><span>Opening balance</span><span style="font-weight:600;color:var(--ink,#0F1A17);font-variant-numeric:tabular-nums">₹0.00</span></div>
+              <div style="display:flex;justify-content:space-between;font:400 12.5px/1.9 Figtree;color:var(--ink-soft,#4A5B56)"><span>Billed this year</span><span style="font-weight:600;color:var(--ink,#0F1A17);font-variant-numeric:tabular-nums">₹66,382.50</span></div>
+              <div style="display:flex;justify-content:space-between;font:400 12.5px/1.9 Figtree;color:var(--ink-soft,#4A5B56)"><span>Paid this year</span><span style="font-weight:600;color:var(--ok,#167A3C);font-variant-numeric:tabular-nums">₹53,542.00</span></div>
+              <div style="display:flex;justify-content:space-between;font:400 12.5px/1.9 Figtree;color:var(--ink-soft,#4A5B56)"><span>Interest levied</span><span style="font-weight:600;color:var(--ink,#0F1A17);font-variant-numeric:tabular-nums">₹0.00</span></div>
+              <div style="margin-top:8px;padding-top:9px;border-top:1px solid var(--border-soft,#EDF1EF);display:flex;justify-content:space-between;font:700 15px/1.4 Figtree"><span>Balance due</span><span style="font-variant-numeric:tabular-nums">₹12,840.50</span></div>
+            </div>
+            <div style="background:var(--surface,#fff);border-radius:15px;overflow:hidden">
+              <div style="padding:11px 15px;border-bottom:1px solid var(--border-soft,#F1F4F3);display:flex;justify-content:space-between;align-items:center"><div><div style="font:600 13px/1.3 Figtree">Bill · September</div><div style="margin-top:2px;font:400 11.5px/1.3 Figtree;color:var(--ink-soft,#4A5B56)">01 Sep 2026</div></div><span style="font:600 13.5px/1 Figtree;font-variant-numeric:tabular-nums">₹12,840.50</span></div>
+              <div style="padding:11px 15px;border-bottom:1px solid var(--border-soft,#F1F4F3);display:flex;justify-content:space-between;align-items:center"><div><div style="font:600 13px/1.3 Figtree">Receipt · UPI</div><div style="margin-top:2px;font:400 11.5px/1.3 Figtree;color:var(--ink-soft,#4A5B56)">12 Aug 2026</div></div><span style="font:600 13.5px/1 Figtree;font-variant-numeric:tabular-nums;color:var(--ok,#167A3C)">−₹12,450.00</span></div>
+              <div style="padding:11px 15px;border-bottom:1px solid var(--border-soft,#F1F4F3);display:flex;justify-content:space-between;align-items:center"><div><div style="font:600 13px/1.3 Figtree">Bill · August</div><div style="margin-top:2px;font:400 11.5px/1.3 Figtree;color:var(--ink-soft,#4A5B56)">01 Aug 2026</div></div><span style="font:600 13.5px/1 Figtree;font-variant-numeric:tabular-nums">₹12,450.00</span></div>
+              <div style="padding:11px 15px;display:flex;justify-content:space-between;align-items:center"><div><div style="font:600 13px/1.3 Figtree">Credit note · water adj.</div><div style="margin-top:2px;font:400 11.5px/1.3 Figtree;color:var(--ink-soft,#4A5B56)">28 Jul 2026</div></div><span style="font:600 13.5px/1 Figtree;font-variant-numeric:tabular-nums;color:var(--ok,#167A3C)">−₹340.00</span></div>
+            </div>
+            <div style="margin-top:12px;display:flex;gap:9px"><span style="flex:1;height:42px;border-radius:12px;background:var(--surface,#fff);border:1px solid var(--border-strong,#CCD6D2);display:flex;align-items:center;justify-content:center;font:600 13px/1 Figtree">Download PDF</span><span style="flex:1;height:42px;border-radius:12px;background:var(--surface,#fff);border:1px solid var(--border-strong,#CCD6D2);display:flex;align-items:center;justify-content:center;font:600 13px/1 Figtree">Email to me</span></div>
+          </div>
+          <div style="flex:none;height:58px;border-top:1px solid var(--border,#E3E9E6);background:var(--surface,#fff);display:flex;align-items:center;justify-content:space-around;font:600 9.5px/1 Figtree;color:var(--ink-soft,#5A6B66)"><span>Home</span><span style="color:var(--accent-ink,#0E6B5C);font-weight:700">Bills</span><span>Help</span><span>Gate</span><span>Me</span></div>
+        </div>
+        <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">The same statement the treasurer sees, so a dispute starts from one shared number.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <section style="max-width:1460px;margin:0 auto 52px">
+    <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:20px;flex-wrap:wrap">
+      <span style="font:600 11.5px/1 'IBM Plex Mono',monospace;letter-spacing:.13em;text-transform:uppercase;color:var(--accent-ink,#0E6B5C)">03 · Living here</span>
+      <h2 style="margin:0;font:700 25px/1.2 Figtree;letter-spacing:-.022em">Complaints, gate and notices</h2>
+      <p style="margin:0;flex:1;min-width:260px;font:400 14.5px/1.55 Figtree;color:var(--ink-soft,#4A5B56)">Daily utility. These are the screens that pull a resident back into the app between billing cycles.</p>
+    </div>
+    <div style="display:flex;gap:22px;flex-wrap:wrap">
+
+      <div style="width:320px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><span style="font:600 10.5px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">12</span><span style="font:600 13.5px/1.3 Figtree">My complaints</span></div>
+        <div style="width:320px;height:646px;background:var(--canvas,#F7F9F8);border-radius:34px;border:8px solid #0B1512;box-shadow:0 20px 44px -22px rgba(15,26,23,.34);overflow:hidden;display:flex;flex-direction:column">
+          <div style="flex:none;background:var(--surface,#fff);padding:8px 18px 13px;border-bottom:1px solid var(--border,#E3E9E6)">
+            <div style="height:22px;display:flex;align-items:center;justify-content:space-between"><span style="font:700 11px/1 Figtree">9:41</span><span style="width:15px;height:8px;border:1px solid #0F1A17;border-radius:2px"></span></div>
+            <div style="margin-top:12px;font:700 21px/1.2 Figtree;letter-spacing:-.02em">Helpdesk</div>
+            <div style="margin-top:11px;display:flex;gap:7px"><span style="height:30px;padding:0 12px;border-radius:999px;background:#0E6B5C;color:#fff;display:flex;align-items:center;font:600 12px/1 Figtree">Mine</span><span style="height:30px;padding:0 12px;border-radius:999px;border:1px solid var(--border-strong,#CCD6D2);background:var(--surface,#fff);display:flex;align-items:center;font:600 12px/1 Figtree">Common area</span><span style="height:30px;padding:0 12px;border-radius:999px;border:1px solid var(--border-strong,#CCD6D2);background:var(--surface,#fff);display:flex;align-items:center;font:600 12px/1 Figtree">Closed</span></div>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:14px 16px">
+            <div style="background:var(--surface,#fff);border-radius:15px;padding:15px;margin-bottom:11px">
+              <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font:500 10.5px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#4A5B56)">TKT/1182</span><span style="padding:2px 8px;border-radius:999px;background:var(--info-wash,#EAF0FE);color:var(--info-ink,#12327A);font:600 10.5px/1.6 Figtree">In progress</span></div>
+              <div style="font:600 14px/1.35 Figtree;margin-bottom:5px">Seepage in bedroom wall</div>
+              <div style="font:400 12px/1.4 Figtree;color:var(--ink-soft,#4A5B56);margin-bottom:11px">Civil · raised 3 days ago · Ganesh M. assigned</div>
+              <div style="display:flex;align-items:center;gap:7px"><span style="flex:1;height:4px;border-radius:2px;background:#0E6B5C"></span><span style="flex:1;height:4px;border-radius:2px;background:#0E6B5C"></span><span style="flex:1;height:4px;border-radius:2px;background:#0E6B5C"></span><span style="flex:1;height:4px;border-radius:2px;background:var(--border,#E3E9E6)"></span><span style="flex:1;height:4px;border-radius:2px;background:var(--border,#E3E9E6)"></span></div>
+            </div>
+            <div style="background:var(--surface,#fff);border-radius:15px;padding:15px;margin-bottom:11px">
+              <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font:500 10.5px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#4A5B56)">TKT/1160</span><span style="padding:2px 8px;border-radius:999px;background:var(--warn-wash,#FDF3E7);color:var(--warn-ink,#8F4A0A);font:600 10.5px/1.6 Figtree">Confirm resolution</span></div>
+              <div style="font:600 14px/1.35 Figtree;margin-bottom:5px">Garbage not collected</div>
+              <div style="font:400 12px/1.4 Figtree;color:var(--ink-soft,#4A5B56);margin-bottom:11px">Housekeeping · resolved 2 hours ago</div>
+              <div style="display:flex;gap:8px"><span style="flex:1;height:36px;border-radius:10px;background:#0E6B5C;color:#fff;display:flex;align-items:center;justify-content:center;font:600 12.5px/1 Figtree">It's fixed</span><span style="flex:1;height:36px;border-radius:10px;border:1px solid var(--border-strong,#CCD6D2);display:flex;align-items:center;justify-content:center;font:600 12.5px/1 Figtree">Reopen</span></div>
+            </div>
+            <div style="background:var(--surface,#fff);border-radius:15px;padding:15px">
+              <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font:500 10.5px/1.4 'IBM Plex Mono',monospace;color:var(--ink-soft,#4A5B56)">TKT/1104</span><span style="padding:2px 8px;border-radius:999px;background:var(--ok-wash,#E8F5EC);color:var(--ok-ink,#14663A);font:600 10.5px/1.6 Figtree">Closed</span></div>
+              <div style="font:600 14px/1.35 Figtree;margin-bottom:5px">Bathroom tap leaking</div>
+              <div style="font:400 12px/1.4 Figtree;color:var(--ink-soft,#4A5B56)">Plumbing · you rated 5 of 5</div>
+            </div>
+          </div>
+          <div style="flex:none;position:relative;height:58px;border-top:1px solid var(--border,#E3E9E6);background:var(--surface,#fff);display:flex;align-items:center;justify-content:space-around;font:600 9.5px/1 Figtree;color:var(--ink-soft,#5A6B66)">
+            <span>Home</span><span>Bills</span><span style="color:var(--accent-ink,#0E6B5C);font-weight:700">Help</span><span>Gate</span><span>Me</span>
+            <span style="position:absolute;right:16px;top:-62px;width:52px;height:52px;border-radius:50%;background:#0E6B5C;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 22px -8px rgba(14,107,92,.6);animation:pulseRing 3s ease-out infinite"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></span>
+          </div>
+        </div>
+        <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">A resolved ticket asks one question and offers exactly two answers.</div>
+      </div>
+
+      <div style="width:320px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><span style="font:600 10.5px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">13</span><span style="font:600 13.5px/1.3 Figtree">Raise a complaint</span></div>
+        <div style="width:320px;height:646px;background:var(--canvas,#F7F9F8);border-radius:34px;border:8px solid #0B1512;box-shadow:0 20px 44px -22px rgba(15,26,23,.34);overflow:hidden;display:flex;flex-direction:column">
+          <div style="flex:none;background:var(--surface,#fff);padding:8px 18px 13px;border-bottom:1px solid var(--border,#E3E9E6)">
+            <div style="height:22px;display:flex;align-items:center;justify-content:space-between"><span style="font:700 11px/1 Figtree">9:41</span><span style="width:15px;height:8px;border:1px solid #0F1A17;border-radius:2px"></span></div>
+            <div style="margin-top:12px;display:flex;align-items:center;gap:12px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"></path></svg><span style="font:700 16px/1.2 Figtree">New complaint</span></div>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:16px">
+            <div style="font:600 12.5px/1 Figtree;margin-bottom:10px">What is the problem?</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px">
+              <div style="background:#0E6B5C;border-radius:12px;padding:12px 5px;display:flex;flex-direction:column;align-items:center;gap:7px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"><path d="M12 3c3 4 5 6.4 5 9a5 5 0 0 1-10 0c0-2.6 2-5 5-9Z"></path></svg><span style="font:600 10px/1.2 Figtree;color:#fff">Plumbing</span></div>
+              <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:12px;padding:12px 5px;display:flex;flex-direction:column;align-items:center;gap:7px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#3D4A46" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 5 14h6l-1 8 8-12h-6Z"></path></svg><span style="font:600 10px/1.2 Figtree">Electrical</span></div>
+              <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:12px;padding:12px 5px;display:flex;flex-direction:column;align-items:center;gap:7px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#3D4A46" stroke-width="1.9" stroke-linecap="round"><rect x="5" y="3" width="14" height="18" rx="2"></rect><path d="M9 8h6M9 12h6"></path></svg><span style="font:600 10px/1.2 Figtree">Lift</span></div>
+              <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:12px;padding:12px 5px;display:flex;flex-direction:column;align-items:center;gap:7px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#3D4A46" stroke-width="1.9" stroke-linecap="round"><path d="M4 20 20 4M9 20h11"></path></svg><span style="font:600 10px/1.2 Figtree">Cleaning</span></div>
+              <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:12px;padding:12px 5px;display:flex;flex-direction:column;align-items:center;gap:7px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#3D4A46" stroke-width="1.9" stroke-linecap="round"><path d="M12 3l7.5 3v6c0 4.6-3.1 8-7.5 9.5C7.6 20 4.5 16.6 4.5 12V6Z"></path></svg><span style="font:600 10px/1.2 Figtree">Security</span></div>
+              <div style="background:var(--surface,#fff);border:1px solid var(--border,#E3E9E6);border-radius:12px;padding:12px 5px;display:flex;flex-direction:column;align-items:center;gap:7px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#3D4A46" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v4M12 16h.01"></path></svg><span style="font:600 10px/1.2 Figtree">Other</span></div>
+            </div>
+            <div style="font:600 12.5px/1 Figtree;margin-bottom:8px">Where?</div>
+            <div style="display:flex;gap:8px;margin-bottom:18px"><span style="flex:1;height:40px;border-radius:11px;background:var(--accent-wash,#E6F2EF);border:1.5px solid #0E6B5C;display:flex;align-items:center;justify-content:center;font:600 12.5px/1 Figtree;color:var(--accent-ink,#0A5749)">My flat</span><span style="flex:1;height:40px;border-radius:11px;background:var(--surface,#fff);border:1px solid var(--border-strong,#CCD6D2);display:flex;align-items:center;justify-content:center;font:600 12.5px/1 Figtree">Common area</span></div>
+            <div style="font:600 12.5px/1 Figtree;margin-bottom:8px">Describe it</div>
+            <div style="height:80px;padding:12px 13px;background:var(--surface,#fff);border:1px solid var(--border-strong,#CCD6D2);border-radius:12px;font:400 13px/1.5 Figtree;color:var(--ink,#0F1A17);margin-bottom:16px">Water seeping through the bedroom wall since Monday. Paint has started peeling.</div>
+            <div style="display:flex;gap:9px">
+              <div style="width:64px;height:64px;border-radius:12px;background:var(--subtle,#EDF1EF);display:flex;align-items:center;justify-content:center"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#4A5B56" stroke-width="1.8" stroke-linecap="round"><path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h1.9l1.4-2h6.4l1.4 2h1.9A2.5 2.5 0 0 1 21 8.5v8A2.5 2.5 0 0 1 18.5 19h-13A2.5 2.5 0 0 1 3 16.5Z"></path><circle cx="12" cy="12.5" r="3.2"></circle></svg></div>
+              <div style="width:64px;height:64px;border-radius:12px;background:var(--accent-200,#C9E4DC)"></div>
+              <div style="width:64px;height:64px;border-radius:12px;background:var(--accent-200,#DCE7E3)"></div>
+              <div style="flex:1;height:64px;border-radius:12px;border:1.5px dashed var(--border-strong,#CCD6D2);display:flex;align-items:center;justify-content:center;font:600 11.5px/1.3 Figtree;color:var(--ink-soft,#4A5B56);text-align:center">Up to 5 photos</div>
+            </div>
+          </div>
+          <div style="flex:none;padding:12px 16px;background:var(--surface,#fff);border-top:1px solid var(--border,#E3E9E6)"><span style="display:flex;height:48px;border-radius:13px;background:#0E6B5C;color:#fff;align-items:center;justify-content:center;font:700 15.5px/1 Figtree">Submit complaint</span></div>
+        </div>
+        <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">Four taps end to end: category, location, description, submit.</div>
+      </div>
+
+      <div style="width:320px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><span style="font:600 10.5px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">14</span><span style="font:600 13.5px/1.3 Figtree">Ticket timeline</span></div>
+        <div style="width:320px;height:646px;background:var(--canvas,#F7F9F8);border-radius:34px;border:8px solid #0B1512;box-shadow:0 20px 44px -22px rgba(15,26,23,.34);overflow:hidden;display:flex;flex-direction:column">
+          <div style="flex:none;background:var(--surface,#fff);padding:8px 18px 13px;border-bottom:1px solid var(--border,#E3E9E6)">
+            <div style="height:22px;display:flex;align-items:center;justify-content:space-between"><span style="font:700 11px/1 Figtree">9:41</span><span style="width:15px;height:8px;border:1px solid #0F1A17;border-radius:2px"></span></div>
+            <div style="margin-top:12px;display:flex;align-items:center;gap:12px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="2" stroke-linecap="round"><path d="m15 5-7 7 7 7"></path></svg><div><div style="font:700 15px/1.2 Figtree">Seepage in bedroom wall</div><div style="margin-top:3px;font:500 11px/1.3 'IBM Plex Mono',monospace;color:var(--ink-soft,#4A5B56)">TKT/1182 · Civil · A-1204</div></div></div>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:16px">
+            <div style="background:var(--surface,#fff);border-radius:15px;padding:15px;margin-bottom:13px;display:flex;justify-content:space-between;align-items:center">
+              <div><div style="font:600 11px/1 Figtree;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft,#4A5B56);margin-bottom:6px">Resolution SLA</div><div style="font:600 14px/1 Figtree;color:var(--warn,#B45309)">21 h remaining</div></div>
+              <div style="text-align:right"><div style="font:600 11px/1 Figtree;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft,#4A5B56);margin-bottom:6px">Assigned</div><div style="font:600 14px/1 Figtree">Ganesh M.</div></div>
+            </div>
+            <div style="position:relative;padding-left:22px">
+              <div style="position:absolute;left:6px;top:6px;bottom:16px;width:2px;background:var(--border,#E3E9E6)"></div>
+              <div style="position:relative;margin-bottom:18px"><span style="position:absolute;left:-22px;top:3px;width:14px;height:14px;border-radius:50%;background:#0E6B5C;border:3px solid #F7F9F8"></span><div style="font:600 13px/1.35 Figtree">Raised by you</div><div style="margin-top:3px;font:400 12px/1.45 Figtree;color:var(--ink-soft,#4A5B56)">08 Sep, 10:12 · 3 photos attached</div></div>
+              <div style="position:relative;margin-bottom:18px"><span style="position:absolute;left:-22px;top:3px;width:14px;height:14px;border-radius:50%;background:#0E6B5C;border:3px solid #F7F9F8"></span><div style="font:600 13px/1.35 Figtree">Assigned to Ganesh Mane</div><div style="margin-top:3px;font:400 12px/1.45 Figtree;color:var(--ink-soft,#4A5B56)">08 Sep, 10:19 · auto-assigned by category</div></div>
+              <div style="position:relative;margin-bottom:18px"><span style="position:absolute;left:-22px;top:3px;width:14px;height:14px;border-radius:50%;background:#0E6B5C;border:3px solid #F7F9F8"></span><div style="font:600 13px/1.35 Figtree">Site visit done</div><div style="margin-top:3px;font:400 12px/1.45 Figtree;color:var(--ink-soft,#4A5B56)">09 Sep, 15:40</div><div style="margin-top:8px;padding:11px 13px;border-radius:11px;background:var(--surface,#fff);font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#3D4A46)">Leak traced to the flat above. Their bathroom waterproofing has failed. Raising a linked ticket for B-1304.</div></div>
+              <div style="position:relative;margin-bottom:18px"><span style="position:absolute;left:-22px;top:3px;width:14px;height:14px;border-radius:50%;background:#B45309;border:3px solid #F7F9F8"></span><div style="font:600 13px/1.35 Figtree">Awaiting parts</div><div style="margin-top:3px;font:400 12px/1.45 Figtree;color:var(--ink-soft,#4A5B56)">10 Sep, 09:05 · SLA timer paused</div></div>
+              <div style="position:relative"><span style="position:absolute;left:-22px;top:3px;width:14px;height:14px;border-radius:50%;background:var(--surface,#fff);border:2px solid var(--border-strong,#CCD6D2)"></span><div style="font:600 13px/1.35 Figtree;color:var(--ink-soft,#4A5B56)">Resolution</div><div style="margin-top:3px;font:400 12px/1.45 Figtree;color:var(--ink-muted,#8A9995)">Expected 12 Sep</div></div>
+            </div>
+          </div>
+          <div style="flex:none;padding:11px 16px;background:var(--surface,#fff);border-top:1px solid var(--border,#E3E9E6);display:flex;gap:9px;align-items:center"><span style="flex:1;height:42px;border-radius:12px;background:var(--subtle,#F1F4F3);display:flex;align-items:center;padding:0 14px;font:400 13px/1 Figtree;color:var(--ink-soft,#5A6B66)">Add a comment</span><span style="width:42px;height:42px;border-radius:12px;background:#0E6B5C;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h14M13 6l6 6-6 6"></path></svg></span></div>
+        </div>
+        <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">Every state change is on the record, including the pause that stopped the clock.</div>
+      </div>
+
+      <div style="width:320px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><span style="font:600 10.5px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">15</span><span style="font:600 13.5px/1.3 Figtree">Visitor approval</span></div>
+        <div style="width:320px;height:646px;background:#0B1512;border-radius:34px;border:8px solid #0B1512;box-shadow:0 20px 44px -22px rgba(15,26,23,.34);overflow:hidden;display:flex;flex-direction:column">
+          <div style="height:30px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 20px"><span style="font:700 11px/1 Figtree;color:#fff">9:41</span><span style="width:15px;height:8px;border:1px solid #fff;border-radius:2px"></span></div>
+          <div style="flex:1;padding:20px 20px 16px;display:flex;flex-direction:column;align-items:center;text-align:center">
+            <div style="font:600 11px/1 Figtree;letter-spacing:.12em;text-transform:uppercase;color:#7E918B;margin-bottom:16px">Visitor at main gate</div>
+            <div style="position:relative;width:104px;height:104px;margin-bottom:16px">
+              <svg width="104" height="104" viewBox="0 0 118 118" style="position:absolute;inset:0;transform:rotate(-90deg)">
+                <circle cx="59" cy="59" r="56" fill="none" stroke="#1B2A25" stroke-width="4"></circle>
+                <circle cx="59" cy="59" r="56" fill="none" stroke="#F5B94A" stroke-width="4" stroke-linecap="round" stroke-dasharray="352" stroke-dashoffset="88"></circle>
+              </svg>
+              <div style="position:absolute;inset:8px;border-radius:50%;background:#1B2A25;display:flex;align-items:center;justify-content:center"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#7E918B" stroke-width="1.4" stroke-linecap="round"><circle cx="12" cy="8.5" r="3.6"></circle><path d="M4.5 20c0-4 3.4-6.6 7.5-6.6s7.5 2.6 7.5 6.6"></path></svg></div>
+            </div>
+            <div style="font:700 22px/1.25 Figtree;color:#fff;margin-bottom:6px">Sagar Deshmukh</div>
+            <div style="font:400 14px/1.5 Figtree;color:var(--ink-dim,#A8B5B0);margin-bottom:4px">Amazon delivery · 2 parcels</div>
+            <div style="font:500 12px/1.4 'IBM Plex Mono',monospace;color:#7E918B;margin-bottom:16px">Verified against gate photo · 09:41</div>
+            <div style="width:100%;padding:13px 15px;border-radius:14px;background:#16261F;text-align:left;margin-bottom:16px">
+              <div style="display:flex;justify-content:space-between;font:400 12.5px/1.9 Figtree;color:var(--ink-dim,#A8B5B0)"><span>Requested for</span><span style="font-weight:600;color:#fff">A-1204</span></div>
+              <div style="display:flex;justify-content:space-between;font:400 12.5px/1.9 Figtree;color:var(--ink-dim,#A8B5B0)"><span>Your default</span><span style="font-weight:600;color:#fff">Leave at gate</span></div>
+              <div style="display:flex;justify-content:space-between;font:400 12.5px/1.9 Figtree;color:var(--ink-dim,#A8B5B0)"><span>Auto-decision in</span><span style="font-weight:600;color:#F5B94A">0:34</span></div>
+            </div>
+            <div style="width:100%;display:flex;flex-direction:column;gap:10px">
+              <span style="height:52px;border-radius:14px;background:#0E6B5C;color:#fff;display:flex;align-items:center;justify-content:center;font:700 16px/1 Figtree">Allow entry</span>
+              <div style="display:flex;gap:10px"><span style="flex:1;height:48px;border-radius:13px;background:#16261F;color:#fff;display:flex;align-items:center;justify-content:center;font:600 14.5px/1 Figtree">Leave at gate</span><span style="flex:1;height:48px;border-radius:13px;background:#16261F;color:#fff;display:flex;align-items:center;justify-content:center;font:600 14.5px/1 Figtree">Deny</span></div>
+              <span style="height:44px;border-radius:13px;border:1px solid #2C3D37;color:var(--ink-dim,#A8B5B0);display:flex;align-items:center;justify-content:center;gap:8px;font:600 13.5px/1 Figtree"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A8B5B0" stroke-width="1.9" stroke-linecap="round"><path d="M4.5 5.5c0 8 6 14 14 14l2.5-3-4.5-2.5-2.5 2.5c-2.5-1.5-4.5-3.5-6-6L10.5 8 8 3.5Z"></path></svg>Call the guard</span>
+            </div>
+            <div style="margin-top:12px;font:400 11.5px/1.45 Figtree;color:#8FA39D">Calls use a proxy number. Your number is never shared.</div>
+          </div>
+        </div>
+        <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">Full-screen and dark, because it arrives as an interrupt with a 45-second clock.</div>
+      </div>
+
+      <div style="width:320px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><span style="font:600 10.5px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">16</span><span style="font:600 13.5px/1.3 Figtree">Pre-approve a guest</span></div>
+        <div style="width:320px;height:646px;background:var(--canvas,#F7F9F8);border-radius:34px;border:8px solid #0B1512;box-shadow:0 20px 44px -22px rgba(15,26,23,.34);overflow:hidden;display:flex;flex-direction:column">
+          <div style="flex:none;background:var(--surface,#fff);padding:8px 18px 13px;border-bottom:1px solid var(--border,#E3E9E6)">
+            <div style="height:22px;display:flex;align-items:center;justify-content:space-between"><span style="font:700 11px/1 Figtree">9:41</span><span style="width:15px;height:8px;border:1px solid #0F1A17;border-radius:2px"></span></div>
+            <div style="margin-top:12px;display:flex;align-items:center;gap:12px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="2" stroke-linecap="round"><path d="m15 5-7 7 7 7"></path></svg><span style="font:700 16px/1.2 Figtree">Guest pass created</span></div>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:18px 16px;display:flex;flex-direction:column;align-items:center">
+            <div style="width:100%;background:var(--surface,#fff);border-radius:18px;padding:18px 20px;text-align:center;box-shadow:0 10px 26px -16px rgba(15,26,23,.24)">
+              <div style="font:600 11px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#4A5B56);margin-bottom:13px">Show at the gate</div>
+              <div style="width:120px;height:120px;margin:0 auto 13px;border-radius:14px;background:#0F1A17;display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(7,1fr);gap:3px;padding:12px">
+                <span style="background:var(--surface,#fff);grid-column:1/3;grid-row:1/3;border-radius:2px"></span><span style="background:var(--surface,#fff);grid-column:6/8;grid-row:1/3;border-radius:2px"></span><span style="background:var(--surface,#fff);grid-column:4/5;grid-row:2/3"></span><span style="background:var(--surface,#fff);grid-column:1/3;grid-row:6/8;border-radius:2px"></span><span style="background:var(--surface,#fff);grid-column:4/6;grid-row:4/5"></span><span style="background:var(--surface,#fff);grid-column:6/7;grid-row:5/6"></span><span style="background:var(--surface,#fff);grid-column:5/6;grid-row:6/7"></span><span style="background:var(--surface,#fff);grid-column:7/8;grid-row:7/8"></span><span style="background:var(--surface,#fff);grid-column:3/4;grid-row:4/6"></span>
+              </div>
+              <div style="font:700 24px/1 'IBM Plex Mono',monospace;letter-spacing:.16em;margin-bottom:7px">418 902</div>
+              <div style="font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">Valid 14 Sep, 18:00 – 23:00 · single entry</div>
+            </div>
+            <div style="width:100%;margin-top:10px;background:var(--surface,#fff);border-radius:15px;padding:14px 15px">
+              <div style="display:flex;justify-content:space-between;font:400 12.5px/1.8 Figtree;color:var(--ink-soft,#4A5B56)"><span>Guest</span><span style="font-weight:600;color:var(--ink,#0F1A17)">Rahul &amp; family</span></div>
+              <div style="display:flex;justify-content:space-between;font:400 12.5px/1.9 Figtree;color:var(--ink-soft,#4A5B56)"><span>People</span><span style="font-weight:600;color:var(--ink,#0F1A17)">4</span></div>
+              <div style="display:flex;justify-content:space-between;font:400 12.5px/1.9 Figtree;color:var(--ink-soft,#4A5B56)"><span>Vehicle</span><span style="font-weight:600;color:var(--ink,#0F1A17);font-family:'IBM Plex Mono',monospace">MH12 AB 4471</span></div>
+              <div style="display:flex;justify-content:space-between;font:400 12.5px/1.9 Figtree;color:var(--ink-soft,#4A5B56)"><span>Parking</span><span style="font-weight:600;color:var(--ink,#0F1A17)">Visitor bay 3</span></div>
+            </div>
+            <div style="width:100%;margin-top:10px;display:flex;gap:9px"><span style="flex:1;height:46px;border-radius:12px;background:#0E6B5C;color:#fff;display:flex;align-items:center;justify-content:center;font:600 14px/1 Figtree">Share on WhatsApp</span><span style="width:46px;height:46px;border-radius:12px;border:1px solid var(--border-strong,#CCD6D2);background:var(--surface,#fff);display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="1.9" stroke-linecap="round"><path d="M12 3v12M7.5 10.5 12 15l4.5-4.5M4 20h16"></path></svg></span></div>
+            <div style="width:100%;margin-top:10px;padding:11px 14px;border-radius:12px;background:var(--accent-wash,#E6F2EF);font:400 12.5px/1.5 Figtree;color:var(--accent-ink,#294C44)">The guard scans this code — you are not interrupted.</div>
+          </div>
+        </div>
+        <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">A pre-approved guest is the only visitor flow that never pings the resident.</div>
+      </div>
+
+      <div style="width:320px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><span style="font:600 10.5px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">17</span><span style="font:600 13.5px/1.3 Figtree">Notices</span></div>
+        <div style="width:320px;height:646px;background:var(--canvas,#F7F9F8);border-radius:34px;border:8px solid #0B1512;box-shadow:0 20px 44px -22px rgba(15,26,23,.34);overflow:hidden;display:flex;flex-direction:column">
+          <div style="flex:none;background:var(--surface,#fff);padding:8px 18px 13px;border-bottom:1px solid var(--border,#E3E9E6)">
+            <div style="height:22px;display:flex;align-items:center;justify-content:space-between"><span style="font:700 11px/1 Figtree">9:41</span><span style="width:15px;height:8px;border:1px solid #0F1A17;border-radius:2px"></span></div>
+            <div style="margin-top:12px;display:flex;align-items:center;justify-content:space-between"><span style="font:700 21px/1.2 Figtree;letter-spacing:-.02em">Notices</span><span style="padding:3px 9px;border-radius:999px;background:var(--bad-wash,#FCEDEC);color:var(--bad-ink,#9B2B22);font:700 11px/1.6 Figtree">2 new</span></div>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:14px 16px">
+            <div style="background:var(--surface,#fff);border-radius:15px;padding:16px;margin-bottom:11px;border-left:3px solid #B45309">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="padding:2px 7px;border-radius:5px;background:var(--warn-wash,#FDF3E7);color:var(--warn-ink,#8F4A0A);font:700 9.5px/1.6 Figtree;letter-spacing:.06em">MEETING</span><span style="padding:2px 7px;border-radius:5px;background:var(--accent-wash,#E6F2EF);color:var(--accent-ink,#0A5749);font:700 9.5px/1.6 Figtree;letter-spacing:.06em">PINNED</span><span style="margin-left:auto;font:400 11px/1 Figtree;color:var(--ink-soft,#4A5B56)">08 Sep</span></div>
+              <div style="font:700 15px/1.35 Figtree;margin-bottom:6px">AGM notice — 28 September 2026</div>
+              <div style="font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56);margin-bottom:12px">Annual General Meeting at the clubhouse, 10:30. Agenda, audited accounts and budget attached. Fourteen clear days notice as required.</div>
+              <div style="display:flex;gap:8px;align-items:center"><span style="flex:1;height:38px;border-radius:10px;background:#0E6B5C;color:#fff;display:flex;align-items:center;justify-content:center;font:600 12.5px/1 Figtree">Acknowledge</span><span style="height:38px;padding:0 13px;border-radius:10px;border:1px solid var(--border-strong,#CCD6D2);display:flex;align-items:center;gap:6px;font:600 12.5px/1 Figtree"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"></path></svg>3 files</span></div>
+            </div>
+            <div style="background:var(--surface,#fff);border-radius:15px;padding:15px;margin-bottom:11px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><span style="padding:2px 7px;border-radius:5px;background:var(--info-wash,#EAF0FE);color:var(--info-ink,#12327A);font:700 9.5px/1.6 Figtree;letter-spacing:.06em">WATER</span><span style="margin-left:auto;font:400 11px/1 Figtree;color:var(--ink-soft,#4A5B56)">Yesterday</span></div>
+              <div style="font:600 14px/1.35 Figtree;margin-bottom:5px">Water shutdown, 13 Sep, 10:00 – 14:00</div>
+              <div style="font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">Wing B only. Tank cleaning. Please store water in advance.</div>
+            </div>
+            <div style="background:var(--surface,#fff);border-radius:15px;padding:15px;margin-bottom:11px;opacity:.72">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><span style="padding:2px 7px;border-radius:5px;background:var(--subtle,#F1F4F3);color:var(--ink-soft,#3D4A46);font:700 9.5px/1.6 Figtree;letter-spacing:.06em">GENERAL</span><span style="margin-left:auto;font:400 11px/1 Figtree;color:var(--ink-soft,#4A5B56)">05 Sep</span></div>
+              <div style="font:600 14px/1.35 Figtree;margin-bottom:5px">Diwali decoration committee</div>
+              <div style="font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">Volunteers welcome. Contact the secretary by 20 September.</div>
+            </div>
+            <div style="background:var(--surface,#fff);border-radius:15px;padding:15px;opacity:.72">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><span style="padding:2px 7px;border-radius:5px;background:var(--bad-wash,#FCEDEC);color:var(--bad-ink,#9B2B22);font:700 9.5px/1.6 Figtree;letter-spacing:.06em">EMERGENCY</span><span style="margin-left:auto;font:400 11px/1 Figtree;color:var(--ink-soft,#4A5B56)">28 Aug</span></div>
+              <div style="font:600 14px/1.35 Figtree;margin-bottom:5px">Fire drill — mandatory attendance</div>
+              <div style="font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">You acknowledged on 28 Aug, 19:14.</div>
+            </div>
+          </div>
+          <div style="flex:none;height:58px;border-top:1px solid var(--border,#E3E9E6);background:var(--surface,#fff);display:flex;align-items:center;justify-content:space-around;font:600 9.5px/1 Figtree;color:var(--ink-soft,#5A6B66)"><span style="color:var(--accent-ink,#0E6B5C);font-weight:700">Home</span><span>Bills</span><span>Help</span><span>Gate</span><span>Me</span></div>
+        </div>
+        <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">Acknowledgement is a button, not a read receipt — that record is the society's proof of service.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <section style="max-width:1460px;margin:0 auto">
+    <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:20px;flex-wrap:wrap">
+      <span style="font:600 11.5px/1 'IBM Plex Mono',monospace;letter-spacing:.13em;text-transform:uppercase;color:var(--accent-ink,#0E6B5C)">04 · Membership</span>
+      <h2 style="margin:0;font:700 25px/1.2 Figtree;letter-spacing:-.022em">Governance, bookings and my unit</h2>
+      <p style="margin:0;flex:1;min-width:260px;font:400 14.5px/1.55 Figtree;color:var(--ink-soft,#4A5B56)">Lower frequency, higher stakes. These screens carry the rules that decide who may act.</p>
+    </div>
+    <div style="display:flex;gap:22px;flex-wrap:wrap">
+
+      <div style="width:320px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><span style="font:600 10.5px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">18</span><span style="font:600 13.5px/1.3 Figtree">Meeting &amp; voting</span></div>
+        <div style="width:320px;height:646px;background:var(--canvas,#F7F9F8);border-radius:34px;border:8px solid #0B1512;box-shadow:0 20px 44px -22px rgba(15,26,23,.34);overflow:hidden;display:flex;flex-direction:column">
+          <div style="flex:none;background:var(--surface,#fff);padding:8px 18px 13px;border-bottom:1px solid var(--border,#E3E9E6)">
+            <div style="height:22px;display:flex;align-items:center;justify-content:space-between"><span style="font:700 11px/1 Figtree">9:41</span><span style="width:15px;height:8px;border:1px solid #0F1A17;border-radius:2px"></span></div>
+            <div style="margin-top:12px;display:flex;align-items:center;gap:12px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="2" stroke-linecap="round"><path d="m15 5-7 7 7 7"></path></svg><span style="font:700 16px/1.2 Figtree">AGM 2026</span></div>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:16px">
+            <div style="background:#0E6B5C;border-radius:16px;padding:15px;color:#fff;margin-bottom:11px">
+              <div style="font:600 11px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:#D6EDE6;margin-bottom:9px">28 September 2026 · 10:30</div>
+              <div style="font:700 18px/1.3 Figtree;margin-bottom:12px">Annual General Meeting</div>
+              <div style="display:flex;gap:8px"><span style="flex:1;height:40px;border-radius:11px;background:var(--surface,#fff);color:var(--accent-ink,#0A5749);display:flex;align-items:center;justify-content:center;font:700 13.5px/1 Figtree">I will attend</span><span style="flex:1;height:40px;border-radius:11px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font:600 13.5px/1 Figtree">Send proxy</span></div>
+            </div>
+            <div style="background:var(--surface,#fff);border-radius:15px;padding:14px;margin-bottom:11px">
+              <div style="font:600 13.5px/1.3 Figtree;margin-bottom:9px">Agenda</div>
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <div style="display:flex;gap:10px"><span style="font:600 11px/1.5 'IBM Plex Mono',monospace;color:var(--ink-soft,#4A5B56);flex:none">01</span><span style="font:400 12.5px/1.5 Figtree">Adoption of audited accounts, FY 2025-26</span></div>
+                <div style="display:flex;gap:10px"><span style="font:600 11px/1.5 'IBM Plex Mono',monospace;color:var(--ink-soft,#4A5B56);flex:none">02</span><span style="font:400 12.5px/1.5 Figtree">Budget approval, FY 2026-27</span></div>
+                <div style="display:flex;gap:10px"><span style="font:600 11px/1.5 'IBM Plex Mono',monospace;color:var(--ink-soft,#4A5B56);flex:none">03</span><span style="font:400 12.5px/1.5 Figtree">Interest rate on defaulted dues</span></div>
+                <div style="display:flex;gap:10px"><span style="font:600 11px/1.5 'IBM Plex Mono',monospace;color:var(--ink-soft,#4A5B56);flex:none">04</span><span style="font:400 12.5px/1.5 Figtree">Sinking fund withdrawal for terrace waterproofing</span></div>
+              </div>
+            </div>
+            <div style="background:var(--surface,#fff);border-radius:15px;padding:15px;border:1.5px solid var(--accent-200,#C9E4DC)">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px"><span style="font:600 13.5px/1.3 Figtree">Resolution 3 · your vote</span><span style="padding:2px 8px;border-radius:999px;background:var(--accent-wash,#E6F2EF);color:var(--accent-ink,#0A5749);font:600 10.5px/1.6 Figtree">Open</span></div>
+              <div style="font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56);margin-bottom:12px">Set interest on defaulted dues at 12% simple per annum, the statutory maximum.</div>
+              <div style="display:flex;gap:8px;margin-bottom:11px"><span style="flex:1;height:42px;border-radius:11px;background:#0E6B5C;color:#fff;display:flex;align-items:center;justify-content:center;font:600 13.5px/1 Figtree">For</span><span style="flex:1;height:42px;border-radius:11px;border:1px solid var(--border-strong,#CCD6D2);display:flex;align-items:center;justify-content:center;font:600 13.5px/1 Figtree">Against</span><span style="flex:1;height:42px;border-radius:11px;border:1px solid var(--border-strong,#CCD6D2);display:flex;align-items:center;justify-content:center;font:600 13.5px/1 Figtree">Abstain</span></div>
+              <div style="font:400 11.5px/1.45 Figtree;color:var(--ink-soft,#4A5B56)">One vote per flat, by the primary owner. Tenants cannot vote.</div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">Who may vote is stated on the screen, not discovered after tapping.</div>
+      </div>
+
+      <div style="width:320px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><span style="font:600 10.5px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">19</span><span style="font:600 13.5px/1.3 Figtree">Book an amenity</span></div>
+        <div style="width:320px;height:646px;background:var(--canvas,#F7F9F8);border-radius:34px;border:8px solid #0B1512;box-shadow:0 20px 44px -22px rgba(15,26,23,.34);overflow:hidden;display:flex;flex-direction:column">
+          <div style="flex:none;background:var(--surface,#fff);padding:8px 18px 13px;border-bottom:1px solid var(--border,#E3E9E6)">
+            <div style="height:22px;display:flex;align-items:center;justify-content:space-between"><span style="font:700 11px/1 Figtree">9:41</span><span style="width:15px;height:8px;border:1px solid #0F1A17;border-radius:2px"></span></div>
+            <div style="margin-top:12px;display:flex;align-items:center;gap:12px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0F1A17" stroke-width="2" stroke-linecap="round"><path d="m15 5-7 7 7 7"></path></svg><span style="font:700 16px/1.2 Figtree">Clubhouse</span></div>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:16px">
+            <div style="height:96px;border-radius:15px;background:linear-gradient(135deg,#C9E4DC,#6FB3A1);margin-bottom:14px;display:flex;align-items:flex-end;padding:13px"><span style="font:600 12px/1.3 Figtree;color:#093B31">Capacity 80 · ₹1,000 per hour · ₹5,000 deposit</span></div>
+            <div style="font:600 12.5px/1 Figtree;margin-bottom:10px">Saturday, 14 September</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
+              <span style="height:38px;border-radius:10px;background:var(--subtle,#EDF1EF);color:var(--ink-dim,#A8B5B0);display:flex;align-items:center;justify-content:center;font:600 12px/1 Figtree;text-decoration:line-through">10–14</span>
+              <span style="height:38px;border-radius:10px;background:var(--surface,#fff);border:1px solid var(--border-strong,#CCD6D2);display:flex;align-items:center;justify-content:center;font:600 12px/1 Figtree">14–18</span>
+              <span style="height:38px;border-radius:10px;background:#0E6B5C;color:#fff;display:flex;align-items:center;justify-content:center;font:600 12px/1 Figtree">18–22</span>
+            </div>
+            <div style="background:var(--surface,#fff);border-radius:15px;padding:15px;margin-bottom:13px">
+              <div style="display:flex;justify-content:space-between;font:400 12.5px/1.9 Figtree;color:var(--ink-soft,#4A5B56)"><span>Slot charge · 4 h</span><span style="font-weight:600;color:var(--ink,#0F1A17);font-variant-numeric:tabular-nums">₹4,000.00</span></div>
+              <div style="display:flex;justify-content:space-between;font:400 12.5px/1.9 Figtree;color:var(--ink-soft,#4A5B56)"><span>Refundable deposit</span><span style="font-weight:600;color:var(--ink,#0F1A17);font-variant-numeric:tabular-nums">₹5,000.00</span></div>
+              <div style="margin-top:7px;padding-top:8px;border-top:1px solid var(--border-soft,#EDF1EF);display:flex;justify-content:space-between;font:700 14px/1.4 Figtree"><span>Payable now</span><span style="font-variant-numeric:tabular-nums">₹9,000.00</span></div>
+            </div>
+            <div style="padding:12px 14px;border-radius:12px;background:var(--accent-wash,#E6F2EF);font:400 12.5px/1.5 Figtree;color:var(--accent-ink,#294C44);margin-bottom:13px">Your dues are clear, so this slot can be confirmed immediately. Cancelling within 48 hours forfeits the slot charge.</div>
+            <div style="display:flex;gap:8px"><span style="flex:1;height:46px;border-radius:12px;background:#0E6B5C;color:#fff;display:flex;align-items:center;justify-content:center;font:700 14.5px/1 Figtree">Pay &amp; confirm</span><span style="height:46px;padding:0 15px;border-radius:12px;border:1px solid var(--border-strong,#CCD6D2);background:var(--surface,#fff);display:flex;align-items:center;justify-content:center;font:600 14px/1 Figtree">Rules</span></div>
+          </div>
+        </div>
+        <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">Eligibility is resolved before the calendar is shown, so a booking never fails at payment.</div>
+      </div>
+
+      <div style="width:320px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><span style="font:600 10.5px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">20</span><span style="font:600 13.5px/1.3 Figtree">Request centre</span></div>
+        <div style="width:320px;height:646px;background:var(--canvas,#F7F9F8);border-radius:34px;border:8px solid #0B1512;box-shadow:0 20px 44px -22px rgba(15,26,23,.34);overflow:hidden;display:flex;flex-direction:column">
+          <div style="flex:none;background:var(--surface,#fff);padding:8px 18px 13px;border-bottom:1px solid var(--border,#E3E9E6)">
+            <div style="height:22px;display:flex;align-items:center;justify-content:space-between"><span style="font:700 11px/1 Figtree">9:41</span><span style="width:15px;height:8px;border:1px solid #0F1A17;border-radius:2px"></span></div>
+            <div style="margin-top:12px;font:700 21px/1.2 Figtree;letter-spacing:-.02em">Requests</div>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:16px">
+            <div style="background:var(--surface,#fff);border-radius:15px;padding:16px;margin-bottom:13px">
+              <div style="display:flex;justify-content:space-between;margin-bottom:10px"><span style="font:600 14px/1.3 Figtree">NOC for sale</span><span style="padding:2px 8px;border-radius:999px;background:var(--warn-wash,#FDF3E7);color:var(--warn-ink,#8F4A0A);font:600 10.5px/1.6 Figtree">In progress</span></div>
+              <div style="display:flex;gap:0;margin-bottom:11px">
+                <div style="flex:1"><div style="height:4px;border-radius:2px;background:#0E6B5C"></div><div style="margin-top:6px;font:600 9.5px/1.3 Figtree;color:var(--accent-ink,#0A5749)">Raised</div></div>
+                <div style="flex:1;padding-left:3px"><div style="height:4px;border-radius:2px;background:#0E6B5C"></div><div style="margin-top:6px;font:600 9.5px/1.3 Figtree;color:var(--accent-ink,#0A5749)">Dues clear</div></div>
+                <div style="flex:1;padding-left:3px"><div style="height:4px;border-radius:2px;background:#B45309"></div><div style="margin-top:6px;font:600 9.5px/1.3 Figtree;color:var(--warn-ink,#8F4A0A)">Committee</div></div>
+                <div style="flex:1;padding-left:3px"><div style="height:4px;border-radius:2px;background:var(--border,#E3E9E6)"></div><div style="margin-top:6px;font:600 9.5px/1.3 Figtree;color:var(--ink-muted,#8A9995)">Issued</div></div>
+              </div>
+              <div style="font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">Raised 08 Sep · fee ₹2,500 paid · expected by 13 Sep</div>
+            </div>
+            <div style="font:600 11px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#4A5B56);margin-bottom:11px">Raise a new request</div>
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <div style="background:var(--surface,#fff);border-radius:13px;padding:13px 14px;display:flex;align-items:center;gap:12px"><span style="width:34px;height:34px;border-radius:10px;background:var(--ok-wash,#E8F5EC);display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#167A3C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"></path></svg></span><span style="flex:1"><span style="display:block;font:600 13.5px/1.3 Figtree">No-dues certificate</span><span style="display:block;margin-top:2px;font:400 11.5px/1.3 Figtree;color:var(--ok-ink,#14663A)">Instant · free</span></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A8B5B0" stroke-width="2" stroke-linecap="round"><path d="m9 5 7 7-7 7"></path></svg></div>
+              <div style="background:var(--surface,#fff);border-radius:13px;padding:13px 14px;display:flex;align-items:center;gap:12px"><span style="width:34px;height:34px;border-radius:10px;background:var(--subtle,#F1F4F3);display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3D4A46" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"></path></svg></span><span style="flex:1"><span style="display:block;font:600 13.5px/1.3 Figtree">Renovation permit</span><span style="display:block;margin-top:2px;font:400 11.5px/1.3 Figtree;color:var(--ink-soft,#4A5B56)">₹5,000 deposit · 3 days</span></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A8B5B0" stroke-width="2" stroke-linecap="round"><path d="m9 5 7 7-7 7"></path></svg></div>
+              <div style="background:var(--surface,#fff);border-radius:13px;padding:13px 14px;display:flex;align-items:center;gap:12px"><span style="width:34px;height:34px;border-radius:10px;background:var(--subtle,#F1F4F3);display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3D4A46" stroke-width="1.9" stroke-linecap="round"><circle cx="9" cy="8" r="3.2"></circle><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"></path></svg></span><span style="flex:1"><span style="display:block;font:600 13.5px/1.3 Figtree">Add a tenant</span><span style="display:block;margin-top:2px;font:400 11.5px/1.3 Figtree;color:var(--ink-soft,#4A5B56)">Agreement + police intimation</span></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A8B5B0" stroke-width="2" stroke-linecap="round"><path d="m9 5 7 7-7 7"></path></svg></div>
+              <div style="background:var(--surface,#fff);border-radius:13px;padding:13px 14px;display:flex;align-items:center;gap:12px"><span style="width:34px;height:34px;border-radius:10px;background:var(--subtle,#F1F4F3);display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3D4A46" stroke-width="1.9" stroke-linecap="round"><rect x="2.5" y="6" width="19" height="13" rx="3"></rect></svg></span><span style="flex:1"><span style="display:block;font:600 13.5px/1.3 Figtree">Parking change</span><span style="display:block;margin-top:2px;font:400 11.5px/1.3 Figtree;color:var(--ink-soft,#4A5B56)">Subject to availability</span></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A8B5B0" stroke-width="2" stroke-linecap="round"><path d="m9 5 7 7-7 7"></path></svg></div>
+            </div>
+          </div>
+          <div style="flex:none;height:58px;border-top:1px solid var(--border,#E3E9E6);background:var(--surface,#fff);display:flex;align-items:center;justify-content:space-around;font:600 9.5px/1 Figtree;color:var(--ink-soft,#5A6B66)"><span>Home</span><span>Bills</span><span>Help</span><span>Gate</span><span style="color:var(--accent-ink,#0E6B5C);font-weight:700">Me</span></div>
+        </div>
+        <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">Fee and turnaround are on the list item, before anything is filled in.</div>
+      </div>
+
+      <div style="width:320px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><span style="font:600 10.5px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">21</span><span style="font:600 13.5px/1.3 Figtree">My unit &amp; profile</span></div>
+        <div style="width:320px;height:646px;background:var(--canvas,#F7F9F8);border-radius:34px;border:8px solid #0B1512;box-shadow:0 20px 44px -22px rgba(15,26,23,.34);overflow:hidden;display:flex;flex-direction:column">
+          <div style="flex:none;background:var(--surface,#fff);padding:8px 18px 16px;border-bottom:1px solid var(--border,#E3E9E6)">
+            <div style="height:22px;display:flex;align-items:center;justify-content:space-between"><span style="font:700 11px/1 Figtree">9:41</span><span style="width:15px;height:8px;border:1px solid #0F1A17;border-radius:2px"></span></div>
+            <div style="margin-top:14px;display:flex;align-items:center;gap:13px">
+              <span style="width:52px;height:52px;border-radius:16px;background:var(--accent-wash,#E6F2EF);display:flex;align-items:center;justify-content:center;font:700 17px/1 Figtree;color:var(--accent-ink,#0A5749)">AD</span>
+              <span style="flex:1;min-width:0"><span style="display:block;font:700 17px/1.25 Figtree">Anjali Deshpande</span><span style="display:block;margin-top:3px;font:400 12.5px/1.3 Figtree;color:var(--ink-soft,#4A5B56)">Primary owner · A-1204</span></span>
+            </div>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:14px 16px">
+            <div style="background:var(--surface,#fff);border-radius:15px;padding:15px;margin-bottom:12px">
+              <div style="font:600 11px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#4A5B56);margin-bottom:11px">My unit</div>
+              <div style="display:flex;justify-content:space-between;font:400 12.5px/1.9 Figtree;color:var(--ink-soft,#4A5B56)"><span>Carpet area</span><span style="font-weight:600;color:var(--ink,#0F1A17)">842 sq ft</span></div>
+              <div style="display:flex;justify-content:space-between;font:400 12.5px/1.9 Figtree;color:var(--ink-soft,#4A5B56)"><span>Occupancy</span><span style="font-weight:600;color:var(--ink,#0F1A17)">Tenanted</span></div>
+              <div style="display:flex;justify-content:space-between;font:400 12.5px/1.9 Figtree;color:var(--ink-soft,#4A5B56)"><span>Share certificate</span><span style="font-weight:600;color:var(--ink,#0F1A17);font-family:'IBM Plex Mono',monospace">SC/0412</span></div>
+              <div style="display:flex;justify-content:space-between;font:400 12.5px/1.9 Figtree;color:var(--ink-soft,#4A5B56)"><span>Parking</span><span style="font-weight:600;color:var(--ink,#0F1A17)">P1-14, P1-15</span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:2px;background:var(--surface,#fff);border-radius:15px;overflow:hidden;margin-bottom:12px">
+              <div style="padding:13px 15px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border-soft,#F1F4F3)"><span style="flex:1;font:500 13.5px/1.3 Figtree">Family members</span><span style="font:400 12.5px/1 Figtree;color:var(--ink-soft,#4A5B56)">3</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A8B5B0" stroke-width="2" stroke-linecap="round"><path d="m9 5 7 7-7 7"></path></svg></div>
+              <div style="padding:13px 15px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border-soft,#F1F4F3)"><span style="flex:1;font:500 13.5px/1.3 Figtree">My tenant</span><span style="font:400 12.5px/1 Figtree;color:var(--ink-soft,#4A5B56)">Kiran Patil</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A8B5B0" stroke-width="2" stroke-linecap="round"><path d="m9 5 7 7-7 7"></path></svg></div>
+              <div style="padding:13px 15px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border-soft,#F1F4F3)"><span style="flex:1;font:500 13.5px/1.3 Figtree">Vehicles</span><span style="font:400 12.5px/1 Figtree;color:var(--ink-soft,#4A5B56)">2</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A8B5B0" stroke-width="2" stroke-linecap="round"><path d="m9 5 7 7-7 7"></path></svg></div>
+              <div style="padding:13px 15px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border-soft,#F1F4F3)"><span style="flex:1;font:500 13.5px/1.3 Figtree">Domestic help</span><span style="font:400 12.5px/1 Figtree;color:var(--ink-soft,#4A5B56)">1 verified</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A8B5B0" stroke-width="2" stroke-linecap="round"><path d="m9 5 7 7-7 7"></path></svg></div>
+              <div style="padding:13px 15px;display:flex;align-items:center;gap:12px"><span style="flex:1;font:500 13.5px/1.3 Figtree">Nominee</span><span style="font:400 12.5px/1 Figtree;color:var(--ink-soft,#4A5B56)">Filed</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A8B5B0" stroke-width="2" stroke-linecap="round"><path d="m9 5 7 7-7 7"></path></svg></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:2px;background:var(--surface,#fff);border-radius:15px;overflow:hidden;margin-bottom:12px">
+              <div style="padding:13px 15px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border-soft,#F1F4F3)"><span style="flex:1;font:500 13.5px/1.3 Figtree">Notification preferences</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A8B5B0" stroke-width="2" stroke-linecap="round"><path d="m9 5 7 7-7 7"></path></svg></div>
+              <div style="padding:13px 15px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border-soft,#F1F4F3)"><span style="flex:1;font:500 13.5px/1.3 Figtree">Change password</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A8B5B0" stroke-width="2" stroke-linecap="round"><path d="m9 5 7 7-7 7"></path></svg></div>
+              <div style="padding:13px 15px;display:flex;align-items:center;gap:12px"><span style="flex:1;font:500 13.5px/1.3 Figtree">Signed-in devices</span><span style="font:400 12.5px/1 Figtree;color:var(--ink-soft,#4A5B56)">2</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A8B5B0" stroke-width="2" stroke-linecap="round"><path d="m9 5 7 7-7 7"></path></svg></div>
+            </div>
+            <div style="padding:12px 14px;border-radius:12px;background:var(--surface,#fff);font:400 12px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">Something wrong here? Report it and the office gets a task with your note attached.</div>
+          </div>
+          <div style="flex:none;height:58px;border-top:1px solid var(--border,#E3E9E6);background:var(--surface,#fff);display:flex;align-items:center;justify-content:space-around;font:600 9.5px/1 Figtree;color:var(--ink-soft,#5A6B66)"><span>Home</span><span>Bills</span><span>Help</span><span>Gate</span><span style="color:var(--accent-ink,#0E6B5C);font-weight:700">Me</span></div>
+        </div>
+        <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">Residents cannot edit society-held facts directly — corrections go through an approval queue.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <section style="max-width:1460px;margin:52px auto 0">
+    <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:16px;flex-wrap:wrap">
+      <span style="font:600 11.5px/1 'IBM Plex Mono',monospace;letter-spacing:.13em;text-transform:uppercase;color:var(--accent-ink,#0E6B5C)">05 · Who you are</span>
+      <h2 style="margin:0;font:700 25px/1.2 Figtree;letter-spacing:-.022em">One person, many units</h2>
+      <p style="margin:0;flex:1;min-width:260px;font:400 14.5px/1.55 Figtree;color:var(--ink-soft,#4A5B56)">The same login can be an owner of several flats, a tenant in someone else's, or both at once. The app resolves this with a unit context: one flat is active at a time, and that flat's relationship decides what the screen offers.</p>
+    </div>
+
+    <div style="background:var(--surface,#fff);border:1px solid var(--border,#DDE5E2);border-radius:16px;overflow:hidden;margin-bottom:26px">
+      <div style="display:grid;grid-template-columns:170px 1fr 1fr 1fr;padding:12px 20px;background:var(--canvas,#F7F9F8);border-bottom:1px solid var(--border-soft,#EDF1EF);gap:12px">
+        <span style="font:600 11px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#4A5B56)">Capability</span>
+        <span style="font:600 11px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#4A5B56)">Owner</span>
+        <span style="font:600 11px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#4A5B56)">Tenant</span>
+        <span style="font:600 11px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#4A5B56)">Owner + tenant</span>
+      </div>
+      <div style="display:grid;grid-template-columns:170px 1fr 1fr 1fr;padding:12px 20px;border-bottom:1px solid var(--border-soft,#F1F4F3);gap:12px"><span style="font:500 13.5px/1.4 Figtree">Bills &amp; pay</span><span style="font:400 13px/1.4 Figtree;color:var(--ok-ink,#14663A)">All owned flats</span><span style="font:400 13px/1.4 Figtree;color:var(--ink-soft,#4A5B56)">Only if bill-payer</span><span style="font:400 13px/1.4 Figtree;color:var(--ok-ink,#14663A)">Owned flats + rented if bill-payer</span></div>
+      <div style="display:grid;grid-template-columns:170px 1fr 1fr 1fr;padding:12px 20px;border-bottom:1px solid var(--border-soft,#F1F4F3);gap:12px"><span style="font:500 13.5px/1.4 Figtree">Ledger &amp; receipts</span><span style="font:400 13px/1.4 Figtree;color:var(--ok-ink,#14663A)">Yes</span><span style="font:400 13px/1.4 Figtree;color:var(--ink-soft,#4A5B56)">Own payments only</span><span style="font:400 13px/1.4 Figtree;color:var(--ok-ink,#14663A)">Per active unit</span></div>
+      <div style="display:grid;grid-template-columns:170px 1fr 1fr 1fr;padding:12px 20px;border-bottom:1px solid var(--border-soft,#F1F4F3);gap:12px"><span style="font:500 13.5px/1.4 Figtree">Voting on resolutions</span><span style="font:400 13px/1.4 Figtree;color:var(--ok-ink,#14663A)">One vote per owned flat</span><span style="font:400 13px/1.4 Figtree;color:var(--bad-ink,#9B2B22)">No</span><span style="font:400 13px/1.4 Figtree;color:var(--ink-soft,#4A5B56)">Only on owned flats</span></div>
+      <div style="display:grid;grid-template-columns:170px 1fr 1fr 1fr;padding:12px 20px;border-bottom:1px solid var(--border-soft,#F1F4F3);gap:12px"><span style="font:500 13.5px/1.4 Figtree">Sale NOC &amp; transfer</span><span style="font:400 13px/1.4 Figtree;color:var(--ok-ink,#14663A)">Primary owner only</span><span style="font:400 13px/1.4 Figtree;color:var(--bad-ink,#9B2B22)">No</span><span style="font:400 13px/1.4 Figtree;color:var(--ink-soft,#4A5B56)">Owned flats only</span></div>
+      <div style="display:grid;grid-template-columns:170px 1fr 1fr 1fr;padding:12px 20px;border-bottom:1px solid var(--border-soft,#F1F4F3);gap:12px"><span style="font:500 13.5px/1.4 Figtree">Add / end a tenancy</span><span style="font:400 13px/1.4 Figtree;color:var(--ok-ink,#14663A)">Yes, per flat</span><span style="font:400 13px/1.4 Figtree;color:var(--bad-ink,#9B2B22)">No</span><span style="font:400 13px/1.4 Figtree;color:var(--ink-soft,#4A5B56)">Owned flats only</span></div>
+      <div style="display:grid;grid-template-columns:170px 1fr 1fr 1fr;padding:12px 20px;border-bottom:1px solid var(--border-soft,#F1F4F3);gap:12px"><span style="font:500 13.5px/1.4 Figtree">Helpdesk, gate, notices, amenities</span><span style="font:400 13px/1.4 Figtree;color:var(--ok-ink,#14663A)">Yes</span><span style="font:400 13px/1.4 Figtree;color:var(--ok-ink,#14663A)">Yes</span><span style="font:400 13px/1.4 Figtree;color:var(--ok-ink,#14663A)">Yes, per active unit</span></div>
+      <div style="display:grid;grid-template-columns:170px 1fr 1fr 1fr;padding:12px 20px;gap:12px"><span style="font:500 13.5px/1.4 Figtree">Access ends when</span><span style="font:400 13px/1.4 Figtree;color:var(--ink-soft,#4A5B56)">Cessation date is set</span><span style="font:400 13px/1.4 Figtree;color:var(--ink-soft,#4A5B56)">Agreement expires · T-30 reminder</span><span style="font:400 13px/1.4 Figtree;color:var(--ink-soft,#4A5B56)">Per unit, independently</span></div>
+    </div>
+
+    <div style="display:flex;gap:22px;flex-wrap:wrap">
+
+      <div style="width:320px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><span style="font:600 10.5px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">22</span><span style="font:600 13.5px/1.3 Figtree">Unit switcher</span></div>
+        <div style="width:320px;height:646px;background:var(--canvas,#F7F9F8);border-radius:34px;border:8px solid #0B1512;box-shadow:0 20px 44px -22px rgba(15,26,23,.34);overflow:hidden;display:flex;flex-direction:column;position:relative">
+          <div style="flex:none;background:#0E6B5C;padding:8px 20px 16px;color:#fff;opacity:.5">
+            <div style="height:22px;display:flex;align-items:center;justify-content:space-between"><span style="font:700 11px/1 Figtree">9:41</span><span style="width:15px;height:8px;border:1px solid #fff;border-radius:2px"></span></div>
+          </div>
+          <div style="flex:1;background:rgba(15,26,23,.46);display:flex;align-items:flex-end">
+            <div style="width:100%;background:var(--surface,#fff);border-radius:22px 22px 0 0;padding:14px 18px 18px;box-shadow:0 -14px 40px -18px rgba(15,26,23,.4)">
+              <div style="width:38px;height:4px;border-radius:2px;background:var(--border,#DDE5E2);margin:0 auto 14px"></div>
+              <div style="font:700 17px/1.25 Figtree;letter-spacing:-.016em;margin-bottom:4px">Switch unit</div>
+              <div style="font:400 12.5px/1.45 Figtree;color:var(--ink-soft,#4A5B56);margin-bottom:15px">You are linked to 4 flats across 2 societies.</div>
+              <div style="font:600 10.5px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#4A5B56);margin-bottom:9px">Shanti Vihar CHS</div>
+              <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+                <div style="border:1.5px solid #0E6B5C;border-radius:13px;padding:12px 13px;display:flex;align-items:center;gap:11px"><span style="width:34px;height:34px;border-radius:10px;background:var(--accent-wash,#E6F2EF);display:flex;align-items:center;justify-content:center;font:700 11px/1 'IBM Plex Mono',monospace;color:var(--accent-ink,#0A5749);flex:none">A12</span><span style="flex:1;min-width:0"><span style="display:block;font:600 13.5px/1.3 Figtree">A-1204</span><span style="display:block;margin-top:2px;font:400 11.5px/1.3 Figtree;color:var(--ink-soft,#4A5B56)">Owner · tenanted out · ₹12,840.50 due</span></span><span style="width:19px;height:19px;border-radius:50%;background:#0E6B5C;display:flex;align-items:center;justify-content:center;flex:none"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"></path></svg></span></div>
+                <div style="border:1px solid var(--border,#E3E9E6);border-radius:13px;padding:12px 13px;display:flex;align-items:center;gap:11px;background:var(--surface,#fff)"><span style="width:34px;height:34px;border-radius:10px;background:var(--subtle,#F1F4F3);display:flex;align-items:center;justify-content:center;font:700 11px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#3D4A46);flex:none">A07</span><span style="flex:1;min-width:0"><span style="display:block;font:600 13.5px/1.3 Figtree">A-0710</span><span style="display:block;margin-top:2px;font:400 11.5px/1.3 Figtree;color:var(--ink-soft,#4A5B56)">Owner · self-occupied · clear</span></span></div>
+                <div style="border:1px solid var(--border,#E3E9E6);border-radius:13px;padding:12px 13px;display:flex;align-items:center;gap:11px;background:var(--surface,#fff)"><span style="width:34px;height:34px;border-radius:10px;background:var(--info-wash,#EAF0FE);display:flex;align-items:center;justify-content:center;font:700 11px/1 'IBM Plex Mono',monospace;color:var(--info-ink,#12327A);flex:none">C04</span><span style="flex:1;min-width:0"><span style="display:block;font:600 13.5px/1.3 Figtree">C-0402</span><span style="display:block;margin-top:2px;font:400 11.5px/1.3 Figtree;color:var(--info-ink,#12327A)">Tenant · you are the bill-payer</span></span></div>
+              </div>
+              <div style="font:600 10.5px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#4A5B56);margin-bottom:9px">Green Meadows CHS</div>
+              <div style="border:1px solid var(--border,#E3E9E6);border-radius:13px;padding:12px 13px;display:flex;align-items:center;gap:11px;background:var(--surface,#fff);margin-bottom:14px"><span style="width:34px;height:34px;border-radius:10px;background:var(--subtle,#F1F4F3);display:flex;align-items:center;justify-content:center;font:700 11px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#3D4A46);flex:none">B03</span><span style="flex:1;min-width:0"><span style="display:block;font:600 13.5px/1.3 Figtree">B-0311</span><span style="display:block;margin-top:2px;font:400 11.5px/1.3 Figtree;color:var(--ink-soft,#4A5B56)">Co-owner · ₹14,200.00 due</span></span></div>
+              <div style="padding:11px 13px;border-radius:11px;background:var(--canvas,#F7F9F8);border:1px solid var(--border-soft,#EDF1EF);font:400 11.5px/1.45 Figtree;color:var(--ink-soft,#4A5B56)">Switching changes bills, ledger, gate approvals and voting rights to that flat. Notices for every linked flat stay in one feed.</div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">Each row states the relationship and the money, so switching is never a guess.</div>
+      </div>
+
+      <div style="width:320px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><span style="font:600 10.5px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">23</span><span style="font:600 13.5px/1.3 Figtree">Owner of many flats</span></div>
+        <div style="width:320px;height:646px;background:var(--canvas,#F7F9F8);border-radius:34px;border:8px solid #0B1512;box-shadow:0 20px 44px -22px rgba(15,26,23,.34);overflow:hidden;display:flex;flex-direction:column">
+          <div style="flex:none;background:#0E6B5C;padding:8px 18px 18px;color:#fff">
+            <div style="height:22px;display:flex;align-items:center;justify-content:space-between"><span style="font:700 11px/1 Figtree">9:41</span><span style="width:15px;height:8px;border:1px solid #fff;border-radius:2px"></span></div>
+            <div style="margin-top:12px;display:flex;align-items:center;gap:11px">
+              <span style="width:36px;height:36px;border-radius:11px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font:700 12px/1 Figtree">AD</span>
+              <span style="flex:1;min-width:0"><span style="display:block;font:600 14.5px/1.3 Figtree">Anjali Deshpande</span><span style="display:block;margin-top:2px;font:400 12px/1.3 Figtree;color:#C9E4DC">Owner · 3 flats · Shanti Vihar</span></span>
+              <span style="height:30px;padding:0 11px;border-radius:999px;background:rgba(255,255,255,.18);display:flex;align-items:center;gap:6px;font:600 11.5px/1 Figtree">All flats<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m7 10 5 5 5-5"></path></svg></span>
+            </div>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:0 16px">
+            <div style="margin-top:-8px;background:var(--surface,#fff);border-radius:18px;padding:17px;box-shadow:0 8px 22px -12px rgba(15,26,23,.2);margin-bottom:12px">
+              <div style="font:600 11px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#4A5B56);margin-bottom:9px">Total across 3 flats</div>
+              <div style="font:700 28px/1 Figtree;letter-spacing:-.026em;font-variant-numeric:tabular-nums">₹27,040.50</div>
+              <div style="margin-top:8px;display:flex;gap:7px;flex-wrap:wrap"><span style="padding:3px 9px;border-radius:999px;background:var(--bad-wash,#FCEDEC);color:var(--bad-ink,#9B2B22);font:600 11px/1.5 Figtree">1 overdue</span><span style="padding:3px 9px;border-radius:999px;background:var(--warn-wash,#FDF3E7);color:var(--warn-ink,#8F4A0A);font:600 11px/1.5 Figtree">1 due in 4 days</span><span style="padding:3px 9px;border-radius:999px;background:var(--ok-wash,#E8F5EC);color:var(--ok-ink,#14663A);font:600 11px/1.5 Figtree">1 clear</span></div>
+              <span style="margin-top:14px;display:flex;height:46px;border-radius:12px;background:#0E6B5C;color:#fff;align-items:center;justify-content:center;font:700 15px/1 Figtree">Pay all ₹27,040.50</span>
+            </div>
+            <div style="font:600 10.5px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#4A5B56);margin-bottom:9px">My flats</div>
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <div style="background:var(--surface,#fff);border-radius:14px;padding:13px 14px;border-left:3px solid #C0342B"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><span style="font:600 14px/1.3 Figtree">B-0311</span><span style="font:700 14px/1 Figtree;font-variant-numeric:tabular-nums;color:var(--bad,#C0342B)">₹14,200.00</span></div><div style="font:400 11.5px/1.4 Figtree;color:var(--ink-soft,#4A5B56)">Co-owner · tenanted · overdue 12 days</div></div>
+              <div style="background:var(--surface,#fff);border-radius:14px;padding:13px 14px;border-left:3px solid #B45309"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><span style="font:600 14px/1.3 Figtree">A-1204</span><span style="font:700 14px/1 Figtree;font-variant-numeric:tabular-nums">₹12,840.50</span></div><div style="font:400 11.5px/1.4 Figtree;color:var(--ink-soft,#4A5B56)">Primary owner · tenanted · due 15 Sep</div></div>
+              <div style="background:var(--surface,#fff);border-radius:14px;padding:13px 14px;border-left:3px solid #167A3C"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><span style="font:600 14px/1.3 Figtree">A-0710</span><span style="font:700 14px/1 Figtree;color:var(--ok,#167A3C)">Clear</span></div><div style="font:400 11.5px/1.4 Figtree;color:var(--ink-soft,#4A5B56)">Primary owner · self-occupied</div></div>
+            </div>
+            <div style="margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--accent-wash,#E6F2EF);font:400 12px/1.5 Figtree;color:var(--accent-ink,#294C44)">Three votes at the AGM — one per flat you are primary owner of. B-0311 is a co-ownership, so its vote sits with the primary owner.</div>
+          </div>
+          <div style="flex:none;height:58px;border-top:1px solid var(--border,#E3E9E6);background:var(--surface,#fff);display:flex;align-items:center;justify-content:space-around;font:600 9.5px/1 Figtree;color:var(--ink-soft,#5A6B66)"><span style="color:var(--accent-ink,#0E6B5C);font-weight:700">Home</span><span>Bills</span><span>Help</span><span>Gate</span><span>Me</span></div>
+        </div>
+        <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">A portfolio, not a single flat: consolidated dues, one payment, per-flat status.</div>
+      </div>
+
+      <div style="width:320px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><span style="font:600 10.5px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">24</span><span style="font:600 13.5px/1.3 Figtree">Tenant home</span></div>
+        <div style="width:320px;height:646px;background:var(--canvas,#F7F9F8);border-radius:34px;border:8px solid #0B1512;box-shadow:0 20px 44px -22px rgba(15,26,23,.34);overflow:hidden;display:flex;flex-direction:column">
+          <div style="flex:none;background:#1D4ED8;padding:8px 18px 18px;color:#fff">
+            <div style="height:22px;display:flex;align-items:center;justify-content:space-between"><span style="font:700 11px/1 Figtree">9:41</span><span style="width:15px;height:8px;border:1px solid #fff;border-radius:2px"></span></div>
+            <div style="margin-top:12px;display:flex;align-items:center;gap:11px">
+              <span style="width:36px;height:36px;border-radius:11px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font:700 12px/1 Figtree">KP</span>
+              <span style="flex:1;min-width:0"><span style="display:block;font:600 14.5px/1.3 Figtree">Kiran Patil</span><span style="display:block;margin-top:2px;font:400 12px/1.3 Figtree;color:#CBD9FB">Tenant · A-1204</span></span>
+              <span style="position:relative;width:32px;height:32px;border-radius:10px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"></path><path d="M10 19a2 2 0 0 0 4 0"></path></svg></span>
+            </div>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:0 16px">
+            <div style="margin-top:-8px;background:var(--surface,#fff);border-radius:18px;padding:17px;box-shadow:0 8px 22px -12px rgba(15,26,23,.2);margin-bottom:10px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font:600 11px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#4A5B56)">Maintenance</span><span style="padding:2px 8px;border-radius:999px;background:var(--info-wash,#EAF0FE);color:var(--info-ink,#12327A);font:600 10.5px/1.6 Figtree">You pay</span></div>
+              <div style="font:700 28px/1 Figtree;letter-spacing:-.026em;font-variant-numeric:tabular-nums">₹12,840.50</div>
+              <div style="margin-top:8px;font:400 12.5px/1.4 Figtree;color:var(--ink-soft,#4A5B56)">Due 15 Sep · the owner set you as bill-payer</div>
+              <span style="margin-top:14px;display:flex;height:46px;border-radius:12px;background:#0E6B5C;color:#fff;align-items:center;justify-content:center;font:700 15px/1 Figtree">Pay now</span>
+            </div>
+            <div style="background:var(--surface,#fff);border-radius:15px;padding:13px 15px;margin-bottom:10px">
+              <div style="font:600 10.5px/1 Figtree;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft,#4A5B56);margin-bottom:8px">My tenancy</div>
+              <div style="display:flex;justify-content:space-between;font:400 12.5px/1.85 Figtree;color:var(--ink-soft,#4A5B56)"><span>Agreement ends</span><span style="font-weight:600;color:var(--warn,#B45309)">30 Nov 2026</span></div>
+              <div style="display:flex;justify-content:space-between;font:400 12.5px/1.85 Figtree;color:var(--ink-soft,#4A5B56)"><span>Police intimation</span><span style="font-weight:600;color:var(--ok-ink,#14663A)">Filed</span></div>
+              <div style="display:flex;justify-content:space-between;font:400 12.5px/1.85 Figtree;color:var(--ink-soft,#4A5B56)"><span>Allowed occupants</span><span style="font-weight:600;color:var(--ink,#0F1A17)">3</span></div>
+              <div style="margin-top:9px;padding:10px 12px;border-radius:10px;background:var(--warn-wash,#FDF3E7);font:400 11.5px/1.45 Figtree;color:var(--warn-ink,#7C3D06)">Access ends with the agreement unless the owner extends it. Reminder at T-30.</div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">
+              <div style="background:var(--surface,#fff);border-radius:13px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:6px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0E6B5C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h13A2.5 2.5 0 0 1 21 8.5v7A2.5 2.5 0 0 1 18.5 18h-13A2.5 2.5 0 0 1 3 15.5Z"></path></svg><span style="font:600 9.5px/1.2 Figtree;text-align:center">Complaint</span></div>
+              <div style="background:var(--surface,#fff);border-radius:13px;padding:11px 4px;display:flex;flex-direction:column;align-items:center;gap:6px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0E6B5C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7.5 3v6c0 4.6-3.1 8-7.5 9.5C7.6 20 4.5 16.6 4.5 12V6Z"></path></svg><span style="font:600 9.5px/1.2 Figtree;text-align:center">Guest</span></div>
+              <div style="background:var(--surface,#fff);border-radius:13px;padding:11px 4px;display:flex;flex-direction:column;align-items:center;gap:6px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0E6B5C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"></rect><path d="M3.5 10h17"></path></svg><span style="font:600 9.5px/1.2 Figtree;text-align:center">Book</span></div>
+              <div style="background:var(--subtle,#F1F4F3);border-radius:13px;padding:11px 4px;display:flex;flex-direction:column;align-items:center;gap:6px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A8B5B0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10.5" rx="2.5"></rect><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"></path></svg><span style="font:600 9.5px/1.2 Figtree;text-align:center;color:var(--ink-muted,#6B7A75)">Voting</span></div>
+            </div>
+            <div style="padding:11px 14px;border-radius:12px;background:var(--surface,#fff);font:400 12px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">Restricted actions are greyed with a reason, never hidden.</div>
+          </div>
+          <div style="flex:none;height:58px;border-top:1px solid var(--border,#E3E9E6);background:var(--surface,#fff);display:flex;align-items:center;justify-content:space-around;font:600 9.5px/1 Figtree;color:var(--ink-soft,#5A6B66)"><span style="color:var(--accent-ink,#0E6B5C);font-weight:700">Home</span><span>Bills</span><span>Help</span><span>Gate</span><span>Me</span></div>
+        </div>
+        <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">Tenants get a blue header — a persistent, glanceable signal that this is a rented context.</div>
+      </div>
+
+      <div style="width:320px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px"><span style="font:600 10.5px/1 'IBM Plex Mono',monospace;color:var(--ink-soft,#5A6B66)">25</span><span style="font:600 13.5px/1.3 Figtree">Owns and rents</span></div>
+        <div style="width:320px;height:646px;background:var(--canvas,#F7F9F8);border-radius:34px;border:8px solid #0B1512;box-shadow:0 20px 44px -22px rgba(15,26,23,.34);overflow:hidden;display:flex;flex-direction:column">
+          <div style="flex:none;background:#0E6B5C;padding:8px 18px 16px;color:#fff">
+            <div style="height:22px;display:flex;align-items:center;justify-content:space-between"><span style="font:700 11px/1 Figtree">9:41</span><span style="width:15px;height:8px;border:1px solid #fff;border-radius:2px"></span></div>
+            <div style="margin-top:12px;display:flex;align-items:center;gap:11px">
+              <span style="width:36px;height:36px;border-radius:11px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font:700 12px/1 Figtree">RK</span>
+              <span style="flex:1;min-width:0"><span style="display:block;font:600 14.5px/1.3 Figtree">Rohit Kulkarni</span><span style="display:block;margin-top:2px;font:400 12px/1.3 Figtree;color:#C9E4DC">Owns 1 · rents 1</span></span>
+            </div>
+            <div style="margin-top:13px;display:flex;padding:3px;background:rgba(255,255,255,.16);border-radius:11px;gap:3px">
+              <span style="flex:1;height:34px;border-radius:9px;background:var(--surface,#fff);color:var(--accent-ink,#0A5749);display:flex;align-items:center;justify-content:center;gap:6px;font:700 12.5px/1 Figtree">Owned · A-0203</span>
+              <span style="flex:1;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font:600 12.5px/1 Figtree;color:#DCF0EA">Rented · C-0402</span>
+            </div>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:14px 16px">
+            <div style="background:var(--surface,#fff);border-radius:16px;padding:16px;margin-bottom:12px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px"><span style="padding:2px 8px;border-radius:5px;background:var(--accent-wash,#E6F2EF);color:var(--accent-ink,#0A5749);font:700 9.5px/1.7 Figtree;letter-spacing:.06em">OWNER</span><span style="font:400 11.5px/1 Figtree;color:var(--ink-soft,#4A5B56)">A-0203 · self-occupied</span></div>
+              <div style="font:700 25px/1 Figtree;letter-spacing:-.024em;font-variant-numeric:tabular-nums;color:var(--ok,#167A3C)">Clear</div>
+              <div style="margin-top:7px;font:400 12.5px/1.4 Figtree;color:var(--ink-soft,#4A5B56)">Paid 12 Aug · next bill 01 Oct</div>
+              <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border-soft,#F1F4F3);display:flex;flex-direction:column;gap:8px">
+                <div style="display:flex;align-items:center;gap:10px"><span style="width:6px;height:6px;border-radius:50%;background:#0E6B5C"></span><span style="flex:1;font:500 12.5px/1.4 Figtree">AGM vote pending · resolution 3</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A8B5B0" stroke-width="2.2" stroke-linecap="round"><path d="m9 5 7 7-7 7"></path></svg></div>
+                <div style="display:flex;align-items:center;gap:10px"><span style="width:6px;height:6px;border-radius:50%;background:#0E6B5C"></span><span style="flex:1;font:500 12.5px/1.4 Figtree">NOC for sale · in committee</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A8B5B0" stroke-width="2.2" stroke-linecap="round"><path d="m9 5 7 7-7 7"></path></svg></div>
+              </div>
+            </div>
+            <div style="background:var(--surface,#fff);border-radius:16px;padding:16px;border-left:3px solid #1D4ED8;margin-bottom:12px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px"><span style="padding:2px 8px;border-radius:5px;background:var(--info-wash,#EAF0FE);color:var(--info-ink,#12327A);font:700 9.5px/1.7 Figtree;letter-spacing:.06em">TENANT</span><span style="font:400 11.5px/1 Figtree;color:var(--ink-soft,#4A5B56)">C-0402 · Green Meadows</span></div>
+              <div style="font:700 25px/1 Figtree;letter-spacing:-.024em;font-variant-numeric:tabular-nums">₹11,200.00</div>
+              <div style="margin-top:7px;font:400 12.5px/1.4 Figtree;color:var(--ink-soft,#4A5B56)">Due 15 Sep · you are the bill-payer</div>
+              <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border-soft,#F1F4F3);display:flex;flex-direction:column;gap:8px">
+                <div style="display:flex;align-items:center;gap:10px"><span style="width:6px;height:6px;border-radius:50%;background:#1D4ED8"></span><span style="flex:1;font:500 12.5px/1.4 Figtree">Agreement ends 31 Mar 2027</span></div>
+                <div style="display:flex;align-items:center;gap:10px"><span style="width:6px;height:6px;border-radius:50%;background:var(--border-strong,#CCD6D2)"></span><span style="flex:1;font:400 12.5px/1.4 Figtree;color:var(--ink-soft,#5A6B66)">No voting rights on this flat</span></div>
+              </div>
+            </div>
+            <div style="padding:12px 14px;border-radius:12px;background:var(--accent-wash,#E6F2EF);font:400 12px/1.5 Figtree;color:var(--accent-ink,#294C44)">Two relationships, two societies, one login. Each card carries its own role badge, and actions obey the badge above them.</div>
+          </div>
+          <div style="flex:none;height:58px;border-top:1px solid var(--border,#E3E9E6);background:var(--surface,#fff);display:flex;align-items:center;justify-content:space-around;font:600 9.5px/1 Figtree;color:var(--ink-soft,#5A6B66)"><span style="color:var(--accent-ink,#0E6B5C);font-weight:700">Home</span><span>Bills</span><span>Help</span><span>Gate</span><span>Me</span></div>
+        </div>
+        <div style="margin-top:11px;font:400 12.5px/1.5 Figtree;color:var(--ink-soft,#4A5B56)">Both roles on one screen with explicit badges, because the mixed case is where mistakes happen.</div>
+      </div>
+
+    </div>
+  </section>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">class Component extends DCLogic {
+  state = { dark: false };
+
+  renderVals() {
+    const dark = this.state.dark;
+    const icon = (d) => d
+      ? React.createElement("svg", { width: 17, height: 17, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" },
+          React.createElement("circle", { cx: 12, cy: 12, r: 4.2 }),
+          React.createElement("path", { d: "M12 2.6v2.4M12 19v2.4M21.4 12H19M5 12H2.6M18.6 5.4 16.9 7.1M7.1 16.9 5.4 18.6M18.6 18.6 16.9 16.9M7.1 7.1 5.4 5.4" }))
+      : React.createElement("svg", { width: 17, height: 17, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round" },
+          React.createElement("path", { d: "M20.5 14.3A8.6 8.6 0 0 1 9.7 3.5 8.8 8.8 0 1 0 20.5 14.3Z" }));
+    return {
+      themeLabel: dark ? "Switch to light" : "Switch to dark",
+      themeShort: dark ? "Light" : "Dark",
+      themeIcon: icon(dark),
+      toggleTheme: () => {
+        document.documentElement.setAttribute("data-theme", dark ? "light" : "dark");
+        this.setState({ dark: !dark });
+      }
+    };
+  }
+}</script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+<template id="__bundler_thumbnail" data-bg-color="#0E6B5C">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#0E6B5C"/>
+    <g transform="translate(500 240)">
+      <rect width="200" height="200" rx="46" fill="#FFFFFF"/>
+      <g transform="translate(44 46)" fill="none" stroke="#0A5749" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 104h104M18 104V44L56 12l38 32v60"/>
+        <path d="M40 104V74h32v30"/>
+      </g>
+    </g>
+    <rect x="420" y="504" width="360" height="26" rx="13" fill="#7FC4B3"/>
+    <rect x="500" y="552" width="200" height="26" rx="13" fill="#4E9E8C"/>
+  </svg>
+</template>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --surface:#FFFFFF; --canvas:#F7F9F8; --canvas-deep:#EFF3F1;
+    --subtle:#EDF1EF; --border:#E3E9E6; --border-soft:#F1F4F3; --border-strong:#CCD6D2;
+    --ink:#0F1A17; --ink-soft:#4A5B56; --ink-muted:#6B7A75; --ink-dim:#A8B5B0;
+    --accent:#0E6B5C; --accent-ink:#0A5749; --accent-wash:#E6F2EF; --accent-200:#C9E4DC;
+    --rail:#FFFFFF; --rail-ink:#0F1A17; --rail-soft:#5A6B66; --rail-line:#E3E9E6;
+    --ease: cubic-bezier(.2,.7,.3,1);
+  }
+  :root[data-theme="dark"] {
+    --surface:#151C1A; --canvas:#0E1413; --canvas-deep:#090E0D;
+    --subtle:#1D2624; --border:#2B3532; --border-soft:#222B29; --border-strong:#3A453F;
+    --ink:#EEF3F1; --ink-soft:#A7B8B2; --ink-muted:#8A9B95; --ink-dim:#6F7E79;
+    --accent:#0E6B5C; --accent-ink:#5FD3B6; --accent-wash:#113931; --accent-200:#1A5A4C;
+    --rail:#101715; --rail-ink:#EEF3F1; --rail-soft:#9DAFA9; --rail-line:#232D2A;
+  }
+  body { margin: 0; background: var(--canvas-deep); -webkit-font-smoothing: antialiased; font-family: Figtree, system-ui, sans-serif; }
+  * { box-sizing: border-box; }
+  a { color: #0E6B5C; text-decoration: none; }
+  a:hover { color: #0A5749; }
+  html { scroll-behavior: smooth; }
+  button, input, textarea, select { color: inherit; font-family: inherit; }
+  @keyframes tabIn { from { opacity: 0; transform: translate3d(0,14px,0); } to { opacity: 1; transform: none; } }
+  [style*="var(--surface"], [style*="var(--canvas"], [style*="var(--rail"], [style*="var(--subtle"] { transition: background-color .28s ease, border-color .28s ease, color .28s ease; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001ms !important; animation-delay: 0s !important; transition-duration: .001ms !important; } }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:var(--canvas-deep,#EFF3F1);color:var(--ink,#0F1A17);font-family:Figtree,system-ui,sans-serif">
+
+  <header style="position:sticky;top:0;z-index:400;background:var(--rail,#fff);border-bottom:1px solid var(--rail-line,#E3E9E6);padding:10px 22px;display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:10px;margin-right:auto">
+      <span style="width:28px;height:28px;border-radius:8px;background:var(--accent,#0E6B5C);display:flex;align-items:center;justify-content:center;flex:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-5 7 5v13"></path><path d="M9 21v-5h6v5"></path></svg></span>
+      <span style="font:700 15px/1 Figtree;color:var(--rail-ink,#0F1A17);letter-spacing:-.01em">Sahaj</span>
+      <span style="font:500 13px/1 Figtree;color:var(--rail-soft,#5A6B66)">Complete design system</span>
+    </div>
+    <nav style="display:flex;align-items:center;gap:3px;flex-wrap:wrap">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="6">
+        <button type="button" onClick="{{ t.go }}" style="height:34px;padding:0 13px;border:0;border-radius:9px;cursor:pointer;background:{{ t.bg }};color:{{ t.fg }};font:600 12.5px/1 Figtree;transition:background .18s ease,color .18s ease">{{ t.label }}</button>
+      </sc-for>
+    </nav>
+  </header>
+
+  <sc-if value="{{ isFoundation }}" hint-placeholder-val="{{ true }}">
+    <div style="animation:tabIn .46s var(--ease-out,cubic-bezier(.22,1,.36,1)) both">
+      <dc-import name="Foundation Kit" hint-size="100%,1400px"></dc-import>
+    </div>
+  </sc-if>
+  <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ false }}">
+    <div style="animation:tabIn .46s var(--ease-out,cubic-bezier(.22,1,.36,1)) both">
+      <dc-import name="Admin Web" hint-size="100%,1400px"></dc-import>
+    </div>
+  </sc-if>
+  <sc-if value="{{ isResidentProto }}" hint-placeholder-val="{{ false }}">
+    <div style="animation:tabIn .46s var(--ease-out,cubic-bezier(.22,1,.36,1)) both">
+      <dc-import name="Resident Prototype" hint-size="100%,1400px"></dc-import>
+    </div>
+  </sc-if>
+  <sc-if value="{{ isGateProto }}" hint-placeholder-val="{{ false }}">
+    <div style="animation:tabIn .46s var(--ease-out,cubic-bezier(.22,1,.36,1)) both">
+      <dc-import name="Gate Prototype" hint-size="100%,1400px"></dc-import>
+    </div>
+  </sc-if>
+  <sc-if value="{{ isResidentSpec }}" hint-placeholder-val="{{ false }}">
+    <div style="animation:tabIn .46s var(--ease-out,cubic-bezier(.22,1,.36,1)) both">
+      <dc-import name="Resident App" hint-size="100%,1400px"></dc-import>
+    </div>
+  </sc-if>
+  <sc-if value="{{ isGateSpec }}" hint-placeholder-val="{{ false }}">
+    <div style="animation:tabIn .46s var(--ease-out,cubic-bezier(.22,1,.36,1)) both">
+      <dc-import name="Gate App" hint-size="100%,1400px"></dc-import>
+    </div>
+  </sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const TABS = [
+  { k: "foundation", label: "Foundation" },
+  { k: "admin", label: "Admin web" },
+  { k: "residentProto", label: "Resident prototype" },
+  { k: "gateProto", label: "Gate prototype" },
+  { k: "residentSpec", label: "Resident screens" },
+  { k: "gateSpec", label: "Gate screens" }
+];
+
+class Component extends DCLogic {
+  state = { page: "foundation", dark: false };
+
+  renderVals() {
+    const cur = this.state.page, dark = this.state.dark;
+    return {
+      tabs: TABS.map((t) => ({
+        label: t.label,
+        bg: cur === t.k ? "var(--accent,#0E6B5C)" : "transparent",
+        fg: cur === t.k ? "#ffffff" : "var(--rail-soft,#5A6B66)",
+        go: () => { this.setState({ page: t.k }); window.scrollTo({ top: 0, behavior: "smooth" }); }
+      })),
+      isFoundation: cur === "foundation",
+      isAdmin: cur === "admin",
+      isResidentProto: cur === "residentProto",
+      isGateProto: cur === "gateProto",
+      isResidentSpec: cur === "residentSpec",
+      isGateSpec: cur === "gateSpec",
+      themeLabel: dark ? "Switch to light" : "Switch to dark",
+      themeShort: dark ? "Light" : "Dark",
+      themeIcon: dark
+        ? React.createElement("svg", { width: 16, height: 16, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" },
+            React.createElement("circle", { cx: 12, cy: 12, r: 4.2 }),
+            React.createElement("path", { d: "M12 2.6v2.4M12 19v2.4M21.4 12H19M5 12H2.6M18.6 5.4 16.9 7.1M7.1 16.9 5.4 18.6M18.6 18.6 16.9 16.9M7.1 7.1 5.4 5.4" }))
+        : React.createElement("svg", { width: 16, height: 16, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round" },
+            React.createElement("path", { d: "M20.5 14.3A8.6 8.6 0 0 1 9.7 3.5 8.8 8.8 0 1 0 20.5 14.3Z" })),
+      toggleTheme: () => {
+        document.documentElement.setAttribute("data-theme", dark ? "light" : "dark");
+        this.setState({ dark: !dark });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>
