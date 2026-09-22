@@ -12,6 +12,8 @@
   },
   "overrides": {
     "react": "19.2.3",
-    "@types/react": "~19.2.2"
+    "react-dom": "19.2.3",
+    "@types/react": "~19.2.2",
+    "react-native-screens": "4.28.0"
   }
 }
