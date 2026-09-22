@@ -29,7 +29,14 @@ export function FilterPill({ label, active, onPress }: { label: string; active: 
   );
 }
 
-/** Rectangular option button used for purpose/category/role/day/window pickers throughout invite/ticket/booking forms. */
+/**
+ * Rectangular option button used for purpose/category/role/day/window pickers
+ * throughout invite/ticket/booking forms. `flex={1}` (the default) is for a
+ * single non-wrapping row of equal-width buttons; pass `flex={0}` for a
+ * `flexWrap: "wrap"` row instead — mixing flex:1 children with flexWrap
+ * fights over space before wrapping resolves and overlaps them (RN Yoga,
+ * not a web-flexbox behaviour), so a wrapping row needs content-sized chips.
+ */
 export function OptionButton({ label, sub, active, onPress, flex = 1, height = 44 }: { label: string; sub?: string; active: boolean; onPress: () => void; flex?: number; height?: number }) {
   const { colors } = useTheme();
   return (
@@ -45,7 +52,7 @@ export function OptionButton({ label, sub, active, onPress, flex = 1, height = 4
         alignItems: "center",
         justifyContent: sub ? "space-between" : "center",
         flexDirection: sub ? "row" : "column",
-        paddingHorizontal: sub ? 15 : 4,
+        paddingHorizontal: sub ? 15 : 12,
       }}
     >
       <AppText variant="cardTitle" color={active ? colors.accentInk : colors.ink} style={{ fontSize: 13 }}>
