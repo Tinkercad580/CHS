@@ -7,13 +7,34 @@ renders fixtures.
 
 | | |
 |---|---|
-| `./scripts/start.sh` | Admin console (web-app) → http://localhost:5173 |
-| `./scripts/mobile-web.sh [resident\|gate]` | Resident app → :8081 · Gate app → :8082 |
+| `./scripts/start.sh` | Admin console (web-app) → http://localhost:5273 |
+| `./scripts/mobile-web.sh [resident\|gate]` | Resident app → :8181 · Gate app → :8182 |
 | `./scripts/bundle-grep.sh <app> <string>` | Is my change in the bundle, or is the tab stale? |
 | `./scripts/check.sh [all\|web\|mobile]` | Typecheck + lint everything |
 
 First run of either server installs dependencies (web ~1 min, mobile ~4 min).
 Both mobile apps can run at once — they are on different ports on purpose.
+
+## Ports
+
+None of these are the tool defaults. Vite's 5173 and Metro's 8081 are already
+taken by another project on this machine, and a port clash is not an error you
+get told about: whichever server started first keeps answering, and you review
+the wrong app while reading the right filenames. Each script frees its own port
+before starting and refuses to continue if it cannot.
+
+| | default | override |
+|---|---|---|
+| admin console | 5273 | `CHS_WEB_PORT` |
+| resident app | 8181 | `CHS_RESIDENT_PORT` |
+| gate app | 8182 | `CHS_GATE_PORT` |
+
+`bundle-grep.sh` reads the same variables, so an override stays consistent:
+
+```
+CHS_RESIDENT_PORT=9001 ./scripts/mobile-web.sh resident
+CHS_RESIDENT_PORT=9001 ./scripts/bundle-grep.sh resident 'Pay now'
+```
 
 ## What you are reviewing
 

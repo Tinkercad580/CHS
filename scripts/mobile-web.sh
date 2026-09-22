@@ -1,10 +1,17 @@
 #!/usr/bin/env bash
 # A mobile app in a desktop browser, through react-native-web.
 #
-#   ./scripts/mobile-web.sh                 # resident app, http://localhost:8081
-#   ./scripts/mobile-web.sh gate            # gate app,     http://localhost:8082
+#   ./scripts/mobile-web.sh                 # resident app, http://localhost:8181
+#   ./scripts/mobile-web.sh gate            # gate app,     http://localhost:8182
 #   ./scripts/mobile-web.sh resident --clear
 #   ./scripts/mobile-web.sh --reinstall     # clean install of the whole workspace
+#   CHS_RESIDENT_PORT=9001 ./scripts/mobile-web.sh
+#
+# Off Metro's 8081 default on purpose: another project on this machine already
+# uses it. A port clash here does not announce itself — Expo will happily
+# attach to whatever is already listening, or silently pick another port, and
+# either way you end up reviewing an app that is not this one. Override with
+# CHS_RESIDENT_PORT / CHS_GATE_PORT.
 #
 # Same React Native code Expo would ship to a phone, run in a browser. It is a
 # development preview, not a client — nothing deploys it. What it buys is a UI
@@ -47,8 +54,8 @@ for arg in "$@"; do
 done
 
 case "$APP" in
-  resident) DIR="mobile-app/apps/resident-app"; PORT=8081; LABEL="Sahaj — resident" ;;
-  gate)     DIR="mobile-app/apps/gate-app";     PORT=8082; LABEL="Sahaj Gate — guard" ;;
+  resident) DIR="mobile-app/apps/resident-app"; PORT="${CHS_RESIDENT_PORT:-8181}"; LABEL="Sahaj — resident" ;;
+  gate)     DIR="mobile-app/apps/gate-app";     PORT="${CHS_GATE_PORT:-8182}";     LABEL="Sahaj Gate — guard" ;;
 esac
 
 if [ -n "$REINSTALL" ]; then
@@ -61,11 +68,35 @@ fi
 # workspace root. Installing inside an app instead splits the tree and Metro
 # resolves two copies of react-native, which fails as a blank screen.
 echo "1/3  dependencies"
-if [ -d mobile-app/node_modules ]; then
+
+# Refuse to race a running install. npm creates node_modules early and fills it
+# over several minutes, so a concurrent run sees a directory that exists, calls
+# it installed, and hands Metro a half-populated tree. The symptom is
+# "sh: 1: expo: not found", which reads as a broken PATH rather than "wait".
+# Anchored. `pgrep -f "npm install"` is an unanchored substring match against
+# whole command lines, so it also matches the shell that invoked this script
+# whenever that invocation happens to contain the words — including this very
+# check, quoted inside a wrapper. The guard then fires against itself and the
+# script refuses to run with no install anywhere. Anchoring to the start of the
+# command line matches the npm process (cmdline is exactly "npm install ...")
+# and nothing that merely mentions it.
+if pgrep -f "^npm install" >/dev/null 2>&1; then
+  echo "     ✗ an npm install is already running — let it finish, then re-run this"
+  exit 1
+fi
+
+# Tested by the binary that is about to be executed, not by the directory that
+# contains it: `[ -d node_modules ]` is true from the first second of an
+# install to the last, which is exactly the window in which it is a lie.
+if [ -x mobile-app/node_modules/.bin/expo ]; then
   echo "     already installed"
 else
+  [ -d mobile-app/node_modules ] \
+    && echo "     node_modules exists but expo is missing — finishing the install"
   echo "     installing the workspace (first run — several minutes)"
   npm install --prefix mobile-app || { echo "     ✗ install failed"; exit 1; }
+  [ -x mobile-app/node_modules/.bin/expo ] \
+    || { echo "     ✗ install finished but expo is still missing"; exit 1; }
 fi
 
 # ---------------------------------------------------------------- 2/3 port --
@@ -113,8 +144,11 @@ cat <<TXT
      confirmation, a live visitor approval — is a mock and stops at the screen.
 
      The other app runs at the same time:
-       resident  ./scripts/mobile-web.sh resident   :8081
-       gate      ./scripts/mobile-web.sh gate       :8082
+       resident  ./scripts/mobile-web.sh resident   :${CHS_RESIDENT_PORT:-8181}
+       gate      ./scripts/mobile-web.sh gate       :${CHS_GATE_PORT:-8182}
+
+     Not Metro's default 8081 — that port belongs to another project here.
+     Override with CHS_RESIDENT_PORT / CHS_GATE_PORT.
 
      Edit a file and this has to be restarted — see the header. Ctrl-C to stop.
 

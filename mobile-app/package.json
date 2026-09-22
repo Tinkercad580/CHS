@@ -12,6 +12,9 @@
   },
   "overrides": {
     "react": "19.2.3",
-    "@types/react": "~19.2.2"
-  }
+    "@types/react": "~19.2.2",
+    "react-native-screens": "~4.26.0",
+    "react-dom": "19.2.3"
+  },
+  "//overrides": "react-native-screens is pinned so the tree holds ONE copy. Left alone, @react-navigation/* pulls 4.11.1 (which has no featureFlags export, and expo-router crashes on import reading featureFlags.experiment) while expo-router pulls 4.28.0 and the apps declare ~4.26.0 — three copies of a native module in one app. ~4.26.0 satisfies expo-router's ^4.26.0 and react-navigation's >=4.0.0, and matches what `expo install --check` expects for SDK 57. react-dom is pinned to the same version as react: they are one library shipped as two packages and must match exactly, and react-dom is what the web preview actually renders through, so a skew shows up here first."
 }

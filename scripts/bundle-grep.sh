@@ -24,8 +24,8 @@ if [ -z "$APP" ] || [ -z "$NEEDLE" ]; then
 fi
 
 case "$APP" in
-  resident|resident-app) PORT=8081 ;;
-  gate|gate-app)         PORT=8082 ;;
+  resident|resident-app) PORT="${CHS_RESIDENT_PORT:-8181}" ;;
+  gate|gate-app)         PORT="${CHS_GATE_PORT:-8182}" ;;
   *) echo "usage: $0 [resident|gate] <string>"; exit 2 ;;
 esac
 

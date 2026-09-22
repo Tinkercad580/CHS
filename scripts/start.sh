@@ -3,6 +3,12 @@
 #
 #   ./scripts/start.sh
 #   ./scripts/start.sh --reinstall     # blow away node_modules and install clean
+#   CHS_WEB_PORT=6000 ./scripts/start.sh
+#
+# Ports are deliberately off Vite's 5173 default: another project on this
+# machine already owns it, and two dev servers fighting over one port is not a
+# clash you get told about — whichever started first keeps serving, and you
+# review the wrong app. Override with CHS_WEB_PORT if these collide too.
 #
 # This is a UI review loop, not the product. There is no backend yet: every
 # screen reads from web-app/src/mock/*.ts, so what you are checking is layout,
@@ -23,7 +29,7 @@ set -uo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
-PORT=5173
+PORT="${CHS_WEB_PORT:-5273}"
 
 if [ "${1:-}" = "--reinstall" ]; then
   echo "     removing web-app/node_modules"
@@ -32,11 +38,31 @@ fi
 
 # ---------------------------------------------------------------- 1/3 deps --
 echo "1/3  dependencies"
-if [ -d web-app/node_modules ]; then
+
+# Refuse to race a running install — see the note in mobile-web.sh. npm fills
+# node_modules over minutes, so "the directory exists" and "the tools are
+# there" are different questions, and only the second one matters.
+# Anchored — see the note in mobile-web.sh. `pgrep -f "npm install"` is an unanchored substring match against
+# whole command lines, so it also matches the shell that invoked this script
+# whenever that invocation happens to contain the words — including this very
+# check, quoted inside a wrapper. The guard then fires against itself and the
+# script refuses to run with no install anywhere. Anchoring to the start of the
+# command line matches the npm process (cmdline is exactly "npm install ...")
+# and nothing that merely mentions it.
+if pgrep -f "^npm install" >/dev/null 2>&1; then
+  echo "     ✗ an npm install is already running — let it finish, then re-run this"
+  exit 1
+fi
+
+if [ -x web-app/node_modules/.bin/vite ]; then
   echo "     already installed"
 else
+  [ -d web-app/node_modules ] \
+    && echo "     node_modules exists but vite is missing — finishing the install"
   echo "     installing (first run — a few minutes)"
   npm install --prefix web-app || { echo "     ✗ install failed"; exit 1; }
+  [ -x web-app/node_modules/.bin/vite ] \
+    || { echo "     ✗ install finished but vite is still missing"; exit 1; }
 fi
 
 # ---------------------------------------------------------------- 2/3 port --
@@ -62,6 +88,9 @@ cat <<TXT
 
      console   http://localhost:$PORT
      phone     http://<this machine's LAN IP>:$PORT   (server.host is on)
+
+     Not Vite's default 5173 — that port belongs to another project here.
+     Override with CHS_WEB_PORT=... if 5273 is taken too.
 
      There is no login screen and no API. The app boots straight into the
      admin shell against mock data — that is the current state of the build,
