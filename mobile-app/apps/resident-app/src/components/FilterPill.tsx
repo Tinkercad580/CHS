@@ -1,14 +1,15 @@
 import React from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import { radius } from "@sahaj/shared";
 import { useTheme } from "../hooks/useTheme";
 import { AppText } from "./AppText";
+import { AnimatedPressable } from "./AnimatedPressable";
 
 /** Pill-shaped filter/segment button (dues All/Unpaid/Paid, category pickers, etc). */
 export function FilterPill({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
   const { colors } = useTheme();
   return (
-    <Pressable
+    <AnimatedPressable
       onPress={onPress}
       style={{
         height: 34,
@@ -24,7 +25,7 @@ export function FilterPill({ label, active, onPress }: { label: string; active: 
       <AppText variant="cardTitle" color={active ? "#FFFFFF" : colors.ink} style={{ fontSize: 12.5 }}>
         {label}
       </AppText>
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 
@@ -32,7 +33,7 @@ export function FilterPill({ label, active, onPress }: { label: string; active: 
 export function OptionButton({ label, sub, active, onPress, flex = 1, height = 44 }: { label: string; sub?: string; active: boolean; onPress: () => void; flex?: number; height?: number }) {
   const { colors } = useTheme();
   return (
-    <Pressable
+    <AnimatedPressable
       onPress={onPress}
       style={{
         flex,
@@ -55,7 +56,7 @@ export function OptionButton({ label, sub, active, onPress, flex = 1, height = 4
           {sub}
         </AppText>
       ) : null}
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 
@@ -63,7 +64,7 @@ export function OptionButton({ label, sub, active, onPress, flex = 1, height = 4
 export function DayToggle({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
   const { colors } = useTheme();
   return (
-    <Pressable
+    <AnimatedPressable
       onPress={onPress}
       style={{
         flex: 1,
@@ -79,7 +80,7 @@ export function DayToggle({ label, active, onPress }: { label: string; active: b
       <AppText variant="cardTitleLarge" color={active ? "#FFFFFF" : colors.inkSoft} style={{ fontSize: 13 }} forceLatin>
         {label}
       </AppText>
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 
@@ -97,7 +98,7 @@ export function RadioRow({
 }) {
   const { colors } = useTheme();
   return (
-    <Pressable
+    <AnimatedPressable
       onPress={onPress}
       style={{
         borderWidth: 1,
@@ -131,6 +132,6 @@ export function RadioRow({
           {detail}
         </AppText>
       </View>
-    </Pressable>
+    </AnimatedPressable>
   );
 }

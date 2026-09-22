@@ -1,5 +1,6 @@
-import React from "react";
-import { View, Pressable, ActivityIndicator } from "react-native";
+import React, { useEffect } from "react";
+import { View, ActivityIndicator } from "react-native";
+import Animated, { useSharedValue, useAnimatedStyle, withSequence, withTiming, useReducedMotion } from "react-native-reanimated";
 import { formatInr } from "@sahaj/shared";
 import { useResident } from "../../state/ResidentProvider";
 import { useTheme } from "../../hooks/useTheme";
@@ -10,6 +11,8 @@ import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
 import { Button } from "../../components/Button";
 import { BottomSheet } from "../../components/BottomSheet";
+import { AnimatedPressable } from "../../components/AnimatedPressable";
+import { EASE_OUT } from "../../components/motion";
 import { QrGraphic } from "./QrGraphic";
 
 const UPI_APPS = [
@@ -58,7 +61,7 @@ export function PaymentSheets() {
         </AppText>
         <View style={{ gap: 9 }}>
           {UPI_APPS.map((app) => (
-            <Pressable
+            <AnimatedPressable
               key={app.name}
               onPress={() => actions.choosePaymentApp(app.name)}
               style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 14, backgroundColor: colors.surface, padding: 14, flexDirection: "row", alignItems: "center", gap: 13 }}
@@ -77,7 +80,7 @@ export function PaymentSheets() {
                 </AppText>
               </View>
               <Icon d={iconPaths.chevronRight} size={16} color={colors.inkDim} strokeWidth={2.2} />
-            </Pressable>
+            </AnimatedPressable>
           ))}
         </View>
         <View style={{ marginTop: 16 }}>
@@ -95,7 +98,7 @@ export function PaymentSheets() {
 function PayMethodRow({ icon, title, sub, onPress }: { icon: keyof typeof iconPaths; title: string; sub: string; onPress: () => void }) {
   const { colors } = useTheme();
   return (
-    <Pressable onPress={onPress} style={{ borderWidth: 1, borderColor: colors.borderStrong, borderRadius: 16, backgroundColor: colors.surface, padding: 16, flexDirection: "row", alignItems: "center", gap: 14 }}>
+    <AnimatedPressable onPress={onPress} style={{ borderWidth: 1, borderColor: colors.borderStrong, borderRadius: 16, backgroundColor: colors.surface, padding: 16, flexDirection: "row", alignItems: "center", gap: 14 }}>
       <View style={{ width: 44, height: 44, borderRadius: 13, backgroundColor: colors.accentWash, alignItems: "center", justifyContent: "center" }}>
         <Icon d={iconPaths[icon]} size={22} color={colors.accentInk} strokeWidth={1.9} />
       </View>
@@ -108,7 +111,7 @@ function PayMethodRow({ icon, title, sub, onPress }: { icon: keyof typeof iconPa
         </AppText>
       </View>
       <Icon d={iconPaths.chevronRight} size={17} color={colors.inkDim} strokeWidth={2.2} />
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 
@@ -207,9 +210,11 @@ function SuccessBody() {
   return (
     <View style={{ flex: 1, paddingTop: 70, paddingHorizontal: 26, paddingBottom: 30 }}>
       <View style={{ flex: 1, alignItems: "center" }}>
-        <View style={{ width: 86, height: 86, borderRadius: 28, backgroundColor: colors.okWash, alignItems: "center", justifyContent: "center", marginBottom: 24 }}>
-          <Icon d={iconPaths.check} size={44} color={colors.okInk} strokeWidth={2.5} />
-        </View>
+        <PopInGlyph>
+          <View style={{ width: 86, height: 86, borderRadius: 28, backgroundColor: colors.okWash, alignItems: "center", justifyContent: "center", marginBottom: 24 }}>
+            <Icon d={iconPaths.check} size={44} color={colors.okInk} strokeWidth={2.5} />
+          </View>
+        </PopInGlyph>
         <AppText variant="screenTitleMobile" style={{ fontSize: 26, marginBottom: 9 }}>
           {t("paymentReceived")}
         </AppText>
@@ -233,4 +238,24 @@ function SuccessBody() {
       <Button label={t("done")} onPress={actions.finishPay} />
     </View>
   );
+}
+
+/** `popIn`: scale(.5)→1.1→1 + opacity 0→1 — the payment-success checkmark, README's "Success glyphs". */
+function PopInGlyph({ children }: { children: React.ReactNode }) {
+  const reduced = useReducedMotion();
+  const scale = useSharedValue(0.5);
+  const opacity = useSharedValue(0);
+
+  useEffect(() => {
+    if (reduced) {
+      scale.value = 1;
+      opacity.value = 1;
+      return;
+    }
+    scale.value = withSequence(withTiming(1.1, { duration: 220, easing: EASE_OUT }), withTiming(1, { duration: 140, easing: EASE_OUT }));
+    opacity.value = withTiming(1, { duration: 220, easing: EASE_OUT });
+  }, [reduced, scale, opacity]);
+
+  const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value, transform: [{ scale: scale.value }] }));
+  return <Animated.View style={animatedStyle}>{children}</Animated.View>;
 }

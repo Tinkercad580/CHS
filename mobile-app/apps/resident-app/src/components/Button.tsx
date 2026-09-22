@@ -1,8 +1,9 @@
 import React from "react";
-import { Pressable, ActivityIndicator, type StyleProp, type ViewStyle } from "react-native";
+import { ActivityIndicator, type StyleProp, type ViewStyle } from "react-native";
 import { radius } from "@sahaj/shared";
 import { useTheme } from "../hooks/useTheme";
 import { AppText } from "./AppText";
+import { AnimatedPressable } from "./AnimatedPressable";
 
 interface Props {
   label: string;
@@ -22,7 +23,7 @@ export function Button({ label, onPress, kind = "primary", loading, disabled, he
   const fg = kind === "primary" ? "#FFFFFF" : kind === "danger" ? colors.badInk : colors.ink;
 
   return (
-    <Pressable
+    <AnimatedPressable
       onPress={onPress}
       disabled={disabled || loading}
       style={({ pressed }) => [
@@ -45,6 +46,6 @@ export function Button({ label, onPress, kind = "primary", loading, disabled, he
       <AppText variant="cardTitleLarge" color={fg} style={{ fontSize: 15.5 }}>
         {label}
       </AppText>
-    </Pressable>
+    </AnimatedPressable>
   );
 }

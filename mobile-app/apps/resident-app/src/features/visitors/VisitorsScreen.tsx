@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import type { VisitorPass } from "@sahaj/shared";
 import { useResident } from "../../state/ResidentProvider";
 import { useTheme } from "../../hooks/useTheme";
@@ -11,6 +11,8 @@ import { AppText } from "../../components/AppText";
 import { Button } from "../../components/Button";
 import { EmptyState } from "../../components/EmptyState";
 import { iconPaths } from "../../components/iconPaths";
+import { AnimatedPressable } from "../../components/AnimatedPressable";
+import { StaggerItem } from "../../components/StaggerItem";
 
 function initialsOf(name: string): string {
   return name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
@@ -43,13 +45,14 @@ export function VisitorsScreen() {
           <EmptyState iconPath={iconPaths.people} title={t("noPassesYet")} body={t("noPassesSub")} actionLabel={t("inviteAGuest")} onAction={actions.goInvite} />
         ) : (
           <View style={{ gap: 11 }}>
-            {passesForUnit.map((pass) => {
+            {passesForUnit.map((pass, i) => {
               const state2 = stateLabel(pass);
               const stateBg = state2 === "Inside" ? colors.okWash : state2 === "Standing" ? colors.infoWash : colors.warnWash;
               const stateFg = state2 === "Inside" ? colors.okInk : state2 === "Standing" ? colors.infoInk : colors.warnInk;
               const cancellable = pass.state === "expected" || pass.state === "standing";
               return (
-                <View key={pass.id} style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.surface, padding: 15 }}>
+                <StaggerItem key={pass.id} index={i} tier="listRow">
+                <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.surface, padding: 15 }}>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 12 }}>
                     <View style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: state2 === "Inside" ? colors.okWash : colors.subtle, alignItems: "center", justifyContent: "center" }}>
                       <AppText variant="cardTitleLarge" color={state2 === "Inside" ? colors.okInk : colors.inkSoft} style={{ fontSize: 13 }} forceLatin>
@@ -77,17 +80,18 @@ export function VisitorsScreen() {
                       </AppText>
                     </View>
                     {cancellable ? (
-                      <Pressable
+                      <AnimatedPressable
                         onPress={() => actions.cancelPass(pass)}
                         style={{ height: 40, paddingHorizontal: 14, borderRadius: 11, borderWidth: 1, borderColor: colors.badBorder, alignItems: "center", justifyContent: "center" }}
                       >
                         <AppText variant="cardTitle" color={colors.badInk} style={{ fontSize: 12.5 }}>
                           {t("cancel")}
                         </AppText>
-                      </Pressable>
+                      </AnimatedPressable>
                     ) : null}
                   </View>
                 </View>
+                </StaggerItem>
               );
             })}
           </View>

@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Pressable } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { ResidentScreen } from "@sahaj/shared";
 import { useTheme } from "../../hooks/useTheme";
 import { useT } from "../../hooks/useT";
@@ -29,9 +30,16 @@ export function TabBar({ screen, onTab }: { screen: ResidentScreen; onTab: (scre
     amenities: "profile", book: "profile", statement: "profile", polls: "profile", poll: "profile", utilities: "profile", sos: "profile",
   };
   const active = activeGroup[screen] ?? "home";
+  const insets = useSafeAreaInsets();
+  // The design's 22px is a browser-mockup value with no real home-indicator to
+  // clear. On an actual device the safe-area bottom inset already reserves
+  // that space (and varies by gesture-nav vs 3-button-nav vs no inset at all),
+  // so this bar owns the bottom edge itself instead of stacking a flat 22px
+  // underneath whatever the OS also reserves.
+  const paddingBottom = Math.max(insets.bottom + 10, 16);
 
   return (
-    <View style={{ backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border, flexDirection: "row", paddingTop: 8, paddingBottom: 22, paddingHorizontal: 8 }}>
+    <View style={{ backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border, flexDirection: "row", paddingTop: 8, paddingBottom, paddingHorizontal: 8 }}>
       {TABS.map((tab) => {
         const on = active === tab.key;
         const color = on ? colors.accentInk : colors.inkMuted;
