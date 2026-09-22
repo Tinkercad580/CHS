@@ -47,6 +47,7 @@ export function FieldRow({
                 key={o}
                 type="button"
                 onClick={() => onPick(o)}
+                className="press-scale"
                 style={{
                   height: 40,
                   padding: "0 14px",

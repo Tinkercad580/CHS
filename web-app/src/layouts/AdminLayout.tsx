@@ -7,6 +7,7 @@ import { SOCIETIES } from "../mock/societies";
 import { NOTIFS } from "../mock/dashboard";
 import { Toaster } from "../components/Toaster";
 import { ModalShell } from "../components/ModalShell";
+import { listRowStyle } from "../lib/motion";
 
 const BREAKPOINT = 1100;
 
@@ -107,7 +108,7 @@ function Sidebar({
     : { width: 246, flex: "none" as const, position: "sticky" as const, top: 0, height: "100vh", overflow: "hidden", borderRight: "1px solid var(--rail-line,#E3E9E6)" };
 
   return (
-    <aside style={{ ...railStyle, background: "var(--rail,#FFFFFF)", color: "var(--rail-ink,#0F1A17)", display: "flex", flexDirection: "column" }}>
+    <aside className="theme-transition" style={{ ...railStyle, background: "var(--rail,#FFFFFF)", color: "var(--rail-ink,#0F1A17)", display: "flex", flexDirection: "column" }}>
       <div style={{ flex: "none", padding: "20px 18px 16px", display: "flex", alignItems: "center", gap: 10 }}>
         <div style={{ width: 30, height: 30, borderRadius: 9, background: "var(--accent,#0E6B5C)", display: "flex", alignItems: "center", justifyContent: "center", flex: "none" }}>
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -200,9 +201,9 @@ function TopBar({ narrow, onOpenRail, onOpenNotifs }: { narrow: boolean; onOpenR
   const dark = theme === "dark";
 
   return (
-    <header style={{ position: "sticky", top: 0, zIndex: 30, background: "var(--canvas,#F7F9F8)", borderBottom: "1px solid var(--border,#E3E9E6)", padding: "12px 28px", display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+    <header className="theme-transition" style={{ position: "sticky", top: 0, zIndex: 30, background: "var(--canvas,#F7F9F8)", borderBottom: "1px solid var(--border,#E3E9E6)", padding: "12px 28px", display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
       {narrow && (
-        <button type="button" onClick={onOpenRail} title="Menu" style={{ width: 38, height: 38, flex: "none", border: "1px solid var(--border-strong,#CCD6D2)", borderRadius: 10, background: "var(--surface,#fff)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <button type="button" onClick={onOpenRail} title="Menu" className="press-scale" style={{ width: 38, height: 38, flex: "none", border: "1px solid var(--border-strong,#CCD6D2)", borderRadius: 10, background: "var(--surface,#fff)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink,#0F1A17)" strokeWidth="2.1" strokeLinecap="round">
             <path d="M4 7h16M4 12h16M4 17h16" />
           </svg>
@@ -221,7 +222,7 @@ function TopBar({ narrow, onOpenRail, onOpenNotifs }: { narrow: boolean; onOpenR
           <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#167A3C" }} />
           FY 2026-27 open
         </span>
-        <button type="button" onClick={toggleTheme} title={dark ? "Switch to light" : "Switch to dark"} style={{ width: 38, height: 38, border: "1px solid var(--border-strong,#CCD6D2)", borderRadius: 10, background: "var(--surface,#fff)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <button type="button" onClick={toggleTheme} title={dark ? "Switch to light" : "Switch to dark"} className="press-scale" style={{ width: 38, height: 38, border: "1px solid var(--border-strong,#CCD6D2)", borderRadius: 10, background: "var(--surface,#fff)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
           {dark ? (
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink,#0F1A17)" strokeWidth="1.8" strokeLinecap="round">
               <circle cx="12" cy="12" r="4.2" />
@@ -233,7 +234,7 @@ function TopBar({ narrow, onOpenRail, onOpenNotifs }: { narrow: boolean; onOpenR
             </svg>
           )}
         </button>
-        <button type="button" onClick={onOpenNotifs} style={{ position: "relative", width: 38, height: 38, border: "1px solid var(--border-strong,#CCD6D2)", borderRadius: 10, background: "var(--surface,#fff)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <button type="button" onClick={onOpenNotifs} className="press-scale" style={{ position: "relative", width: 38, height: 38, border: "1px solid var(--border-strong,#CCD6D2)", borderRadius: 10, background: "var(--surface,#fff)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink,#0F1A17)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
             <path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z" />
             <path d="M10 19a2 2 0 0 0 4 0" />
@@ -279,6 +280,7 @@ function SocietyModal({ onClose }: { onClose: () => void }) {
                 navigate("/");
                 toast(`Switched to ${soc.name}. Every screen now shows their data.`, "ok");
               }}
+              className="press-scale"
               style={{
                 width: "100%",
                 textAlign: "left",
@@ -290,6 +292,7 @@ function SocietyModal({ onClose }: { onClose: () => void }) {
                 display: "flex",
                 alignItems: "center",
                 gap: 13,
+                ...listRowStyle(i),
               }}
             >
               <span style={{ width: 38, height: 38, flex: "none", borderRadius: 11, background: current ? "var(--accent,#0E6B5C)" : "var(--subtle,#EDF1EF)", display: "flex", alignItems: "center", justifyContent: "center", font: "700 12px/1 Figtree, sans-serif", color: current ? "#ffffff" : "var(--ink-soft,#4A5B56)" }}>{soc.mark}</span>
@@ -327,7 +330,7 @@ function NotifDrawer({ onClose }: { onClose: () => void }) {
         </div>
         <div style={{ flex: 1, overflowY: "auto", padding: "8px 0" }}>
           {NOTIFS.map((n, i) => (
-            <div key={i} className="row-hover" style={{ padding: "14px 22px", borderBottom: "1px solid var(--border-soft,#F5F7F6)", display: "flex", gap: 12, cursor: "pointer" }}>
+            <div key={i} className="row-hover" style={{ padding: "14px 22px", borderBottom: "1px solid var(--border-soft,#F5F7F6)", display: "flex", gap: 12, cursor: "pointer", ...listRowStyle(i) }}>
               <span style={{ width: 8, height: 8, borderRadius: "50%", flex: "none", marginTop: 6, background: n.dot }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ font: "600 13.5px/1.4 Figtree, sans-serif" }}>{n.t}</div>

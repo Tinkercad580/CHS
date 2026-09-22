@@ -3,6 +3,7 @@ import { useAdminStore } from "../../store/AdminStore";
 import { MDAYS, STAFF_ROLES } from "../../mock/staff";
 import { money } from "../../lib/format";
 import { ModalShell, ModalHeader, ModalFooter, GhostButton, PrimaryButton } from "../../components/ModalShell";
+import { listRowStyle, taggedCardStyle } from "../../lib/motion";
 
 /**
  * Staff & help — the 30-column clickable attendance sheet (README section
@@ -61,14 +62,18 @@ export function StaffPage() {
           <p style={{ margin: 0, maxWidth: "66ch", font: "400 14.5px/1.5 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>Attendance comes from the gate's own in-and-out, not a register. September, {MDAYS} days elapsed.</p>
         </div>
         <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
-          <button type="button" onClick={exportCsv} style={secondaryBtn}>Export sheet</button>
-          <button type="button" onClick={() => setAddOpen(true)} style={primaryBtn}>Add staff</button>
+          <button type="button" onClick={exportCsv} className="press-scale" style={secondaryBtn}>Export sheet</button>
+          <button type="button" onClick={() => setAddOpen(true)} className="press-scale" style={primaryBtn}>Add staff</button>
         </div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", gap: 12, marginBottom: 16 }}>
-        {stats.map((s) => (
-          <div key={s.label} style={{ background: "var(--surface,#fff)", border: "1px solid var(--border,#E3E9E6)", borderRadius: 14, padding: "16px 18px" }}>
+        {stats.map((s, i) => (
+          <div
+            key={s.label}
+            className="hover-lift theme-transition"
+            style={{ background: "var(--surface,#fff)", border: "1px solid var(--border,#E3E9E6)", borderRadius: 14, padding: "16px 18px", ...taggedCardStyle(i) }}
+          >
             <div style={{ font: "600 11px/1 Figtree, sans-serif", letterSpacing: ".09em", textTransform: "uppercase", color: "var(--ink-soft,#5A6B66)", marginBottom: 10 }}>{s.label}</div>
             <div style={{ font: "700 22px/1 Figtree, sans-serif", letterSpacing: "-.02em", fontVariantNumeric: "tabular-nums" }}>{s.value}</div>
             <div style={{ marginTop: 8, font: "400 12.5px/1.4 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>{s.note}</div>
@@ -82,7 +87,7 @@ export function StaffPage() {
           {roleChips.map((r) => {
             const activeChip = role === r;
             return (
-              <button key={r} type="button" onClick={() => setRole(r)} style={{ height: 32, padding: "0 12px", borderRadius: 999, border: `1px solid ${activeChip ? "var(--accent,#0E6B5C)" : "var(--border-strong,#CCD6D2)"}`, background: activeChip ? "var(--accent,#0E6B5C)" : "var(--surface,#fff)", color: activeChip ? "#fff" : "var(--ink,#0F1A17)", font: "600 12.5px/1 Figtree, sans-serif", cursor: "pointer" }}>
+              <button key={r} type="button" onClick={() => setRole(r)} className="press-scale" style={{ height: 32, padding: "0 12px", borderRadius: 999, border: `1px solid ${activeChip ? "var(--accent,#0E6B5C)" : "var(--border-strong,#CCD6D2)"}`, background: activeChip ? "var(--accent,#0E6B5C)" : "var(--surface,#fff)", color: activeChip ? "#fff" : "var(--ink,#0F1A17)", font: "600 12.5px/1 Figtree, sans-serif", cursor: "pointer" }}>
                 {r}
               </button>
             );
@@ -101,13 +106,13 @@ export function StaffPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((p) => {
+              {rows.map((p, ri) => {
                 const present = p.days.filter((d) => d === 1).length;
                 const payable = Math.round((p.salary / MDAYS) * present);
                 return (
-                  <tr key={p.id} style={{ borderTop: "1px solid var(--border-soft,#F1F4F3)" }}>
+                  <tr key={p.id} className="row-hover" style={{ borderTop: "1px solid var(--border-soft,#F1F4F3)", ...listRowStyle(ri) }}>
                     <td style={{ padding: "11px 16px", position: "sticky", left: 0, background: "var(--surface,#fff)", zIndex: 1, minWidth: 186 }}>
-                      <button type="button" onClick={() => setActiveId(p.id)} style={{ border: 0, background: "transparent", padding: 0, cursor: "pointer", textAlign: "left", display: "block", maxWidth: "100%" }}>
+                      <button type="button" onClick={() => setActiveId(p.id)} className="press-scale" style={{ border: 0, background: "transparent", padding: 0, cursor: "pointer", textAlign: "left", display: "block", maxWidth: "100%" }}>
                         <span style={{ display: "block", font: "600 13.5px/1.3 Figtree, sans-serif", color: "var(--ink,#0F1A17)", whiteSpace: "nowrap" }}>{p.name}</span>
                         <span style={{ display: "block", font: "400 11.5px/1.35 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)", whiteSpace: "nowrap" }}>{p.role} · {p.pass}</span>
                       </button>
@@ -122,6 +127,7 @@ export function StaffPage() {
                             const next = d === 1 ? 0 : d === 0 ? 2 : 1;
                             toast(`${p.name} · ${i + 1} Sep marked ${next === 1 ? "present" : next === 0 ? "absent" : "weekly off"}.`, "ok");
                           }}
+                          className="press-scale"
                           style={{ width: 20, height: 22, margin: "1px auto", display: "block", border: 0, borderRadius: 4, background: d === 1 ? "var(--ok-wash,#E8F5EC)" : d === 0 ? "var(--bad-wash,#FCEDEC)" : "var(--subtle,#EDF1EF)", cursor: "pointer" }}
                         />
                       </td>
@@ -220,7 +226,7 @@ function AddStaffModal({ onClose }: { onClose: () => void }) {
           {STAFF_ROLES.map((r) => {
             const active = role === r;
             return (
-              <button key={r} type="button" onClick={() => setRole(r)} style={{ height: 42, border: `1px solid ${active ? "var(--accent,#0E6B5C)" : "var(--border-strong,#CCD6D2)"}`, borderRadius: 11, background: active ? "var(--accent-wash,#E6F2EF)" : "var(--surface,#fff)", color: active ? "var(--accent-ink,#0A5749)" : "var(--ink,#0F1A17)", font: "600 12.5px/1 Figtree, sans-serif", cursor: "pointer" }}>
+              <button key={r} type="button" onClick={() => setRole(r)} className="press-scale" style={{ height: 42, border: `1px solid ${active ? "var(--accent,#0E6B5C)" : "var(--border-strong,#CCD6D2)"}`, borderRadius: 11, background: active ? "var(--accent-wash,#E6F2EF)" : "var(--surface,#fff)", color: active ? "var(--accent-ink,#0A5749)" : "var(--ink,#0F1A17)", font: "600 12.5px/1 Figtree, sans-serif", cursor: "pointer" }}>
                 {r}
               </button>
             );
@@ -271,7 +277,7 @@ function StaffDetailModal({
         ))}
       </div>
       <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", flexWrap: "wrap" }}>
-        <button type="button" onClick={onRevoke} style={{ height: 44, padding: "0 18px", border: "1px solid var(--bad-border,#F6D9D6)", borderRadius: 11, background: "var(--surface,#fff)", color: "var(--bad-ink,#9B2B22)", font: "600 14.5px/1 Figtree, sans-serif", cursor: "pointer" }}>
+        <button type="button" onClick={onRevoke} className="press-scale" style={{ height: 44, padding: "0 18px", border: "1px solid var(--bad-border,#F6D9D6)", borderRadius: 11, background: "var(--surface,#fff)", color: "var(--bad-ink,#9B2B22)", font: "600 14.5px/1 Figtree, sans-serif", cursor: "pointer" }}>
           Revoke pass
         </button>
         <PrimaryButton onClick={onClose}>Done</PrimaryButton>

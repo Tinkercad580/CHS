@@ -3,6 +3,7 @@ import { useAdminStore } from "../../store/AdminStore";
 import { CAL_DAYS, CAL_SLOTS } from "../../mock/amenities";
 import { money } from "../../lib/format";
 import { ModalShell, ModalHeader, ModalFooter, GhostButton, PrimaryButton } from "../../components/ModalShell";
+import { listRowStyle, taggedCardStyle } from "../../lib/motion";
 
 /**
  * Amenities — the booking calendar (three slots × five days) plus the
@@ -35,11 +36,12 @@ export function AmenitiesPage() {
               setBlockSeed({ day: 19, slot: 0 });
               setBlockOpen(true);
             }}
+            className="press-scale"
             style={secondaryBtn}
           >
             Block a slot
           </button>
-          <button type="button" onClick={() => setAddOpen(true)} style={primaryBtn}>Add amenity</button>
+          <button type="button" onClick={() => setAddOpen(true)} className="press-scale" style={primaryBtn}>Add amenity</button>
         </div>
       </div>
 
@@ -49,7 +51,7 @@ export function AmenitiesPage() {
           {(["All", "Confirmed", "Pending"] as const).map((f) => {
             const active = calFilter === f;
             return (
-              <button key={f} type="button" onClick={() => setCalFilter(f)} style={{ height: 32, padding: "0 12px", borderRadius: 999, border: `1px solid ${active ? "var(--accent,#0E6B5C)" : "var(--border-strong,#CCD6D2)"}`, background: active ? "var(--accent,#0E6B5C)" : "var(--surface,#fff)", color: active ? "#fff" : "var(--ink,#0F1A17)", font: "600 12.5px/1 Figtree, sans-serif", cursor: "pointer" }}>
+              <button key={f} type="button" onClick={() => setCalFilter(f)} className="press-scale" style={{ height: 32, padding: "0 12px", borderRadius: 999, border: `1px solid ${active ? "var(--accent,#0E6B5C)" : "var(--border-strong,#CCD6D2)"}`, background: active ? "var(--accent,#0E6B5C)" : "var(--surface,#fff)", color: active ? "#fff" : "var(--ink,#0F1A17)", font: "600 12.5px/1 Figtree, sans-serif", cursor: "pointer" }}>
                 {f}
               </button>
             );
@@ -69,7 +71,8 @@ export function AmenitiesPage() {
             {CAL_SLOTS.map((slot, si) => (
               <div key={slot} style={{ display: "grid", gridTemplateColumns: "92px repeat(5,1fr)", gap: 9, marginBottom: 9 }}>
                 <div style={{ display: "flex", alignItems: "center", font: "600 11.5px/1.3 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>{slot}</div>
-                {CAL_DAYS.map((d) => {
+                {CAL_DAYS.map((d, di) => {
+                  const cellIdx = si * CAL_DAYS.length + di;
                   const bk = state.bookings.find((b) => b.day === d.n && b.slot === si && (calFilter === "All" || b.state === calFilter));
                   if (!bk) {
                     return (
@@ -80,7 +83,8 @@ export function AmenitiesPage() {
                           setBlockSeed({ day: d.n, slot: si });
                           setBlockOpen(true);
                         }}
-                        style={{ minHeight: 76, border: "1px solid var(--border,#E3E9E6)", borderRadius: 12, background: "var(--canvas,#F7F9F8)", padding: "9px 10px", cursor: "pointer", textAlign: "left", display: "flex", flexDirection: "column", gap: 4 }}
+                        className="hover-lift-sm press-scale"
+                        style={{ minHeight: 76, border: "1px solid var(--border,#E3E9E6)", borderRadius: 12, background: "var(--canvas,#F7F9F8)", padding: "9px 10px", cursor: "pointer", textAlign: "left", display: "flex", flexDirection: "column", gap: 4, ...taggedCardStyle(cellIdx) }}
                       >
                         <span style={{ margin: "auto", font: "500 11.5px/1 Figtree, sans-serif", color: "var(--ink-dim,#A8B5B0)" }}>Free</span>
                       </button>
@@ -92,7 +96,8 @@ export function AmenitiesPage() {
                       key={d.n}
                       type="button"
                       onClick={() => setActiveBookingId(bk.id)}
-                      style={{ minHeight: 76, border: `1px solid ${pending ? "var(--warn-border,#F5DFBE)" : "var(--accent-200,#C9E4DC)"}`, borderRadius: 12, background: pending ? "var(--warn-wash,#FDF3E7)" : "var(--accent-wash,#E6F2EF)", padding: "9px 10px", cursor: "pointer", textAlign: "left", display: "flex", flexDirection: "column", gap: 4 }}
+                      className="hover-lift-sm press-scale"
+                      style={{ minHeight: 76, border: `1px solid ${pending ? "var(--warn-border,#F5DFBE)" : "var(--accent-200,#C9E4DC)"}`, borderRadius: 12, background: pending ? "var(--warn-wash,#FDF3E7)" : "var(--accent-wash,#E6F2EF)", padding: "9px 10px", cursor: "pointer", textAlign: "left", display: "flex", flexDirection: "column", gap: 4, ...taggedCardStyle(cellIdx) }}
                     >
                       <span style={{ font: "600 12px/1.3 Figtree, sans-serif", color: "var(--ink,#0F1A17)" }}>{bk.amenity}</span>
                       <span style={{ font: "400 11px/1.3 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>{bk.unit}</span>
@@ -120,8 +125,8 @@ export function AmenitiesPage() {
               </tr>
             </thead>
             <tbody>
-              {state.amenities.map((a) => (
-                <tr key={a.id} style={{ borderTop: "1px solid var(--border-soft,#F1F4F3)" }}>
+              {state.amenities.map((a, i) => (
+                <tr key={a.id} className="row-hover" style={{ borderTop: "1px solid var(--border-soft,#F1F4F3)", ...listRowStyle(i) }}>
                   <td style={{ padding: "13px 16px", font: "600 14px/1.4 Figtree, sans-serif" }}>{a.name}</td>
                   <td style={{ padding: "13px 16px", font: "400 13.5px/1.4 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>{a.capacity}</td>
                   <td style={{ padding: "13px 16px", font: "400 13.5px/1.4 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>{a.open}</td>
@@ -135,6 +140,7 @@ export function AmenitiesPage() {
                         const next = a.status === "Open" ? "Closed" : "Open";
                         toast(`${a.name} is now ${next.toLowerCase()} for booking.`, next === "Open" ? "ok" : "warn");
                       }}
+                      className="press-scale"
                       style={{ padding: "4px 11px", border: `1px solid ${a.status === "Open" ? "var(--ok-wash,#E8F5EC)" : "var(--bad-border,#F6D9D6)"}`, borderRadius: 999, font: "600 11.5px/1.5 Figtree, sans-serif", background: a.status === "Open" ? "var(--ok-wash,#E8F5EC)" : "var(--bad-wash,#FCEDEC)", color: a.status === "Open" ? "var(--ok-ink,#14663A)" : "var(--bad-ink,#9B2B22)", cursor: "pointer" }}
                     >
                       {a.status}
@@ -260,7 +266,7 @@ function BlockSlotModal({ seedDay, seedSlot, onClose }: { seedDay: number; seedS
         {state.amenities.map((a) => {
           const active = amenity === a.name;
           return (
-            <button key={a.id} type="button" onClick={() => setAmenity(a.name)} style={{ height: 42, border: `1px solid ${active ? "var(--accent,#0E6B5C)" : "var(--border-strong,#CCD6D2)"}`, borderRadius: 11, background: active ? "var(--accent-wash,#E6F2EF)" : "var(--surface,#fff)", color: active ? "var(--accent-ink,#0A5749)" : "var(--ink,#0F1A17)", font: "600 13px/1 Figtree, sans-serif", cursor: "pointer", textAlign: "left", padding: "0 14px" }}>
+            <button key={a.id} type="button" onClick={() => setAmenity(a.name)} className="press-scale" style={{ height: 42, border: `1px solid ${active ? "var(--accent,#0E6B5C)" : "var(--border-strong,#CCD6D2)"}`, borderRadius: 11, background: active ? "var(--accent-wash,#E6F2EF)" : "var(--surface,#fff)", color: active ? "var(--accent-ink,#0A5749)" : "var(--ink,#0F1A17)", font: "600 13px/1 Figtree, sans-serif", cursor: "pointer", textAlign: "left", padding: "0 14px" }}>
               {a.name}
             </button>
           );
@@ -271,7 +277,7 @@ function BlockSlotModal({ seedDay, seedSlot, onClose }: { seedDay: number; seedS
         {CAL_DAYS.map((d) => {
           const active = day === d.n;
           return (
-            <button key={d.n} type="button" onClick={() => setDay(d.n)} style={{ height: 44, border: `1px solid ${active ? "var(--accent,#0E6B5C)" : "var(--border-strong,#CCD6D2)"}`, borderRadius: 11, background: active ? "var(--accent,#0E6B5C)" : "var(--surface,#fff)", color: active ? "#fff" : "var(--ink,#0F1A17)", font: "600 12px/1 Figtree, sans-serif", cursor: "pointer" }}>
+            <button key={d.n} type="button" onClick={() => setDay(d.n)} className="press-scale" style={{ height: 44, border: `1px solid ${active ? "var(--accent,#0E6B5C)" : "var(--border-strong,#CCD6D2)"}`, borderRadius: 11, background: active ? "var(--accent,#0E6B5C)" : "var(--surface,#fff)", color: active ? "#fff" : "var(--ink,#0F1A17)", font: "600 12px/1 Figtree, sans-serif", cursor: "pointer" }}>
               {d.l} {d.n}
             </button>
           );
@@ -282,7 +288,7 @@ function BlockSlotModal({ seedDay, seedSlot, onClose }: { seedDay: number; seedS
         {CAL_SLOTS.map((s, i) => {
           const active = slot === i;
           return (
-            <button key={s} type="button" onClick={() => setSlot(i)} style={{ height: 42, border: `1px solid ${active ? "var(--accent,#0E6B5C)" : "var(--border-strong,#CCD6D2)"}`, borderRadius: 11, background: active ? "var(--accent-wash,#E6F2EF)" : "var(--surface,#fff)", color: active ? "var(--accent-ink,#0A5749)" : "var(--ink,#0F1A17)", font: "600 13px/1 Figtree, sans-serif", cursor: "pointer" }}>
+            <button key={s} type="button" onClick={() => setSlot(i)} className="press-scale" style={{ height: 42, border: `1px solid ${active ? "var(--accent,#0E6B5C)" : "var(--border-strong,#CCD6D2)"}`, borderRadius: 11, background: active ? "var(--accent-wash,#E6F2EF)" : "var(--surface,#fff)", color: active ? "var(--accent-ink,#0A5749)" : "var(--ink,#0F1A17)", font: "600 13px/1 Figtree, sans-serif", cursor: "pointer" }}>
               {s}
             </button>
           );
@@ -325,7 +331,7 @@ function BookingDetailModal({
         ))}
       </div>
       <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", flexWrap: "wrap" }}>
-        <button type="button" onClick={onRelease} style={{ height: 44, padding: "0 18px", border: "1px solid var(--bad-border,#F6D9D6)", borderRadius: 11, background: "var(--surface,#fff)", color: "var(--bad-ink,#9B2B22)", font: "600 14.5px/1 Figtree, sans-serif", cursor: "pointer" }}>
+        <button type="button" onClick={onRelease} className="press-scale" style={{ height: 44, padding: "0 18px", border: "1px solid var(--bad-border,#F6D9D6)", borderRadius: 11, background: "var(--surface,#fff)", color: "var(--bad-ink,#9B2B22)", font: "600 14.5px/1 Figtree, sans-serif", cursor: "pointer" }}>
           Release slot
         </button>
         {pending && <PrimaryButton onClick={onConfirm}>Confirm booking</PrimaryButton>}

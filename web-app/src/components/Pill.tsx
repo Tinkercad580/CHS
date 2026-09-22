@@ -7,6 +7,7 @@ export function Pill({ label, kind, style }: { label: string; kind: PillKind; st
   const t = PILL_TOKENS[kind];
   return (
     <span
+      className="theme-transition"
       style={{
         display: "inline-flex",
         alignItems: "center",
@@ -30,6 +31,7 @@ export function DotPill({ label, kind }: { label: string; kind: PillKind }) {
   const t = PILL_TOKENS[kind];
   return (
     <span
+      className="theme-transition"
       style={{
         display: "inline-flex",
         alignItems: "center",
