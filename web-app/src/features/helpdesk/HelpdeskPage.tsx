@@ -4,6 +4,7 @@ import { PANELS } from "../../mock/panels";
 import { PanelModal } from "../../components/PanelModal";
 import { ModalShell, ModalHeader, ModalFooter, GhostButton, PrimaryButton } from "../../components/ModalShell";
 import { useAdminStore } from "../../store/AdminStore";
+import { taggedCardStyle } from "../../lib/motion";
 
 /**
  * Helpdesk kanban — one of the three screens the README places outside the
@@ -25,8 +26,8 @@ export function HelpdeskPage() {
           <p style={{ margin: 0, font: "400 14.5px/1.5 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>31 open · SLA compliance 84% this month · avg resolution 9.2 h</p>
         </div>
         <div style={{ display: "flex", gap: 9 }}>
-          <button type="button" onClick={() => setAnalyticsOpen(true)} style={secondaryBtn}>Analytics</button>
-          <button type="button" onClick={() => setTicketOpen(true)} style={primaryBtn}>New ticket</button>
+          <button type="button" onClick={() => setAnalyticsOpen(true)} className="press-scale" style={secondaryBtn}>Analytics</button>
+          <button type="button" onClick={() => setTicketOpen(true)} className="press-scale" style={primaryBtn}>New ticket</button>
         </div>
       </div>
 
@@ -38,8 +39,12 @@ export function HelpdeskPage() {
               <span style={{ padding: "1px 8px", borderRadius: 999, background: "var(--surface,#fff)", font: "700 11px/1.7 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>{col.count}</span>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-              {col.cards.map((c) => (
-                <div key={c.id} style={{ background: "var(--surface,#fff)", border: "1px solid var(--border,#E3E9E6)", borderRadius: 11, padding: 13, cursor: "pointer" }}>
+              {col.cards.map((c, i) => (
+                <div
+                  key={c.id}
+                  className="hover-lift theme-transition"
+                  style={{ background: "var(--surface,#fff)", border: "1px solid var(--border,#E3E9E6)", borderRadius: 11, padding: 13, cursor: "pointer", ...taggedCardStyle(i) }}
+                >
                   <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 7 }}>
                     <span style={{ font: "500 10.5px/1.4 'IBM Plex Mono',monospace", color: "var(--ink-soft,#5A6B66)" }}>{c.id}</span>
                     <span style={{ padding: "1px 7px", borderRadius: 5, background: c.slaBg, color: c.slaFg, font: "700 10px/1.7 Figtree, sans-serif" }}>{c.sla}</span>
@@ -123,7 +128,7 @@ function NewTicketModal({ onClose }: { onClose: () => void }) {
         {TICKET_CATEGORIES.map((c) => {
           const active = cat === c;
           return (
-            <button key={c} type="button" onClick={() => setCat(c)} style={pickStyle(active)}>
+            <button key={c} type="button" onClick={() => setCat(c)} className="press-scale" style={pickStyle(active)}>
               {c}
             </button>
           );
@@ -138,6 +143,7 @@ function NewTicketModal({ onClose }: { onClose: () => void }) {
               key={p.key}
               type="button"
               onClick={() => setPri(p.key)}
+              className="press-scale"
               style={{ flex: 1, height: 54, border: `1px solid ${active ? "var(--accent,#0E6B5C)" : "var(--border-strong,#CCD6D2)"}`, borderRadius: 11, background: active ? pillBg(p.key) : "var(--surface,#fff)", color: active ? pillFg(p.key) : "var(--ink,#0F1A17)", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3 }}
             >
               <span style={{ font: "600 13px/1 Figtree, sans-serif" }}>{p.key}</span>

@@ -1,6 +1,7 @@
 import React from "react";
-import { View, Pressable } from "react-native";
+import { View } from "react-native";
 import { GateText } from "./GateText";
+import { AnimatedPressable } from "./AnimatedPressable";
 import { Icon } from "./Icon";
 import { iconPaths } from "./iconPaths";
 import { colors } from "../theme";
@@ -16,7 +17,7 @@ export function ScreenHeader({ title, subtitle, onBack }: Props) {
   if (onBack) {
     return (
       <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 18 }}>
-        <Pressable
+        <AnimatedPressable
           onPress={onBack}
           style={{
             width: 40,
@@ -30,7 +31,7 @@ export function ScreenHeader({ title, subtitle, onBack }: Props) {
           }}
         >
           <Icon d={iconPaths.backChevron} color={colors.ink} size={19} strokeWidth={2.1} />
-        </Pressable>
+        </AnimatedPressable>
         <GateText variant="cardTitleLarge" style={{ fontSize: 19 }}>
           {title}
         </GateText>

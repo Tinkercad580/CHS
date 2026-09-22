@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { PAGES } from "../../mock/pages";
 import { PANELS } from "../../mock/panels";
@@ -9,6 +9,7 @@ import { StatGrid } from "../../components/StatGrid";
 import { Pill } from "../../components/Pill";
 import { DataFormModal } from "../../components/DataFormModal";
 import { PanelModal } from "../../components/PanelModal";
+import { listRowStyle } from "../../lib/motion";
 
 /**
  * The generic table page: search/filter/sort/pagination/empty-state driven
@@ -29,6 +30,20 @@ export function GenericPage() {
   const [pageNo, setPageNo] = useState<1 | 2>(1);
   const [formOpen, setFormOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const refreshTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  // A search or filter change briefly shows a 520ms skeleton shimmer over
+  // the table before the (already-computed) result settles in — README,
+  // "Loading" ("a 520ms skeleton shimmer (dues filter)").
+  const flashRefresh = () => {
+    setRefreshing(true);
+    if (refreshTimer.current) clearTimeout(refreshTimer.current);
+    refreshTimer.current = setTimeout(() => setRefreshing(false), 520);
+  };
+  useEffect(() => () => {
+    if (refreshTimer.current) clearTimeout(refreshTimer.current);
+  }, []);
 
   const all = useMemo(() => mergedRows(pageKey, state.added, state.edits), [pageKey, state.added, state.edits]);
 
@@ -63,10 +78,10 @@ export function GenericPage() {
           <p style={{ margin: 0, maxWidth: "66ch", font: "400 14.5px/1.5 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>{page.sub}</p>
         </div>
         <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
-          <button type="button" onClick={() => setPanelOpen(true)} style={secondaryBtnStyle}>
+          <button type="button" onClick={() => setPanelOpen(true)} className="press-scale" style={secondaryBtnStyle}>
             {page.second}
           </button>
-          <button type="button" onClick={() => setFormOpen(true)} style={primaryBtnStyle}>
+          <button type="button" onClick={() => setFormOpen(true)} className="press-scale" style={primaryBtnStyle}>
             {page.primary}
           </button>
         </div>
@@ -87,6 +102,7 @@ export function GenericPage() {
               onChange={(e) => {
                 setSearch(e.target.value);
                 setPageNo(1);
+                flashRefresh();
               }}
               placeholder={page.searchHint}
               style={{ flex: 1, minWidth: 0, border: 0, background: "transparent", font: "400 13.5px/1 Figtree, sans-serif", outline: "none", color: "var(--ink,#0F1A17)" }}
@@ -101,7 +117,9 @@ export function GenericPage() {
                 onClick={() => {
                   setChip((cur) => (cur === i ? null : i));
                   setPageNo(1);
+                  flashRefresh();
                 }}
+                className="press-scale"
                 style={{
                   height: 32,
                   display: "inline-flex",
@@ -138,7 +156,9 @@ export function GenericPage() {
                           setSortDir(1);
                           return i;
                         });
+                        flashRefresh();
                       }}
+                      className="press-scale"
                       style={{
                         width: "100%",
                         padding: "11px 16px",
@@ -161,23 +181,33 @@ export function GenericPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((r, i) => (
-                <tr
-                  key={i}
-                  onClick={() => navigate(`/${pageKey}/record/${encodeURIComponent(r.a)}`)}
-                  style={{ borderTop: "1px solid var(--border-soft,#F1F4F3)", cursor: "pointer" }}
-                  className="row-hover"
-                >
-                  <td style={{ padding: "13px 16px", font: "500 13.5px/1.4 'IBM Plex Mono',monospace", whiteSpace: "nowrap" }}>{r.a}</td>
-                  <td style={{ padding: "13px 16px", font: "600 14px/1.4 Figtree, sans-serif" }}>{r.b}</td>
-                  <td style={{ padding: "13px 16px", font: "400 13.5px/1.4 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>{r.c}</td>
-                  <td style={{ padding: "13px 16px", font: "400 13.5px/1.4 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>{r.d}</td>
-                  <td style={{ padding: "13px 16px", textAlign: "right", font: "600 14px/1.4 Figtree, sans-serif", fontVariantNumeric: "tabular-nums", color: r.eFg ?? "var(--ink,#0F1A17)" }}>{r.e}</td>
-                  <td style={{ padding: "13px 20px 13px 16px", textAlign: "right" }}>
-                    <Pill label={r.pill} kind={r.k} />
-                  </td>
-                </tr>
-              ))}
+              {refreshing
+                ? Array.from({ length: Math.min(6, filtered.length || 6) }, (_, i) => (
+                    <tr key={`sk${i}`} style={{ borderTop: "1px solid var(--border-soft,#F1F4F3)" }}>
+                      {page.cols.map((col) => (
+                        <td key={col.label} style={{ padding: "13px 16px" }}>
+                          <div className="skeleton" style={{ height: 14, width: col.align === "right" ? "60%" : "80%", marginLeft: col.align === "right" ? "auto" : 0 }} />
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+                : filtered.map((r, i) => (
+                    <tr
+                      key={i}
+                      onClick={() => navigate(`/${pageKey}/record/${encodeURIComponent(r.a)}`)}
+                      style={{ borderTop: "1px solid var(--border-soft,#F1F4F3)", cursor: "pointer", ...listRowStyle(i) }}
+                      className="row-hover"
+                    >
+                      <td style={{ padding: "13px 16px", font: "500 13.5px/1.4 'IBM Plex Mono',monospace", whiteSpace: "nowrap" }}>{r.a}</td>
+                      <td style={{ padding: "13px 16px", font: "600 14px/1.4 Figtree, sans-serif" }}>{r.b}</td>
+                      <td style={{ padding: "13px 16px", font: "400 13.5px/1.4 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>{r.c}</td>
+                      <td style={{ padding: "13px 16px", font: "400 13.5px/1.4 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>{r.d}</td>
+                      <td style={{ padding: "13px 16px", textAlign: "right", font: "600 14px/1.4 Figtree, sans-serif", fontVariantNumeric: "tabular-nums", color: r.eFg ?? "var(--ink,#0F1A17)" }}>{r.e}</td>
+                      <td style={{ padding: "13px 20px 13px 16px", textAlign: "right" }}>
+                        <Pill label={r.pill} kind={r.k} />
+                      </td>
+                    </tr>
+                  ))}
             </tbody>
           </table>
         </div>
@@ -188,7 +218,7 @@ export function GenericPage() {
             <div style={{ font: "400 13.5px/1.5 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)", marginBottom: 16 }}>
               {search.trim() ? `No row contains "${search.trim()}".` : "No row is in that state on this page."}
             </div>
-            <button type="button" onClick={clearFilters} style={secondaryBtnStyle}>
+            <button type="button" onClick={clearFilters} className="press-scale" style={secondaryBtnStyle}>
               Clear search and filters
             </button>
           </div>
@@ -205,7 +235,9 @@ export function GenericPage() {
                   return;
                 }
                 setPageNo(1);
+                flashRefresh();
               }}
+              className="press-scale"
               style={{ height: 31, padding: "0 11px", border: "1px solid var(--border,#E3E9E6)", borderRadius: 8, background: "var(--surface,#fff)", font: "600 12.5px/1 Figtree, sans-serif", color: pageNo === 1 ? "var(--ink-dim,#A8B5B0)" : "var(--ink-soft,#5A6B66)", cursor: "pointer" }}
             >
               Prev
@@ -214,7 +246,11 @@ export function GenericPage() {
               <button
                 key={n}
                 type="button"
-                onClick={() => setPageNo(n as 1 | 2)}
+                onClick={() => {
+                  setPageNo(n as 1 | 2);
+                  flashRefresh();
+                }}
+                className="press-scale"
                 style={{
                   height: 31,
                   minWidth: 31,
@@ -237,7 +273,9 @@ export function GenericPage() {
                   return;
                 }
                 setPageNo(2);
+                flashRefresh();
               }}
+              className="press-scale"
               style={{ height: 31, padding: "0 11px", border: "1px solid var(--border,#E3E9E6)", borderRadius: 8, background: "var(--surface,#fff)", font: "600 12.5px/1 Figtree, sans-serif", color: pageNo === 2 ? "var(--ink-dim,#A8B5B0)" : "var(--ink-soft,#5A6B66)", cursor: "pointer" }}
             >
               Next

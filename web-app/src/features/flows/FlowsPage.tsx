@@ -1,4 +1,5 @@
 import { FLOWS, TAGS } from "../../mock/flows";
+import { taggedCardStyle } from "../../lib/motion";
 
 /** The "User flows" screen — the eight journeys the product lives or dies
  * on, each step naming the surface it happens on and every branch that
@@ -11,10 +12,10 @@ export function FlowsPage() {
         The eight journeys the product lives or dies on. Each step names the surface it happens on — admin web, resident app or gate app — and every branch that stops the flow.
       </p>
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {FLOWS.map((f) => {
+        {FLOWS.map((f, fi) => {
           const tag = TAGS[f.tag];
           return (
-            <div key={f.name} style={{ background: "var(--surface,#fff)", border: "1px solid var(--border,#E3E9E6)", borderRadius: 15, padding: "20px 22px" }}>
+            <div key={f.name} className="theme-transition" style={{ background: "var(--surface,#fff)", border: "1px solid var(--border,#E3E9E6)", borderRadius: 15, padding: "20px 22px", ...taggedCardStyle(fi) }}>
               <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 16, flexWrap: "wrap" }}>
                 <span style={{ padding: "3px 9px", borderRadius: 6, background: tag.bg, color: tag.fg, font: "700 10.5px/1.6 Figtree, sans-serif", letterSpacing: ".06em", textTransform: "uppercase" }}>{f.surface}</span>
                 <span style={{ font: "700 16px/1.3 Figtree, sans-serif", letterSpacing: "-.012em" }}>{f.name}</span>

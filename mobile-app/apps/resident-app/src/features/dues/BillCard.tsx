@@ -1,10 +1,11 @@
 import React from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import type { Bill } from "@sahaj/shared";
 import { useTheme } from "../../hooks/useTheme";
 import { useT } from "../../hooks/useT";
 import { AppText } from "../../components/AppText";
 import { StatusPill } from "../../components/StatusPill";
+import { AnimatedPressable } from "../../components/AnimatedPressable";
 
 /** A bill row card with a 3px status edge — README's "warn unpaid, ok paid". */
 export function BillCard({ bill, amount, onPress }: { bill: Bill; amount: string; onPress: () => void }) {
@@ -14,7 +15,7 @@ export function BillCard({ bill, amount, onPress }: { bill: Bill; amount: string
   const edge = paid ? colors.ok : colors.warn;
 
   return (
-    <Pressable
+    <AnimatedPressable
       onPress={onPress}
       style={{ borderWidth: 1, borderColor: colors.border, borderLeftWidth: 3, borderLeftColor: edge, borderRadius: 15, backgroundColor: colors.surface, padding: 15 }}
     >
@@ -42,6 +43,6 @@ export function BillCard({ bill, amount, onPress }: { bill: Bill; amount: string
           {paid ? t("settledOn", { date: bill.paidOn ? new Date(bill.paidOn).toLocaleDateString("en-IN") : "" }) : "Due 17 Sep"}
         </AppText>
       </View>
-    </Pressable>
+    </AnimatedPressable>
   );
 }

@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Pressable } from "react-native";
+import { View } from "react-native";
 import { residentName, formatInr, FOCUS_UNIT_OWNER, FOCUS_UNIT_LET_OUT } from "@sahaj/shared";
 import { useResident } from "../../state/ResidentProvider";
 import { useTheme } from "../../hooks/useTheme";
@@ -11,6 +11,8 @@ import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
 import { Card } from "../../components/Card";
 import { EmptyState } from "../../components/EmptyState";
+import { AnimatedPressable } from "../../components/AnimatedPressable";
+import { StaggerItem } from "../../components/StaggerItem";
 
 function initialsOf(name: string): string {
   return name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
@@ -38,9 +40,9 @@ export function HomeScreen() {
 
   return (
     <ScreenScroll contentPadded={false}>
-      <View style={{ paddingHorizontal: 22, paddingTop: 8, paddingBottom: 22, backgroundColor: colors.accent }}>
+      <StaggerItem index={0} tier="screenBlock" style={{ paddingHorizontal: 22, paddingTop: 8, paddingBottom: 22, backgroundColor: colors.accent }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-          <Pressable onPress={() => actions.go("profile")} style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 12, minWidth: 0 }}>
+          <AnimatedPressable onPress={() => actions.go("profile")} style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 12, minWidth: 0 }}>
             <View style={{ width: 42, height: 42, borderRadius: 13, backgroundColor: "rgba(255,255,255,0.16)", alignItems: "center", justifyContent: "center" }}>
               <AppText variant="cardTitleLarge" color="#FFFFFF" style={{ fontSize: 14 }} forceLatin>
                 {initialsOf(residentName)}
@@ -54,21 +56,21 @@ export function HomeScreen() {
                 {unit.line}
               </AppText>
             </View>
-          </Pressable>
-          <Pressable onPress={() => actions.goSos()} style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.14)", alignItems: "center", justifyContent: "center" }}>
+          </AnimatedPressable>
+          <AnimatedPressable onPress={() => actions.goSos()} style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.14)", alignItems: "center", justifyContent: "center" }}>
             <Icon d={iconPaths.sos} size={19} color="#FFFFFF" strokeWidth={1.95} />
-          </Pressable>
-          <Pressable onPress={actions.goNotifs} style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.14)", alignItems: "center", justifyContent: "center" }}>
+          </AnimatedPressable>
+          <AnimatedPressable onPress={actions.goNotifs} style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.14)", alignItems: "center", justifyContent: "center" }}>
             <Icon d={iconPaths.bell} size={19} color="#FFFFFF" strokeWidth={1.9} />
             {unreadNotifs > 0 ? (
               <View style={{ position: "absolute", top: 8, right: 9, width: 8, height: 8, borderRadius: 4, backgroundColor: "#FFC043", borderWidth: 1.5, borderColor: colors.accent }} />
             ) : null}
-          </Pressable>
+          </AnimatedPressable>
         </View>
-      </View>
+      </StaggerItem>
 
-      <View style={{ paddingHorizontal: 22, marginTop: -14 }}>
-        <Pressable onPress={() => actions.go("dues")} style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 18, backgroundColor: colors.surface, padding: 19 }}>
+      <StaggerItem index={1} tier="screenBlock" style={{ paddingHorizontal: 22, marginTop: -14 }}>
+        <AnimatedPressable onPress={() => actions.go("dues")} style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 18, backgroundColor: colors.surface, padding: 19 }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
             <AppText variant="eyebrow" color={colors.inkMuted} forceLatin>
               {t("amountDue").toUpperCase()}
@@ -97,11 +99,11 @@ export function HomeScreen() {
               <Icon d={iconPaths.chevronRight} size={19} color={colors.accentInk} strokeWidth={2} />
             </View>
           </View>
-        </Pressable>
-      </View>
+        </AnimatedPressable>
+      </StaggerItem>
 
-      <View style={{ paddingHorizontal: 22, marginTop: 18 }}>
-        <Pressable onPress={() => actions.go("utilities", true)} style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 15, backgroundColor: colors.surface, padding: 14, flexDirection: "row", alignItems: "center", gap: 12 }}>
+      <StaggerItem index={2} tier="screenBlock" style={{ paddingHorizontal: 22, marginTop: 18 }}>
+        <AnimatedPressable onPress={() => actions.go("utilities", true)} style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 15, backgroundColor: colors.surface, padding: 14, flexDirection: "row", alignItems: "center", gap: 12 }}>
           <View style={{ width: 34, height: 34, borderRadius: 11, backgroundColor: isBad ? colors.badWash : colors.okWash, alignItems: "center", justifyContent: "center" }}>
             <Icon d={iconPaths.bolt} size={17} color={isBad ? colors.badInk : colors.okInk} strokeWidth={2} />
           </View>
@@ -114,29 +116,29 @@ export function HomeScreen() {
             </AppText>
           </View>
           <Icon d={iconPaths.chevronRight} size={16} color={colors.inkDim} strokeWidth={2.2} />
-        </Pressable>
-      </View>
+        </AnimatedPressable>
+      </StaggerItem>
 
-      <View style={{ paddingHorizontal: 22, marginTop: 20 }}>
+      <StaggerItem index={3} tier="screenBlock" style={{ paddingHorizontal: 22, marginTop: 20 }}>
         <AppText variant="cardTitle" color={colors.inkSoft} style={{ fontSize: 13, marginBottom: 11 }}>
           {t("quickActions")}
         </AppText>
         <View style={{ flexDirection: "row", gap: 9 }}>
           {quickActions.map((q) => (
-            <Pressable key={q.label} onPress={q.go} style={{ flex: 1, borderWidth: 1, borderColor: colors.border, borderRadius: 15, backgroundColor: colors.surface, paddingVertical: 13, alignItems: "center", gap: 8 }}>
+            <AnimatedPressable key={q.label} onPress={q.go} style={{ flex: 1, borderWidth: 1, borderColor: colors.border, borderRadius: 15, backgroundColor: colors.surface, paddingVertical: 13, alignItems: "center", gap: 8 }}>
               <View style={{ width: 34, height: 34, borderRadius: 11, backgroundColor: colors.accentWash, alignItems: "center", justifyContent: "center" }}>
                 <Icon d={iconPaths[q.icon]} size={17} color={colors.accentInk} strokeWidth={1.9} />
               </View>
               <AppText variant="cardTitle" style={{ fontSize: 11, textAlign: "center" }}>
                 {q.label}
               </AppText>
-            </Pressable>
+            </AnimatedPressable>
           ))}
         </View>
-      </View>
+      </StaggerItem>
 
       {state.role === "owner_tenant" ? (
-        <View style={{ paddingHorizontal: 22, marginTop: 20 }}>
+        <StaggerItem index={4} tier="screenBlock" style={{ paddingHorizontal: 22, marginTop: 20 }}>
           <View style={{ borderWidth: 1, borderColor: colors.accent200, borderRadius: 16, backgroundColor: colors.accentWash, padding: 15 }}>
             <AppText variant="cardTitle" color={colors.accentInk} style={{ fontSize: 13, marginBottom: 4 }}>
               {t("twoPositions")}
@@ -148,7 +150,7 @@ export function HomeScreen() {
               {[FOCUS_UNIT_OWNER, FOCUS_UNIT_LET_OUT].map((u) => {
                 const active = unit.code === u;
                 return (
-                  <Pressable
+                  <AnimatedPressable
                     key={u}
                     onPress={() => actions.setUnit(u)}
                     style={{ flex: 1, height: 38, borderRadius: 11, borderWidth: 1, borderColor: active ? colors.accent : colors.borderStrong, backgroundColor: active ? colors.accent : colors.surface, alignItems: "center", justifyContent: "center" }}
@@ -156,16 +158,16 @@ export function HomeScreen() {
                     <AppText variant="cardTitle" color={active ? "#FFFFFF" : colors.ink} style={{ fontSize: 12.5 }} forceLatin>
                       {u} · {u === FOCUS_UNIT_OWNER ? t("owned") : t("rentedOut")}
                     </AppText>
-                  </Pressable>
+                  </AnimatedPressable>
                 );
               })}
             </View>
           </View>
-        </View>
+        </StaggerItem>
       ) : null}
 
-      <View style={{ paddingHorizontal: 22, marginTop: 22 }}>
-        <Pressable onPress={actions.goPolls} style={{ borderWidth: 1, borderColor: colors.accent200, borderRadius: 16, backgroundColor: colors.accentWash, padding: 15, flexDirection: "row", alignItems: "center", gap: 13 }}>
+      <StaggerItem index={state.role === "owner_tenant" ? 5 : 4} tier="screenBlock" style={{ paddingHorizontal: 22, marginTop: 22 }}>
+        <AnimatedPressable onPress={actions.goPolls} style={{ borderWidth: 1, borderColor: colors.accent200, borderRadius: 16, backgroundColor: colors.accentWash, padding: 15, flexDirection: "row", alignItems: "center", gap: 13 }}>
           <View style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: colors.surface, alignItems: "center", justifyContent: "center" }}>
             <Icon d={iconPaths.vote} size={19} color={colors.accentInk} strokeWidth={1.9} />
           </View>
@@ -178,22 +180,22 @@ export function HomeScreen() {
             </AppText>
           </View>
           <Icon d={iconPaths.chevronRight} size={17} color={colors.accentInk} strokeWidth={2.2} />
-        </Pressable>
-      </View>
+        </AnimatedPressable>
+      </StaggerItem>
 
-      <View style={{ paddingHorizontal: 22, marginTop: 22 }}>
+      <StaggerItem index={state.role === "owner_tenant" ? 6 : 5} tier="screenBlock" style={{ paddingHorizontal: 22, marginTop: 22 }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 11 }}>
           <AppText variant="cardTitle" color={colors.inkSoft} style={{ fontSize: 13 }}>
             {t("latestNotice")}
           </AppText>
-          <Pressable onPress={() => actions.go("notices")}>
+          <AnimatedPressable onPress={() => actions.go("notices")}>
             <AppText variant="cardTitle" color={colors.accentInk} style={{ fontSize: 12.5 }}>
               {t("seeAll")}
             </AppText>
-          </Pressable>
+          </AnimatedPressable>
         </View>
         {topNotice ? (
-          <Pressable onPress={() => actions.openNotice(topNotice.id)} style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.surface, padding: 15 }}>
+          <AnimatedPressable onPress={() => actions.openNotice(topNotice.id)} style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.surface, padding: 15 }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 7, marginBottom: 7 }}>
               <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, backgroundColor: colors.badWash }}>
                 <AppText variant="statusPill" color={colors.badInk}>
@@ -210,43 +212,45 @@ export function HomeScreen() {
             <AppText variant="bodySmall" color={colors.inkSoft}>
               {c(topNotice.id, "blurb", topNotice.blurb)}
             </AppText>
-          </Pressable>
+          </AnimatedPressable>
         ) : null}
-      </View>
+      </StaggerItem>
 
-      <View style={{ paddingHorizontal: 22, marginTop: 22 }}>
+      <StaggerItem index={state.role === "owner_tenant" ? 7 : 6} tier="screenBlock" style={{ paddingHorizontal: 22, marginTop: 22 }}>
         <AppText variant="cardTitle" color={colors.inkSoft} style={{ fontSize: 13, marginBottom: 11 }}>
           {t("expectedToday")}
         </AppText>
         {expected.length > 0 ? (
           <View style={{ gap: 9 }}>
-            {expected.map((p) => (
-              <Card key={p.id}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-                  <View style={{ width: 36, height: 36, borderRadius: 11, backgroundColor: colors.subtle, alignItems: "center", justifyContent: "center" }}>
-                    <AppText variant="cardTitleLarge" color={colors.inkSoft} style={{ fontSize: 12 }} forceLatin>
-                      {initialsOf(p.name)}
+            {expected.map((p, i) => (
+              <StaggerItem key={p.id} index={i} tier="listRow">
+                <Card>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+                    <View style={{ width: 36, height: 36, borderRadius: 11, backgroundColor: colors.subtle, alignItems: "center", justifyContent: "center" }}>
+                      <AppText variant="cardTitleLarge" color={colors.inkSoft} style={{ fontSize: 12 }} forceLatin>
+                        {initialsOf(p.name)}
+                      </AppText>
+                    </View>
+                    <View style={{ flex: 1, minWidth: 0 }}>
+                      <AppText variant="cardTitle" style={{ fontSize: 13.5 }}>
+                        {p.name}
+                      </AppText>
+                      <AppText variant="meta" color={colors.inkSoft}>
+                        {p.purpose}
+                      </AppText>
+                    </View>
+                    <AppText variant="moneyMono" color={colors.accentInk} style={{ fontSize: 11.5, backgroundColor: colors.accentWash, paddingHorizontal: 8, paddingVertical: 5, borderRadius: 7 }} forceLatin>
+                      {p.code}
                     </AppText>
                   </View>
-                  <View style={{ flex: 1, minWidth: 0 }}>
-                    <AppText variant="cardTitle" style={{ fontSize: 13.5 }}>
-                      {p.name}
-                    </AppText>
-                    <AppText variant="meta" color={colors.inkSoft}>
-                      {p.purpose}
-                    </AppText>
-                  </View>
-                  <AppText variant="moneyMono" color={colors.accentInk} style={{ fontSize: 11.5, backgroundColor: colors.accentWash, paddingHorizontal: 8, paddingVertical: 5, borderRadius: 7 }} forceLatin>
-                    {p.code}
-                  </AppText>
-                </View>
-              </Card>
+                </Card>
+              </StaggerItem>
             ))}
           </View>
         ) : (
           <EmptyState iconPath={iconPaths.household} title={t("noOneExpected")} body={t("noOneExpectedSub")} actionLabel={t("inviteAGuest")} onAction={actions.goInvite} />
         )}
-      </View>
+      </StaggerItem>
     </ScreenScroll>
   );
 }

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { CHART_MONTHS, FUND_BALANCES, GATE_TODAY, NEEDS_ATTENTION, TOP_DEFAULTERS } from "../../mock/dashboard";
 import { PANELS } from "../../mock/panels";
 import { PanelModal } from "../../components/PanelModal";
+import { listRowStyle, taggedCardStyle } from "../../lib/motion";
 
 const card: CSSProperties = { background: "var(--surface,#fff)", border: "1px solid var(--border,#E3E9E6)", borderRadius: 15, padding: 18 };
 
@@ -21,18 +22,18 @@ export function DashboardPage() {
           <p style={{ margin: 0, font: "400 14.5px/1.5 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>11 September 2026 · September bills published 4 days ago</p>
         </div>
         <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
-          <button type="button" onClick={() => setExportOpen(true)} style={secondaryBtn}>Export</button>
-          <button type="button" onClick={() => navigate("/billing")} style={primaryBtn}>New bill run</button>
+          <button type="button" onClick={() => setExportOpen(true)} className="press-scale" style={secondaryBtn}>Export</button>
+          <button type="button" onClick={() => navigate("/billing")} className="press-scale" style={primaryBtn}>New bill run</button>
         </div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(210px,1fr))", gap: 14, marginBottom: 14 }}>
-        <div style={card}>
+        <div className="hover-lift theme-transition" style={{ ...card, ...taggedCardStyle(0) }}>
           <Label>Billed · September</Label>
           <BigNum>₹16,46,000</BigNum>
           <Note>248 bills · 0 exceptions open</Note>
         </div>
-        <div style={card}>
+        <div className="hover-lift theme-transition" style={{ ...card, ...taggedCardStyle(1) }}>
           <Label>Collected</Label>
           <BigNum color="var(--ok,#167A3C)">₹12,84,600</BigNum>
           <div style={{ marginTop: 9, height: 5, borderRadius: 3, background: "var(--subtle,#EDF1EF)", overflow: "hidden" }}>
@@ -40,7 +41,7 @@ export function DashboardPage() {
           </div>
           <Note style={{ marginTop: 7 }}>78% collection efficiency</Note>
         </div>
-        <div style={card}>
+        <div className="hover-lift theme-transition" style={{ ...card, ...taggedCardStyle(2) }}>
           <Label>Outstanding</Label>
           <BigNum color="var(--bad,#C0342B)">₹3,61,400</BigNum>
           <div style={{ marginTop: 11, display: "flex", height: 7, borderRadius: 4, overflow: "hidden", gap: 2 }}>
@@ -51,7 +52,7 @@ export function DashboardPage() {
           </div>
           <Note style={{ marginTop: 7 }}>31 units · ₹43,400 over 90 days</Note>
         </div>
-        <div style={card}>
+        <div className="hover-lift theme-transition" style={{ ...card, ...taggedCardStyle(3) }}>
           <Label>Compliance score</Label>
           <div style={{ font: "700 25px/1 Figtree, sans-serif", letterSpacing: "-.022em" }}>
             92<span style={{ font: "600 15px/1 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>/100</span>
@@ -93,7 +94,7 @@ export function DashboardPage() {
           </div>
           <div style={{ display: "flex", flexDirection: "column" }}>
             {NEEDS_ATTENTION.map((a, i) => (
-              <div key={a.title} className="row-hover" style={{ display: "flex", gap: 12, padding: "12px 0", borderBottom: i < NEEDS_ATTENTION.length - 1 ? "1px solid var(--border-soft,#F1F4F3)" : "none", cursor: "pointer" }}>
+              <div key={a.title} className="row-hover" style={{ display: "flex", gap: 12, padding: "12px 0", borderBottom: i < NEEDS_ATTENTION.length - 1 ? "1px solid var(--border-soft,#F1F4F3)" : "none", cursor: "pointer", ...listRowStyle(i) }}>
                 <span style={{ width: 7, height: 7, borderRadius: "50%", background: a.dot, flex: "none", marginTop: 6 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ font: "600 13.5px/1.4 Figtree, sans-serif" }}>{a.title}</div>
@@ -110,8 +111,8 @@ export function DashboardPage() {
         <div style={card}>
           <div style={{ font: "600 15px/1.3 Figtree, sans-serif", marginBottom: 14 }}>Top defaulters</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
-            {TOP_DEFAULTERS.map((d) => (
-              <div key={d.unit} style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}>
+            {TOP_DEFAULTERS.map((d, i) => (
+              <div key={d.unit} style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", ...listRowStyle(i) }}>
                 <div>
                   <div style={{ font: "600 13.5px/1.3 Figtree, sans-serif" }}>
                     {d.unit} · {d.name}
@@ -127,8 +128,8 @@ export function DashboardPage() {
         <div style={card}>
           <div style={{ font: "600 15px/1.3 Figtree, sans-serif", marginBottom: 14 }}>Fund balances</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
-            {FUND_BALANCES.map((f) => (
-              <div key={f.name}>
+            {FUND_BALANCES.map((f, i) => (
+              <div key={f.name} style={listRowStyle(i)}>
                 <div style={{ display: "flex", justifyContent: "space-between", font: "500 13px/1.3 Figtree, sans-serif", marginBottom: 6 }}>
                   <span>{f.name}</span>
                   <span style={{ fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{f.amount}</span>
@@ -147,8 +148,8 @@ export function DashboardPage() {
         <div style={card}>
           <div style={{ font: "600 15px/1.3 Figtree, sans-serif", marginBottom: 14 }}>Today at the gate</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
-            {GATE_TODAY.map((g) => (
-              <div key={g.label}>
+            {GATE_TODAY.map((g, i) => (
+              <div key={g.label} style={taggedCardStyle(i)}>
                 <div style={{ font: "700 22px/1 Figtree, sans-serif", fontVariantNumeric: "tabular-nums" }}>{g.value}</div>
                 <div style={{ marginTop: 4, font: "400 12px/1.3 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>{g.label}</div>
               </div>

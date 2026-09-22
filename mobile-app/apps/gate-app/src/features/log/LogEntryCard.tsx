@@ -1,8 +1,9 @@
 import React from "react";
-import { View, Pressable } from "react-native";
+import { View } from "react-native";
 import type { EntryLogRow } from "@sahaj/shared";
 import { GateText } from "../../components/GateText";
 import { GateCard } from "../../components/GateCard";
+import { AnimatedPressable } from "../../components/AnimatedPressable";
 import { StatusPill } from "../../components/StatusPill";
 import { colors } from "../../theme";
 import { stamp } from "../../utils/time";
@@ -52,14 +53,14 @@ export function LogEntryCard({ entry, onExit }: Props) {
           {stampLine(entry)}
         </GateText>
         {entry.status === "inside" ? (
-          <Pressable
+          <AnimatedPressable
             onPress={onExit}
             style={{ height: 36, paddingHorizontal: 14, borderRadius: 10, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.card2, alignItems: "center", justifyContent: "center" }}
           >
             <GateText variant="label" style={{ fontSize: 12.5 }}>
               Mark exit
             </GateText>
-          </Pressable>
+          </AnimatedPressable>
         ) : null}
       </View>
     </GateCard>

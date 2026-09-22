@@ -9,6 +9,7 @@ import { ScreenScroll } from "../../components/ScreenScroll";
 import { ScreenHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
 import { RadioRow } from "../../components/FilterPill";
+import { StaggerItem } from "../../components/StaggerItem";
 
 const OPTIONS: { key: DeliveryPreference; label: string; detail: string }[] = [
   { key: "Leave at door", label: "Leave at the gate", detail: "The guard holds it. No call, no doorbell." },
@@ -31,8 +32,10 @@ export function DeliveriesScreen() {
           {t("deliveriesIntro")}
         </AppText>
         <View style={{ gap: 9, marginBottom: 18 }}>
-          {OPTIONS.map((o) => (
-            <RadioRow key={o.key} label={o.label} detail={o.detail} active={state.deliveryPref === o.key} onPress={() => actions.setDeliveryPref(o.key)} />
+          {OPTIONS.map((o, i) => (
+            <StaggerItem key={o.key} index={i} tier="prefRow">
+              <RadioRow label={o.label} detail={o.detail} active={state.deliveryPref === o.key} onPress={() => actions.setDeliveryPref(o.key)} />
+            </StaggerItem>
           ))}
         </View>
         <View style={{ borderWidth: 1, borderColor: colors.infoBorder, borderRadius: 15, backgroundColor: colors.infoWash, padding: 15 }}>

@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import { useResident } from "../../state/ResidentProvider";
 import { useTheme } from "../../hooks/useTheme";
 import { useT } from "../../hooks/useT";
@@ -9,6 +9,8 @@ import { ScreenHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
+import { AnimatedPressable } from "../../components/AnimatedPressable";
+import { StaggerItem } from "../../components/StaggerItem";
 
 export function PollDetailScreen() {
   const { state, actions } = useResident();
@@ -34,9 +36,9 @@ export function PollDetailScreen() {
           {voted ? t("liveTally") : t("castVote")}
         </AppText>
         <View style={{ gap: 9, marginBottom: 16 }}>
-          {options.map((o) => (
-            <Pressable
-              key={o.key}
+          {options.map((o, i) => (
+            <StaggerItem key={o.key} index={i} tier="taggedCard">
+            <AnimatedPressable
               onPress={() => actions.castVote(poll.id, o.key)}
               style={{ borderWidth: 1, borderColor: o.picked ? colors.accent : colors.border, borderRadius: 14, backgroundColor: o.picked ? colors.accentWash : colors.surface, padding: 14, overflow: "hidden" }}
             >
@@ -56,7 +58,8 @@ export function PollDetailScreen() {
                   </AppText>
                 ) : null}
               </View>
-            </Pressable>
+            </AnimatedPressable>
+            </StaggerItem>
           ))}
         </View>
         {!voted ? (

@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import { useResident } from "../../state/ResidentProvider";
 import { useTheme } from "../../hooks/useTheme";
 import { useT } from "../../hooks/useT";
@@ -8,6 +8,8 @@ import { ScreenScroll } from "../../components/ScreenScroll";
 import { TitleHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
 import { StatusPill } from "../../components/StatusPill";
+import { AnimatedPressable } from "../../components/AnimatedPressable";
+import { StaggerItem } from "../../components/StaggerItem";
 
 const TAG_STYLE: Record<string, "bad" | "info" | "subtle"> = { urgent: "bad", agm: "info", facility: "subtle", billing: "subtle" };
 
@@ -22,13 +24,13 @@ export function NoticesScreen() {
       <TitleHeader title={t("noticesTitle")} subtitle={t("unreadOf", { n: unread, total: num(state.notices.length) })} />
       <ScreenScroll>
         <View style={{ gap: 11 }}>
-          {state.notices.map((n) => {
+          {state.notices.map((n, i) => {
             const kind = TAG_STYLE[n.tag] ?? "subtle";
             const bg = kind === "bad" ? colors.badWash : kind === "info" ? colors.infoWash : colors.subtle;
             const fg = kind === "bad" ? colors.badInk : kind === "info" ? colors.infoInk : colors.inkSoft;
             return (
-              <Pressable
-                key={n.id}
+              <StaggerItem key={n.id} index={i} tier="listRow">
+              <AnimatedPressable
                 onPress={() => actions.openNotice(n.id)}
                 style={{ borderWidth: 1, borderColor: n.unread ? colors.accent200 : colors.border, borderRadius: 16, backgroundColor: colors.surface, padding: 15 }}
               >
@@ -45,7 +47,8 @@ export function NoticesScreen() {
                 <AppText variant="bodySmall" color={colors.inkSoft}>
                   {c(n.id, "blurb", n.blurb)}
                 </AppText>
-              </Pressable>
+              </AnimatedPressable>
+              </StaggerItem>
             );
           })}
         </View>

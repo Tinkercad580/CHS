@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Pressable } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GateText } from "../../components/GateText";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
@@ -22,6 +23,14 @@ interface Props {
 
 /** Entry / Staff / Log / Parcels / More — `repeat(5,1fr)`. "Verify" is deliberately not a tab (README.md). */
 export function TabBar({ screen, heldCount, onTab }: Props) {
+  const insets = useSafeAreaInsets();
+  // The design's 22px is a browser-mockup value with no real home-indicator to
+  // clear. On an actual device the safe-area bottom inset already reserves
+  // that space (and varies by gesture-nav vs 3-button-nav vs no inset at all),
+  // so this bar owns the bottom edge itself instead of stacking a flat 22px
+  // underneath whatever the OS also reserves (that stacking is what produced
+  // the oversized gap under the tab bar).
+  const paddingBottom = Math.max(insets.bottom + 10, 16);
   return (
     <View
       style={{
@@ -30,7 +39,7 @@ export function TabBar({ screen, heldCount, onTab }: Props) {
         borderTopWidth: 1,
         borderTopColor: colors.line,
         paddingTop: 8,
-        paddingBottom: 22,
+        paddingBottom,
         paddingHorizontal: 6,
       }}
     >

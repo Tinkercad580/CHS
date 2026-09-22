@@ -43,6 +43,7 @@ export function ModalShell({
     >
       <div
         onClick={(e) => e.stopPropagation()}
+        className="theme-transition"
         style={{
           width: "100%",
           maxWidth,
@@ -69,6 +70,7 @@ export function ModalHeader({ title, onClose }: { title: string; onClose: () => 
         type="button"
         onClick={onClose}
         title="Close"
+        className="press-scale"
         style={{
           width: 32,
           height: 32,
@@ -99,6 +101,7 @@ export function GhostButton({ onClick, children }: { onClick: () => void; childr
     <button
       type="button"
       onClick={onClick}
+      className="press-scale"
       style={{
         height: 44,
         padding: "0 18px",
@@ -120,6 +123,7 @@ export function PrimaryButton({ onClick, children }: { onClick: () => void; chil
     <button
       type="button"
       onClick={onClick}
+      className="press-scale"
       style={{
         height: 44,
         padding: "0 20px",
