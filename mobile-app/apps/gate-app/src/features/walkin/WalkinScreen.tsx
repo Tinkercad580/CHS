@@ -5,6 +5,7 @@ import { GateInput } from "../../components/GateInput";
 import { GateButton } from "../../components/GateButton";
 import { ScreenHeader } from "../../components/ScreenHeader";
 import { Spinner } from "../../components/Spinner";
+import { StaggerItem } from "../../components/StaggerItem";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
 import { colors } from "../../theme";
@@ -21,7 +22,7 @@ export function WalkinScreen() {
       <ScreenHeader title="Walk-in" onBack={() => actions.go("entry")} />
 
       {walkinStage === "form" ? (
-        <>
+        <StaggerItem index={0} tier="screenBlock">
           <GateText variant="bodySmall" color={colors.soft} style={{ marginBottom: 18 }}>
             No code and no standing pass. Ask the flat before anyone goes up.
           </GateText>
@@ -71,11 +72,11 @@ export function WalkinScreen() {
           </View>
 
           <GateButton label="Ask the resident" onPress={() => actions.askResident(walkin.name, walkin.unit)} />
-        </>
+        </StaggerItem>
       ) : null}
 
       {walkinStage === "waiting" ? (
-        <>
+        <StaggerItem index={0} tier="screenBlock">
           <View style={{ borderWidth: 1, borderColor: colors.line, borderRadius: 18, backgroundColor: colors.card, padding: 20, paddingVertical: 26, alignItems: "center" }}>
             <View style={{ marginBottom: 20 }}>
               <Spinner />
@@ -93,11 +94,11 @@ export function WalkinScreen() {
           <View style={{ marginTop: 16 }}>
             <GateButton label="Cancel the request" variant="outline" height={50} onPress={actions.cancelWalkin} />
           </View>
-        </>
+        </StaggerItem>
       ) : null}
 
       {walkinStage === "approved" ? (
-        <>
+        <StaggerItem index={0} tier="screenBlock">
           <View
             style={{
               borderWidth: 1,
@@ -121,7 +122,7 @@ export function WalkinScreen() {
             </GateText>
           </View>
           <GateButton label="Allow in and log" pulsing onPress={() => actions.allowWalkin(walkin)} />
-        </>
+        </StaggerItem>
       ) : null}
     </ScrollView>
   );

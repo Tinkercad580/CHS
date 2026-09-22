@@ -1,7 +1,33 @@
 import React, { useEffect, useRef } from "react";
 import { Pressable, Animated, ActivityIndicator, StyleSheet, type ViewStyle } from "react-native";
+import Reanimated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing, useReducedMotion } from "react-native-reanimated";
 import { GateText } from "./GateText";
 import { colors, radius } from "../theme";
+
+/**
+ * `pulseGo` (README.md's Motion table) — "an expanding box-shadow ring, on the gate's
+ * Allow-in button". RN has no animatable box-shadow, so this is a ring that scales up and
+ * fades out behind the button, on an infinite loop, in the gate's `go` colour.
+ */
+function PulseRing() {
+  const reducedMotion = useReducedMotion();
+  const progress = useSharedValue(0);
+
+  useEffect(() => {
+    if (reducedMotion) return;
+    progress.value = withRepeat(withTiming(1, { duration: 1600, easing: Easing.out(Easing.quad) }), -1, false);
+    return () => {
+      progress.value = 0;
+    };
+  }, [reducedMotion, progress]);
+
+  const ringStyle = useAnimatedStyle(() => ({
+    opacity: reducedMotion ? 0 : 0.45 * (1 - progress.value),
+    transform: [{ scale: 1 + progress.value * 0.32 }],
+  }));
+
+  return <Reanimated.View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.ring, ringStyle]} />;
+}
 
 type Variant = "primary" | "secondary" | "outline" | "dangerOutline" | "disabled";
 
@@ -45,6 +71,7 @@ export function GateButton({ label, onPress, variant = "primary", loading = fals
 
   return (
     <Animated.View style={{ transform: [{ scale }] }}>
+      {pulsing && !isDisabled ? <PulseRing /> : null}
       <Pressable
         onPress={isDisabled ? undefined : onPress}
         disabled={isDisabled}
@@ -78,6 +105,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 9,
     width: "100%",
+  },
+  ring: {
+    borderRadius: radius.card + 2,
+    borderWidth: 2,
+    borderColor: colors.go,
   },
   label: {
     fontSize: 16.5,

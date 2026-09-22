@@ -1,5 +1,7 @@
-import React, { useEffect, useRef } from "react";
-import { Animated, Pressable, View, ScrollView, StyleSheet } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Pressable, View, ScrollView, StyleSheet, type LayoutChangeEvent } from "react-native";
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, useReducedMotion } from "react-native-reanimated";
+import { EASE_OUT } from "../motion/easing";
 import { colors, radius } from "../theme";
 
 interface Props {
@@ -7,22 +9,36 @@ interface Props {
   onDismissScrim?: () => void;
 }
 
-/** The bottom sheet used for the verdict card and the parcel-log form — slides up (`sheetUp`) over a dark scrim. */
+/**
+ * `sheetUp` (README.md's Motion table): `translateY(102%) -> none`, over a fading scrim
+ * (`fadeIn`). The sheet's own height is measured on layout so the 102% start is a real
+ * off-screen position rather than a guessed pixel offset; a generous fallback covers the
+ * first frame, before that measurement lands.
+ */
 export function BottomSheet({ children, onDismissScrim }: Props) {
-  const translateY = useRef(new Animated.Value(60)).current;
-  const opacity = useRef(new Animated.Value(0)).current;
+  const reducedMotion = useReducedMotion();
+  const [sheetHeight, setSheetHeight] = useState(0);
+  const progress = useSharedValue(0);
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(opacity, { toValue: 1, duration: 180, useNativeDriver: true }),
-      Animated.timing(translateY, { toValue: 0, duration: 300, useNativeDriver: true }),
-    ]).start();
-  }, [opacity, translateY]);
+    progress.value = reducedMotion ? 1 : withTiming(1, { duration: 320, easing: EASE_OUT });
+  }, [reducedMotion, progress]);
+
+  const handleSheetLayout = (e: LayoutChangeEvent) => {
+    const height = e.nativeEvent.layout.height;
+    if (height > 0 && Math.round(height) !== Math.round(sheetHeight)) setSheetHeight(height);
+  };
+
+  const scrimStyle = useAnimatedStyle(() => ({ opacity: progress.value }));
+  const sheetStyle = useAnimatedStyle(() => {
+    const offscreen = sheetHeight > 0 ? sheetHeight * 1.02 : 820;
+    return { transform: [{ translateY: (1 - progress.value) * offscreen }] };
+  });
 
   return (
-    <Animated.View style={[styles.scrim, { opacity }]}>
+    <Animated.View style={[styles.scrim, scrimStyle]}>
       <Pressable style={StyleSheet.absoluteFill} onPress={onDismissScrim} />
-      <Animated.View style={[styles.sheet, { transform: [{ translateY }] }]}>
+      <Animated.View onLayout={handleSheetLayout} style={[styles.sheet, sheetStyle]}>
         <View style={styles.grabber} />
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 4 }}>
           {children}

@@ -1,7 +1,8 @@
 import React from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import type { VisitorPass } from "@sahaj/shared";
 import { GateText } from "../../components/GateText";
+import { AnimatedPressable } from "../../components/AnimatedPressable";
 import { colors } from "../../theme";
 import { initials } from "../../utils/time";
 import { passValidityLabel } from "../../utils/gate";
@@ -14,7 +15,7 @@ interface Props {
 /** One row of the "Expected in the next hour" list — tapping it fills the code and submits it. */
 export function ExpectedPassRow({ pass, onPress }: Props) {
   return (
-    <Pressable
+    <AnimatedPressable
       onPress={onPress}
       style={({ pressed }) => ({
         borderWidth: 1,
@@ -45,6 +46,6 @@ export function ExpectedPassRow({ pass, onPress }: Props) {
           {pass.code}
         </GateText>
       </View>
-    </Pressable>
+    </AnimatedPressable>
   );
 }
