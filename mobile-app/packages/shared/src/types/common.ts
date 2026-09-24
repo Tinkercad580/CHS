@@ -52,7 +52,7 @@ export interface Bill {
   paymentMethod?: string;
 }
 
-export type NoticeTag = "urgent" | "agm" | "facility" | "billing";
+export type NoticeTag = "Urgent" | "AGM" | "Facility" | "Billing";
 
 export interface Notice {
   id: string;

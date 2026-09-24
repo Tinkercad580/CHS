@@ -109,7 +109,14 @@ export function HomeScreen() {
           </View>
           <View style={{ flex: 1, minWidth: 0 }}>
             <AppText variant="cardTitle" style={{ fontSize: 13.5, marginBottom: 2 }}>
-              {isBad ? t("thingsDown", { n: state.utilities.filter((u) => u.state === "down").length }) : t("allNormal")}
+              {isBad
+                ? state.utilities
+                    .filter((u) => u.state === "down")
+                    .map((u) => c(u.id, "name", u.name))
+                    .join(" · ") +
+                  " " +
+                  t("down")
+                : t("allNormal")}
             </AppText>
             <AppText variant="meta" color={colors.inkSoft}>
               {t("utilitySub")}
@@ -167,23 +174,6 @@ export function HomeScreen() {
       ) : null}
 
       <StaggerItem index={state.role === "owner_tenant" ? 5 : 4} tier="screenBlock" style={{ paddingHorizontal: 22, marginTop: 22 }}>
-        <AnimatedPressable onPress={actions.goPolls} style={{ borderWidth: 1, borderColor: colors.accent200, borderRadius: 16, backgroundColor: colors.accentWash, padding: 15, flexDirection: "row", alignItems: "center", gap: 13 }}>
-          <View style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: colors.surface, alignItems: "center", justifyContent: "center" }}>
-            <Icon d={iconPaths.vote} size={19} color={colors.accentInk} strokeWidth={1.9} />
-          </View>
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <AppText variant="cardTitle" style={{ fontSize: 14, marginBottom: 2 }}>
-              {t("agmTitle")}
-            </AppText>
-            <AppText variant="meta" color={colors.inkSoft}>
-              {state.role === "tenant" ? t("ownersVoting") : t("twoAgmItems", { n: votesOpen })}
-            </AppText>
-          </View>
-          <Icon d={iconPaths.chevronRight} size={17} color={colors.accentInk} strokeWidth={2.2} />
-        </AnimatedPressable>
-      </StaggerItem>
-
-      <StaggerItem index={state.role === "owner_tenant" ? 6 : 5} tier="screenBlock" style={{ paddingHorizontal: 22, marginTop: 22 }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 11 }}>
           <AppText variant="cardTitle" color={colors.inkSoft} style={{ fontSize: 13 }}>
             {t("latestNotice")}
@@ -199,7 +189,7 @@ export function HomeScreen() {
             <View style={{ flexDirection: "row", alignItems: "center", gap: 7, marginBottom: 7 }}>
               <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, backgroundColor: colors.badWash }}>
                 <AppText variant="statusPill" color={colors.badInk}>
-                  {c(topNotice.id, "tag", topNotice.tag).toUpperCase()}
+                  {c(topNotice.id, "tag", topNotice.tag)}
                 </AppText>
               </View>
               <AppText variant="meta" color={colors.inkMuted}>
@@ -214,6 +204,23 @@ export function HomeScreen() {
             </AppText>
           </AnimatedPressable>
         ) : null}
+      </StaggerItem>
+
+      <StaggerItem index={state.role === "owner_tenant" ? 6 : 5} tier="screenBlock" style={{ paddingHorizontal: 22, marginTop: 22 }}>
+        <AnimatedPressable onPress={actions.goPolls} style={{ borderWidth: 1, borderColor: colors.accent200, borderRadius: 16, backgroundColor: colors.accentWash, padding: 15, flexDirection: "row", alignItems: "center", gap: 13 }}>
+          <View style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: colors.surface, alignItems: "center", justifyContent: "center" }}>
+            <Icon d={iconPaths.vote} size={19} color={colors.accentInk} strokeWidth={1.9} />
+          </View>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <AppText variant="cardTitle" style={{ fontSize: 14, marginBottom: 2 }}>
+              {t("agmTitle")}
+            </AppText>
+            <AppText variant="meta" color={colors.inkSoft}>
+              {state.role === "tenant" ? t("ownersVoting") : t("twoAgmItems", { n: votesOpen })}
+            </AppText>
+          </View>
+          <Icon d={iconPaths.chevronRight} size={17} color={colors.accentInk} strokeWidth={2.2} />
+        </AnimatedPressable>
       </StaggerItem>
 
       <StaggerItem index={state.role === "owner_tenant" ? 7 : 6} tier="screenBlock" style={{ paddingHorizontal: 22, marginTop: 22 }}>

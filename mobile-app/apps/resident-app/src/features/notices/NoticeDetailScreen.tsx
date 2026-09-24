@@ -10,7 +10,7 @@ import { StatusPill } from "../../components/StatusPill";
 import { Button } from "../../components/Button";
 import { StaggerItem } from "../../components/StaggerItem";
 
-const TAG_STYLE: Record<string, "bad" | "info" | "subtle"> = { urgent: "bad", agm: "info", facility: "subtle", billing: "subtle" };
+const TAG_STYLE: Record<string, "bad" | "info" | "subtle"> = { Urgent: "bad", AGM: "info", Facility: "subtle", Billing: "subtle" };
 
 export function NoticeDetailScreen() {
   const { state, actions } = useResident();
@@ -28,7 +28,7 @@ export function NoticeDetailScreen() {
       <ScreenHeader title="Notice" onBack={actions.back} />
       <ScreenScroll>
         <View style={{ marginBottom: 12 }}>
-          <StatusPill label={c(notice.id, "tag", notice.tag).toUpperCase()} bg={bg} fg={fg} />
+          <StatusPill label={c(notice.id, "tag", notice.tag)} bg={bg} fg={fg} />
         </View>
         <AppText variant="sectionHeading" style={{ fontSize: 23, marginBottom: 8 }}>
           {c(notice.id, "title", notice.title)}

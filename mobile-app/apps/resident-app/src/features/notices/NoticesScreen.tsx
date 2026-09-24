@@ -11,7 +11,7 @@ import { StatusPill } from "../../components/StatusPill";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
 import { StaggerItem } from "../../components/StaggerItem";
 
-const TAG_STYLE: Record<string, "bad" | "info" | "subtle"> = { urgent: "bad", agm: "info", facility: "subtle", billing: "subtle" };
+const TAG_STYLE: Record<string, "bad" | "info" | "subtle"> = { Urgent: "bad", AGM: "info", Facility: "subtle", Billing: "subtle" };
 
 export function NoticesScreen() {
   const { state, actions } = useResident();
@@ -35,7 +35,7 @@ export function NoticesScreen() {
                 style={{ borderWidth: 1, borderColor: n.unread ? colors.accent200 : colors.border, borderRadius: 16, backgroundColor: colors.surface, padding: 15 }}
               >
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 7, marginBottom: 7 }}>
-                  <StatusPill label={c(n.id, "tag", n.tag).toUpperCase()} bg={bg} fg={fg} />
+                  <StatusPill label={c(n.id, "tag", n.tag)} bg={bg} fg={fg} />
                   <AppText variant="meta" color={colors.inkMuted}>
                     {c(n.id, "when", n.postedAt)}
                   </AppText>

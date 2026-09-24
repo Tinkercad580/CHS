@@ -42,7 +42,7 @@ export function HelpdeskScreen() {
                     </AppText>
                     <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, backgroundColor: bg }}>
                       <AppText variant="statusPill" color={fg}>
-                        {label.toUpperCase()}
+                        {label}
                       </AppText>
                     </View>
                     <AppText variant="meta" color={colors.inkMuted} style={{ marginLeft: "auto" }}>

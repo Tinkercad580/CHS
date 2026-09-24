@@ -39,7 +39,7 @@ export const typeScale = {
   tabLabel: { fontFamily: fontFamily.sans, fontWeight: 600, fontSize: 10.5, lineHeight: 10.5 },
   gateCodeDisplay: { fontFamily: fontFamily.mono, fontWeight: 700, fontSize: 40, lineHeight: 40, letterSpacing: 0.2 * 40 },
   gateCodeKeypad: { fontFamily: fontFamily.mono, fontWeight: 700, fontSize: 30, lineHeight: 30 },
-  statusPill: { fontFamily: fontFamily.sans, fontWeight: 700, fontSize: 10.5, lineHeight: 13.65 },
+  statusPill: { fontFamily: fontFamily.sans, fontWeight: 600, fontSize: 10.5, lineHeight: 13.65 },
   statusPillGate: { fontFamily: fontFamily.sans, fontWeight: 600, fontSize: 11, lineHeight: 14.3, letterSpacing: 0.04 * 11 },
 } as const satisfies Record<string, TypeSpec>;
 

@@ -4,7 +4,7 @@ import type { Notice } from "../types/common";
 export const notices: Notice[] = [
   {
     id: "n1",
-    tag: "urgent",
+    tag: "Urgent",
     title: "Water supply off Thursday, 10am to 4pm",
     blurb: "Main pump replacement. Store water on Wednesday night.",
     postedAt: "2 hours ago",
@@ -18,7 +18,7 @@ export const notices: Notice[] = [
   },
   {
     id: "n2",
-    tag: "agm",
+    tag: "AGM",
     title: "Annual general meeting on 28 September",
     blurb: "Agenda, audited accounts and the proxy form are attached.",
     postedAt: "Yesterday",
@@ -32,7 +32,7 @@ export const notices: Notice[] = [
   },
   {
     id: "n3",
-    tag: "facility",
+    tag: "Facility",
     title: "Clubhouse closed for flooring work",
     blurb: "Reopens 20 September. Existing bookings have been refunded.",
     postedAt: "3 days ago",
@@ -45,7 +45,7 @@ export const notices: Notice[] = [
   },
   {
     id: "n4",
-    tag: "billing",
+    tag: "Billing",
     title: "September bills are out",
     blurb: "Maintenance and parking are both payable by 17 September.",
     postedAt: "11 days ago",
