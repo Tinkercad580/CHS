@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { View, ActivityIndicator } from "react-native";
+import { View } from "react-native";
 import Animated, { useSharedValue, useAnimatedStyle, withSequence, withTiming, useReducedMotion } from "react-native-reanimated";
 import { formatInr } from "@sahaj/shared";
 import { useResident } from "../../state/ResidentProvider";
@@ -7,6 +7,7 @@ import { useTheme } from "../../hooks/useTheme";
 import { useT } from "../../hooks/useT";
 import { activeBill, currentUnit } from "../../state/selectors";
 import { AppText } from "../../components/AppText";
+import { Spinner } from "../../components/Spinner";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
 import { Button } from "../../components/Button";
@@ -174,7 +175,7 @@ function QrSheetBody() {
       {!expired ? (
         <>
           <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 14, backgroundColor: colors.canvas, padding: 14, flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 14 }}>
-            <ActivityIndicator color={colors.accent} />
+            <Spinner size={30} />
             <AppText variant="bodySmall" color={colors.inkSoft} style={{ flex: 1 }}>
               {t("waitingBank")}
             </AppText>

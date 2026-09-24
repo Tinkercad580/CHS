@@ -1,8 +1,9 @@
 import React from "react";
-import { ActivityIndicator, type StyleProp, type ViewStyle } from "react-native";
+import { type StyleProp, type ViewStyle } from "react-native";
 import { useTheme } from "../hooks/useTheme";
 import { AppText } from "./AppText";
 import { AnimatedPressable } from "./AnimatedPressable";
+import { Spinner } from "./Spinner";
 
 interface Props {
   label: string;
@@ -68,7 +69,7 @@ export function Button({
         style,
       ]}
     >
-      {loading ? <ActivityIndicator color={fg} /> : null}
+      {loading ? <Spinner size={fontSize + 2} color={fg} /> : null}
       {/*
         Weight is selected by VARIANT, not by a fontWeight style. Each weight is a
         separate loaded font file ("Figtree_600SemiBold"), so setting fontWeight on a
