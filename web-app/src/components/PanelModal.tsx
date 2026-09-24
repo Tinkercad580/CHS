@@ -2,7 +2,6 @@ import type { PanelSpec } from "../lib/types";
 import { panelCellIsFlag } from "../mock/panels";
 import { ModalShell, GhostButton, PrimaryButton } from "./ModalShell";
 import { useAdminStore } from "../store/AdminStore";
-import { listRowStyle } from "../lib/motion";
 
 /**
  * Secondary-action result panel (README, "Secondary actions open a result
@@ -53,7 +52,7 @@ export function PanelModal({ panel, onClose }: { panel: PanelSpec; onClose: () =
               {panel.rows.map((r, i) => {
                 const flag = panelCellIsFlag(r.c);
                 return (
-                  <tr key={i} className="row-hover" style={{ borderTop: "1px solid var(--border-soft,#F1F4F3)", ...listRowStyle(i) }}>
+                  <tr key={i} className="row-hover" style={{ borderTop: "1px solid var(--border-soft,#F1F4F3)" }}>
                     <td style={{ padding: "12px 26px", font: "600 13.5px/1.4 Figtree, sans-serif", whiteSpace: "nowrap" }}>{r.a}</td>
                     <td style={{ padding: "12px 26px", font: "400 13.5px/1.4 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>{r.b}</td>
                     <td style={{ padding: "12px 26px", textAlign: "right", font: "500 13.5px/1.4 Figtree, sans-serif", color: flag === "bad" ? "var(--bad-ink,#9B2B22)" : flag === "warn" ? "var(--warn-ink,#8F4A0A)" : "var(--ink,#0F1A17)" }}>{r.c}</td>

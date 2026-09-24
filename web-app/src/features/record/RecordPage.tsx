@@ -344,7 +344,7 @@ function SectionCard({ s, onAdd }: { s: ReturnType<typeof deriveRecord>["left"][
             </thead>
             <tbody>
               {s.rows.map((x, i) => (
-                <tr key={i} className="row-hover" style={{ borderTop: "1px solid var(--border-soft,#F1F4F3)", ...listRowStyle(i) }}>
+                <tr key={i} className="row-hover" style={{ borderTop: "1px solid var(--border-soft,#F1F4F3)" }}>
                   <td style={{ padding: "12px 18px", font: "600 13px/1.4 Figtree, sans-serif" }}>{x.a}</td>
                   <td style={{ padding: "12px 18px", textAlign: "right", font: "600 13px/1.4 'IBM Plex Mono',monospace", whiteSpace: "nowrap" }}>{x.b}</td>
                   <td style={{ padding: "12px 18px" }}>

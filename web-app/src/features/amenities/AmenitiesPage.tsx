@@ -3,7 +3,7 @@ import { useAdminStore } from "../../store/AdminStore";
 import { CAL_DAYS, CAL_SLOTS } from "../../mock/amenities";
 import { money } from "../../lib/format";
 import { ModalShell, ModalHeader, ModalFooter, GhostButton, PrimaryButton } from "../../components/ModalShell";
-import { listRowStyle, taggedCardStyle } from "../../lib/motion";
+import { taggedCardStyle } from "../../lib/motion";
 
 /**
  * Amenities — the booking calendar (three slots × five days) plus the
@@ -125,8 +125,8 @@ export function AmenitiesPage() {
               </tr>
             </thead>
             <tbody>
-              {state.amenities.map((a, i) => (
-                <tr key={a.id} className="row-hover" style={{ borderTop: "1px solid var(--border-soft,#F1F4F3)", ...listRowStyle(i) }}>
+              {state.amenities.map((a) => (
+                <tr key={a.id} className="row-hover" style={{ borderTop: "1px solid var(--border-soft,#F1F4F3)" }}>
                   <td style={{ padding: "13px 16px", font: "600 14px/1.4 Figtree, sans-serif" }}>{a.name}</td>
                   <td style={{ padding: "13px 16px", font: "400 13.5px/1.4 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>{a.capacity}</td>
                   <td style={{ padding: "13px 16px", font: "400 13.5px/1.4 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>{a.open}</td>
