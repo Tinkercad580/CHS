@@ -7,6 +7,7 @@ import { ScreenScroll } from "../../components/ScreenScroll";
 import { ScreenHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
 import { Button } from "../../components/Button";
+import { StaggerItem } from "../../components/StaggerItem";
 
 const STATE_LABEL: Record<string, string> = { open: "Open", in_progress: "In progress", resolved: "Resolved" };
 
@@ -43,23 +44,25 @@ export function TicketDetailScreen() {
 
         <View>
           {ticket.timeline.map((step, i) => (
-            <View key={i} style={{ flexDirection: "row", gap: 14 }}>
-              <View style={{ alignItems: "center", width: 22 }}>
-                <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: colors.accent, marginTop: 4 }} />
-                {i < ticket.timeline.length - 1 ? <View style={{ flex: 1, width: 2, backgroundColor: colors.border, minHeight: 18 }} /> : null}
+            <StaggerItem key={i} index={i} tier="listRow">
+              <View style={{ flexDirection: "row", gap: 14 }}>
+                <View style={{ alignItems: "center", width: 22 }}>
+                  <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: colors.accent, marginTop: 4 }} />
+                  {i < ticket.timeline.length - 1 ? <View style={{ flex: 1, width: 2, backgroundColor: colors.border, minHeight: 18 }} /> : null}
+                </View>
+                <View style={{ paddingBottom: 20, flex: 1 }}>
+                  <AppText variant="cardTitle" style={{ fontSize: 13.5, marginBottom: 3 }}>
+                    {step.note.split(" — ")[0]}
+                  </AppText>
+                  <AppText variant="bodySmall" color={colors.inkSoft} style={{ marginBottom: 3 }}>
+                    {step.note.split(" — ").slice(1).join(" — ")}
+                  </AppText>
+                  <AppText variant="meta" color={colors.inkMuted}>
+                    {step.at}
+                  </AppText>
+                </View>
               </View>
-              <View style={{ paddingBottom: 20, flex: 1 }}>
-                <AppText variant="cardTitle" style={{ fontSize: 13.5, marginBottom: 3 }}>
-                  {step.note.split(" — ")[0]}
-                </AppText>
-                <AppText variant="bodySmall" color={colors.inkSoft} style={{ marginBottom: 3 }}>
-                  {step.note.split(" — ").slice(1).join(" — ")}
-                </AppText>
-                <AppText variant="meta" color={colors.inkMuted}>
-                  {step.at}
-                </AppText>
-              </View>
-            </View>
+            </StaggerItem>
           ))}
         </View>
 

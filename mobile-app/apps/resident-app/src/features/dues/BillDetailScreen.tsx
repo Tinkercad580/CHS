@@ -12,6 +12,7 @@ import { Card } from "../../components/Card";
 import { Button } from "../../components/Button";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
+import { StaggerItem } from "../../components/StaggerItem";
 
 export function BillDetailScreen() {
   const { state, actions } = useResident();
@@ -42,24 +43,25 @@ export function BillDetailScreen() {
         </AppText>
         <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.surface, overflow: "hidden", marginBottom: 16 }}>
           {bill.lineItems.map((line, i) => (
-            <View
-              key={line.label + i}
-              style={{ padding: 14, borderBottomWidth: 1, borderBottomColor: colors.borderSoft, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 }}
-            >
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <AppText variant="cardTitle" style={{ fontSize: 13.5, fontWeight: "500" as const }}>
-                  {line.label}
-                </AppText>
-                {line.basis ? (
-                  <AppText variant="meta" color={colors.inkMuted}>
-                    {line.basis}
+            <StaggerItem key={line.label + i} index={i} tier="listRow">
+              <View
+                style={{ padding: 14, borderBottomWidth: 1, borderBottomColor: colors.borderSoft, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 }}
+              >
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <AppText variant="cardTitle" style={{ fontSize: 13.5, fontWeight: "500" as const }}>
+                    {line.label}
                   </AppText>
-                ) : null}
+                  {line.basis ? (
+                    <AppText variant="meta" color={colors.inkMuted}>
+                      {line.basis}
+                    </AppText>
+                  ) : null}
+                </View>
+                <AppText variant="cardTitle" style={{ fontSize: 13.5 }} forceLatin>
+                  {formatInr(line.amount)}
+                </AppText>
               </View>
-              <AppText variant="cardTitle" style={{ fontSize: 13.5 }} forceLatin>
-                {formatInr(line.amount)}
-              </AppText>
-            </View>
+            </StaggerItem>
           ))}
           <View style={{ padding: 14, backgroundColor: colors.subtle, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
             <AppText variant="cardTitle" style={{ fontSize: 13.5 }}>

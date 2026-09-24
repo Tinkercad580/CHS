@@ -9,6 +9,7 @@ import { ScreenScroll } from "../../components/ScreenScroll";
 import { ScreenHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
 import { Button } from "../../components/Button";
+import { StaggerItem } from "../../components/StaggerItem";
 
 function initialsOf(name: string): string {
   return name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
@@ -50,7 +51,7 @@ export function PersonalDetailsScreen() {
               {initialsOf(residentName)}
             </AppText>
           </View>
-          <View style={{ minWidth: 0 }}>
+          <View style={{ flex: 1, minWidth: 0 }}>
             <AppText variant="cardTitleLarge" style={{ fontSize: 18 }}>
               {residentName}
             </AppText>
@@ -65,31 +66,33 @@ export function PersonalDetailsScreen() {
         </AppText>
         <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.surface, overflow: "hidden", marginBottom: 16 }}>
           {contactRows.map((row, i) => (
-            <View key={row.label} style={{ padding: 14, paddingHorizontal: 16, borderBottomWidth: i === contactRows.length - 1 ? 0 : 1, borderBottomColor: colors.borderSoft }}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 5 }}>
-                <AppText variant="meta" color={colors.inkMuted}>
-                  {row.label}
-                </AppText>
-                {row.locked ? (
-                  <View style={{ paddingHorizontal: 7, paddingVertical: 2, borderRadius: 6, backgroundColor: colors.subtle }}>
-                    <AppText variant="meta" color={colors.inkSoft} style={{ fontSize: 10 }}>
-                      {t("setByOffice")}
-                    </AppText>
-                  </View>
-                ) : null}
+            <StaggerItem key={row.label} index={i} tier="listRow">
+              <View style={{ padding: 14, paddingHorizontal: 16, borderBottomWidth: i === contactRows.length - 1 ? 0 : 1, borderBottomColor: colors.borderSoft }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 5 }}>
+                  <AppText variant="meta" color={colors.inkMuted}>
+                    {row.label}
+                  </AppText>
+                  {row.locked ? (
+                    <View style={{ paddingHorizontal: 7, paddingVertical: 2, borderRadius: 6, backgroundColor: colors.subtle }}>
+                      <AppText variant="meta" color={colors.inkSoft} style={{ fontSize: 10 }}>
+                        {t("setByOffice")}
+                      </AppText>
+                    </View>
+                  ) : null}
+                </View>
+                {row.editable ? (
+                  <TextInput
+                    value={row.value}
+                    onChangeText={row.onChange}
+                    style={[{ height: 44, paddingHorizontal: 12, borderWidth: 1, borderColor: colors.accent, borderRadius: 10, backgroundColor: colors.surface, color: colors.ink }, type("body")]}
+                  />
+                ) : (
+                  <AppText variant="body" style={{ color: colors.ink }} forceLatin>
+                    {row.value}
+                  </AppText>
+                )}
               </View>
-              {row.editable ? (
-                <TextInput
-                  value={row.value}
-                  onChangeText={row.onChange}
-                  style={[{ height: 44, paddingHorizontal: 12, borderWidth: 1, borderColor: colors.accent, borderRadius: 10, backgroundColor: colors.surface, color: colors.ink }, type("body")]}
-                />
-              ) : (
-                <AppText variant="body" style={{ color: colors.ink }} forceLatin>
-                  {row.value}
-                </AppText>
-              )}
-            </View>
+            </StaggerItem>
           ))}
         </View>
 
@@ -98,14 +101,16 @@ export function PersonalDetailsScreen() {
         </AppText>
         <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.surface, overflow: "hidden", marginBottom: 16 }}>
           {residenceRows.map((row, i) => (
-            <View key={row.label} style={{ padding: 14, paddingHorizontal: 16, borderBottomWidth: i === residenceRows.length - 1 ? 0 : 1, borderBottomColor: colors.borderSoft, flexDirection: "row", justifyContent: "space-between", gap: 12 }}>
-              <AppText variant="bodySmall" color={colors.inkSoft}>
-                {row.label}
-              </AppText>
-              <AppText variant="cardTitle" style={{ fontSize: 13.5 }} forceLatin>
-                {row.value}
-              </AppText>
-            </View>
+            <StaggerItem key={row.label} index={i} tier="listRow">
+              <View style={{ padding: 14, paddingHorizontal: 16, borderBottomWidth: i === residenceRows.length - 1 ? 0 : 1, borderBottomColor: colors.borderSoft, flexDirection: "row", justifyContent: "space-between", gap: 12 }}>
+                <AppText variant="bodySmall" color={colors.inkSoft}>
+                  {row.label}
+                </AppText>
+                <AppText variant="cardTitle" style={{ fontSize: 13.5 }} forceLatin>
+                  {row.value}
+                </AppText>
+              </View>
+            </StaggerItem>
           ))}
         </View>
 

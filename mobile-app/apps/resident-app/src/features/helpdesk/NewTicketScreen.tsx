@@ -12,6 +12,7 @@ import { OptionButton } from "../../components/FilterPill";
 import { Toggle } from "../../components/Toggle";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
+import { StaggerItem } from "../../components/StaggerItem";
 
 const CATEGORIES: { key: "Plumbing" | "Electrical" | "Lift" | "Housekeeping" | "Security" | "Other"; labelKey: "plumbing" | "electrical" | "lift" | "security" | "housekeeping" | "other" }[] = [
   { key: "Plumbing", labelKey: "plumbing" },
@@ -37,8 +38,10 @@ export function NewTicketScreen() {
           {t("category")}
         </AppText>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 9, marginBottom: 14 }}>
-          {CATEGORIES.map((cat) => (
-            <OptionButton key={cat.key} label={t(cat.labelKey)} active={state.ticketForm.category === cat.key} onPress={() => actions.setTicketCategory(cat.key)} flex={1} />
+          {CATEGORIES.map((cat, i) => (
+            <StaggerItem key={cat.key} index={i} tier="listRow">
+              <OptionButton label={t(cat.labelKey)} active={state.ticketForm.category === cat.key} onPress={() => actions.setTicketCategory(cat.key)} flex={0} height={38} />
+            </StaggerItem>
           ))}
         </View>
 

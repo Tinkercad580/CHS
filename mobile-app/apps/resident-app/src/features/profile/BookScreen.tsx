@@ -9,6 +9,7 @@ import { ScreenHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
 import { Button } from "../../components/Button";
 import { OptionButton } from "../../components/FilterPill";
+import { StaggerItem } from "../../components/StaggerItem";
 
 export function BookScreen() {
   const { state, actions } = useResident();
@@ -36,9 +37,14 @@ export function BookScreen() {
         <AppText variant="label" style={{ marginBottom: 9 }}>
           {t("day")}
         </AppText>
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 18 }}>
-          {bookableDays.map((d) => (
-            <OptionButton key={d} label={d} active={state.bookDay === d} onPress={() => actions.setBookDay(d)} height={52} flex={1} />
+        {/* A single non-wrapping row of equal-width cells — flex:1 is only safe to
+            combine with flexWrap when the row is guaranteed to fill exactly, which
+            a fixed 4-day set on a 390px phone is; see OptionButton's doc comment. */}
+        <View style={{ flexDirection: "row", gap: 8, marginBottom: 18 }}>
+          {bookableDays.map((d, i) => (
+            <StaggerItem key={d} index={i} tier="listRow" style={{ flex: 1 }}>
+              <OptionButton label={d} active={state.bookDay === d} onPress={() => actions.setBookDay(d)} height={52} flex={1} />
+            </StaggerItem>
           ))}
         </View>
 
@@ -49,14 +55,15 @@ export function BookScreen() {
           {bookableSlots.map((slot, i) => {
             const taken = i === preTakenSlot.slotIndex && state.bookDay === preTakenSlot.day;
             return (
-              <OptionButton
-                key={slot}
-                label={slot}
-                sub={taken ? t("takenLabel") : t("freeLabel")}
-                active={state.bookSlot === i}
-                onPress={() => actions.setBookSlot(i, taken)}
-                height={50}
-              />
+              <StaggerItem key={slot} index={i} tier="listRow">
+                <OptionButton
+                  label={slot}
+                  sub={taken ? t("takenLabel") : t("freeLabel")}
+                  active={state.bookSlot === i}
+                  onPress={() => actions.setBookSlot(i, taken)}
+                  height={50}
+                />
+              </StaggerItem>
             );
           })}
         </View>

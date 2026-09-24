@@ -10,6 +10,7 @@ import { ScreenHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
+import { StaggerItem } from "../../components/StaggerItem";
 
 const KINDS: { key: SosKind; labelKey: "medical" | "fire" | "security" | "other" }[] = [
   { key: "Medical", labelKey: "medical" },
@@ -45,18 +46,19 @@ export function EmergencyScreen() {
           {t("whatIsHappening")}
         </AppText>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 9, marginBottom: 22 }}>
-          {KINDS.map((k) => {
+          {KINDS.map((k, i) => {
             const active = kind === k.key;
             return (
-              <Pressable
-                key={k.key}
-                onPress={() => actions.setSosKind(k.key)}
-                style={{ width: "48%", height: 52, borderRadius: 13, borderWidth: 1, borderColor: active ? colors.bad : colors.borderStrong, backgroundColor: active ? colors.badWash : colors.surface, alignItems: "center", justifyContent: "center" }}
-              >
-                <AppText variant="cardTitle" color={active ? colors.badInk : colors.ink} style={{ fontSize: 13.5 }}>
-                  {t(k.labelKey)}
-                </AppText>
-              </Pressable>
+              <StaggerItem key={k.key} index={i} tier="listRow" style={{ width: "48%" }}>
+                <Pressable
+                  onPress={() => actions.setSosKind(k.key)}
+                  style={{ height: 52, borderRadius: 13, borderWidth: 1, borderColor: active ? colors.bad : colors.borderStrong, backgroundColor: active ? colors.badWash : colors.surface, alignItems: "center", justifyContent: "center" }}
+                >
+                  <AppText variant="cardTitle" color={active ? colors.badInk : colors.ink} style={{ fontSize: 13.5 }}>
+                    {t(k.labelKey)}
+                  </AppText>
+                </Pressable>
+              </StaggerItem>
             );
           })}
         </View>
@@ -96,14 +98,16 @@ export function EmergencyScreen() {
         </AppText>
         <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.surface, overflow: "hidden" }}>
           {contacts.map((row, i) => (
-            <View key={row.label} style={{ padding: 14, paddingHorizontal: 16, borderBottomWidth: i === contacts.length - 1 ? 0 : 1, borderBottomColor: colors.borderSoft, flexDirection: "row", justifyContent: "space-between", gap: 12 }}>
-              <AppText variant="body" style={{ fontWeight: "500" as const, fontSize: 13.5 }}>
-                {row.label}
-              </AppText>
-              <AppText variant="bodySmall" color={colors.inkSoft} style={{ textAlign: "right" }} forceLatin>
-                {row.value}
-              </AppText>
-            </View>
+            <StaggerItem key={row.label} index={i} tier="listRow">
+              <View style={{ padding: 14, paddingHorizontal: 16, borderBottomWidth: i === contacts.length - 1 ? 0 : 1, borderBottomColor: colors.borderSoft, flexDirection: "row", justifyContent: "space-between", gap: 12 }}>
+                <AppText variant="body" style={{ fontWeight: "500" as const, fontSize: 13.5 }}>
+                  {row.label}
+                </AppText>
+                <AppText variant="bodySmall" color={colors.inkSoft} style={{ textAlign: "right" }} forceLatin>
+                  {row.value}
+                </AppText>
+              </View>
+            </StaggerItem>
           ))}
         </View>
       </ScreenScroll>

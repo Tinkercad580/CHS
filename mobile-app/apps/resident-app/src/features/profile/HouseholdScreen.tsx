@@ -12,6 +12,7 @@ import { Button } from "../../components/Button";
 import { OptionButton } from "../../components/FilterPill";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
+import { StaggerItem } from "../../components/StaggerItem";
 
 const RELATIONS: { key: "Spouse" | "Child" | "Parent"; labelKey: "spouse" | "child" | "parent" }[] = [
   { key: "Spouse", labelKey: "spouse" },
@@ -39,33 +40,35 @@ export function HouseholdScreen() {
           {t("householdIntro")}
         </AppText>
         <View style={{ gap: 10, marginBottom: 18 }}>
-          {members.map((m) => (
-            <View key={m.id} style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 15, backgroundColor: colors.surface, padding: 14, flexDirection: "row", alignItems: "center", gap: 12 }}>
-              <View style={{ width: 40, height: 40, borderRadius: 13, backgroundColor: colors.accentWash, alignItems: "center", justifyContent: "center" }}>
-                <AppText variant="cardTitleLarge" color={colors.accentInk} style={{ fontSize: 13 }} forceLatin>
-                  {initialsOf(m.name)}
-                </AppText>
-              </View>
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <AppText variant="cardTitle" style={{ fontSize: 14, marginBottom: 2 }}>
-                  {m.name}
-                </AppText>
-                <AppText variant="meta" color={colors.inkSoft}>
-                  {m.relation} · gate access
-                </AppText>
-              </View>
-              {m.id === you ? (
-                <View style={{ paddingHorizontal: 9, paddingVertical: 4, borderRadius: 7, backgroundColor: colors.subtle }}>
-                  <AppText variant="cardTitle" color={colors.inkSoft} style={{ fontSize: 11 }}>
-                    {t("youChip")}
+          {members.map((m, i) => (
+            <StaggerItem key={m.id} index={i} tier="listRow">
+              <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 15, backgroundColor: colors.surface, padding: 14, flexDirection: "row", alignItems: "center", gap: 12 }}>
+                <View style={{ width: 40, height: 40, borderRadius: 13, backgroundColor: colors.accentWash, alignItems: "center", justifyContent: "center" }}>
+                  <AppText variant="cardTitleLarge" color={colors.accentInk} style={{ fontSize: 13 }} forceLatin>
+                    {initialsOf(m.name)}
                   </AppText>
                 </View>
-              ) : (
-                <Pressable onPress={() => actions.removeHouseholdMember(m)} style={{ width: 38, height: 38, borderRadius: 11, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}>
-                  <Icon d={iconPaths.close} size={16} color={colors.badInk} strokeWidth={2} />
-                </Pressable>
-              )}
-            </View>
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <AppText variant="cardTitle" style={{ fontSize: 14, marginBottom: 2 }}>
+                    {m.name}
+                  </AppText>
+                  <AppText variant="meta" color={colors.inkSoft}>
+                    {m.relation} · gate access
+                  </AppText>
+                </View>
+                {m.id === you ? (
+                  <View style={{ paddingHorizontal: 9, paddingVertical: 4, borderRadius: 7, backgroundColor: colors.subtle }}>
+                    <AppText variant="cardTitle" color={colors.inkSoft} style={{ fontSize: 11 }}>
+                      {t("youChip")}
+                    </AppText>
+                  </View>
+                ) : (
+                  <Pressable onPress={() => actions.removeHouseholdMember(m)} style={{ width: 38, height: 38, borderRadius: 11, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}>
+                    <Icon d={iconPaths.close} size={16} color={colors.badInk} strokeWidth={2} />
+                  </Pressable>
+                )}
+              </View>
+            </StaggerItem>
           ))}
         </View>
 

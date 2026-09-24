@@ -11,6 +11,7 @@ import { Button } from "../../components/Button";
 import { OptionButton, DayToggle } from "../../components/FilterPill";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
+import { StaggerItem } from "../../components/StaggerItem";
 
 const PURPOSES: { key: "Guest" | "Delivery" | "Cab" | "Service"; labelKey: "guest" | "delivery" | "cab" | "service" }[] = [
   { key: "Guest", labelKey: "guest" },
@@ -66,15 +67,19 @@ export function InviteScreen() {
 
             <FieldLabel style={{ marginTop: 16 }}>{t("purpose")}</FieldLabel>
             <Row wrap>
-              {PURPOSES.map((p) => (
-                <OptionButton key={p.key} label={t(p.labelKey)} active={state.guestForm.purpose === p.key} onPress={() => actions.setGuestPurpose(p.key)} flex={1} />
+              {PURPOSES.map((p, i) => (
+                <StaggerItem key={p.key} index={i} tier="listRow">
+                  <OptionButton label={t(p.labelKey)} active={state.guestForm.purpose === p.key} onPress={() => actions.setGuestPurpose(p.key)} flex={0} height={38} />
+                </StaggerItem>
               ))}
             </Row>
 
             <FieldLabel style={{ marginTop: 16 }}>{t("validFor")}</FieldLabel>
             <Row>
-              {WINDOWS.map((w) => (
-                <OptionButton key={w.key} label={t(w.labelKey)} active={state.guestForm.window === w.key} onPress={() => actions.setGuestWindow(w.key)} />
+              {WINDOWS.map((w, i) => (
+                <StaggerItem key={w.key} index={i} tier="listRow" style={{ flex: 1 }}>
+                  <OptionButton label={t(w.labelKey)} active={state.guestForm.window === w.key} onPress={() => actions.setGuestWindow(w.key)} />
+                </StaggerItem>
               ))}
             </Row>
 
@@ -101,22 +106,28 @@ export function InviteScreen() {
 
             <FieldLabel style={{ marginTop: 16 }}>{t("helpRole")}</FieldLabel>
             <Row wrap>
-              {HELP_ROLES.map((r) => (
-                <OptionButton key={r.key} label={t(r.labelKey)} active={state.helpForm.role === r.key} onPress={() => actions.setHelpRole(r.key)} flex={1} />
+              {HELP_ROLES.map((r, i) => (
+                <StaggerItem key={r.key} index={i} tier="listRow">
+                  <OptionButton label={t(r.labelKey)} active={state.helpForm.role === r.key} onPress={() => actions.setHelpRole(r.key)} flex={0} height={38} />
+                </StaggerItem>
               ))}
             </Row>
 
             <FieldLabel style={{ marginTop: 16 }}>{t("daysTheyCome")}</FieldLabel>
             <View style={{ flexDirection: "row", gap: 7 }}>
               {WEEKDAYS.map((d, i) => (
-                <DayToggle key={i} label={d} active={state.helpForm.days[i]} onPress={() => actions.toggleHelpDay(i)} />
+                <StaggerItem key={i} index={i} tier="listRow" style={{ flex: 1 }}>
+                  <DayToggle label={d} active={state.helpForm.days[i]} onPress={() => actions.toggleHelpDay(i)} />
+                </StaggerItem>
               ))}
             </View>
 
             <FieldLabel style={{ marginTop: 16 }}>{t("hoursTheyWork")}</FieldLabel>
             <View style={{ gap: 8 }}>
-              {HELP_WINDOWS.map((w) => (
-                <OptionButton key={w.key} label={t(w.labelKey)} sub={w.detail} active={state.helpForm.window === w.key} onPress={() => actions.setHelpWindow(w.key)} height={46} />
+              {HELP_WINDOWS.map((w, i) => (
+                <StaggerItem key={w.key} index={i} tier="listRow">
+                  <OptionButton label={t(w.labelKey)} sub={w.detail} active={state.helpForm.window === w.key} onPress={() => actions.setHelpWindow(w.key)} height={46} />
+                </StaggerItem>
               ))}
             </View>
 

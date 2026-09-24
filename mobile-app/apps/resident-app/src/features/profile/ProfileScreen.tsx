@@ -50,7 +50,7 @@ export function ProfileScreen() {
             {initialsOf(residentName)}
           </AppText>
         </View>
-        <View style={{ minWidth: 0 }}>
+        <View style={{ flex: 1, minWidth: 0 }}>
           <AppText variant="cardTitleLarge" style={{ fontSize: 19 }}>
             {residentName}
           </AppText>

@@ -10,6 +10,7 @@ import { AppText } from "../../components/AppText";
 import { Button } from "../../components/Button";
 import { EmptyState } from "../../components/EmptyState";
 import { iconPaths } from "../../components/iconPaths";
+import { StaggerItem } from "../../components/StaggerItem";
 
 export function TenantsScreen() {
   const { state, actions } = useResident();
@@ -33,38 +34,40 @@ export function TenantsScreen() {
                 const active = new Date(agreement.endDate) > new Date();
                 const edge = active ? colors.ok : colors.borderStrong;
                 return (
-                  <View key={agreement.tenantName + i} style={{ borderWidth: 1, borderColor: active ? colors.accent200 : colors.border, borderLeftWidth: 3, borderLeftColor: edge, borderRadius: 16, backgroundColor: colors.surface, padding: 16 }}>
-                    <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 10, marginBottom: 12 }}>
-                      <View style={{ flex: 1, minWidth: 0 }}>
-                        <AppText variant="cardTitle" style={{ fontSize: 15, marginBottom: 3 }}>
-                          {agreement.tenantName}
-                        </AppText>
-                        <AppText variant="bodySmall" color={colors.inkSoft}>
-                          {agreement.unit} · {formatInr(agreement.monthlyRent)} a month
-                        </AppText>
+                  <StaggerItem key={agreement.tenantName + i} index={i} tier="listRow">
+                    <View style={{ borderWidth: 1, borderColor: active ? colors.accent200 : colors.border, borderLeftWidth: 3, borderLeftColor: edge, borderRadius: 16, backgroundColor: colors.surface, padding: 16 }}>
+                      <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 10, marginBottom: 12 }}>
+                        <View style={{ flex: 1, minWidth: 0 }}>
+                          <AppText variant="cardTitle" style={{ fontSize: 15, marginBottom: 3 }}>
+                            {agreement.tenantName}
+                          </AppText>
+                          <AppText variant="bodySmall" color={colors.inkSoft}>
+                            {agreement.unit} · {formatInr(agreement.monthlyRent)} a month
+                          </AppText>
+                        </View>
+                        <View style={{ paddingHorizontal: 9, paddingVertical: 4, borderRadius: 7, backgroundColor: active ? colors.okWash : colors.subtle }}>
+                          <AppText variant="cardTitle" color={active ? colors.okInk : colors.inkSoft} style={{ fontSize: 11 }}>
+                            {active ? t("activeStatus") : t("endedStatus")}
+                          </AppText>
+                        </View>
                       </View>
-                      <View style={{ paddingHorizontal: 9, paddingVertical: 4, borderRadius: 7, backgroundColor: active ? colors.okWash : colors.subtle }}>
-                        <AppText variant="cardTitle" color={active ? colors.okInk : colors.inkSoft} style={{ fontSize: 11 }}>
-                          {active ? t("activeStatus") : t("endedStatus")}
-                        </AppText>
+                      <View style={{ borderTopWidth: 1, borderTopColor: colors.borderSoft, paddingTop: 12, gap: 7 }}>
+                        <DetailRow label={t("agreementFrom")} value={new Date(agreement.startDate).toLocaleDateString("en-IN")} />
+                        <DetailRow label={t("expiresLabel")} value={new Date(agreement.endDate).toLocaleDateString("en-IN")} highlight={active} />
+                        <DetailRow label={t("policeVerification")} value={agreement.policeVerified ? "Verified" : "Pending"} good={agreement.policeVerified} />
+                        <DetailRow label={t("nonOccupancyChargeLabel")} value={t("perMonthAmount", { amount: agreement.nonOccupancyCharge })} />
                       </View>
+                      {active ? (
+                        <Button
+                          label={state.renewed ? t("renewalSent") : t("startRenewal")}
+                          kind="secondary"
+                          onPress={actions.startRenewal}
+                          height={44}
+                          style={{ marginTop: 13 }}
+                        />
+                      ) : null}
                     </View>
-                    <View style={{ borderTopWidth: 1, borderTopColor: colors.borderSoft, paddingTop: 12, gap: 7 }}>
-                      <DetailRow label={t("agreementFrom")} value={new Date(agreement.startDate).toLocaleDateString("en-IN")} />
-                      <DetailRow label={t("expiresLabel")} value={new Date(agreement.endDate).toLocaleDateString("en-IN")} highlight={active} />
-                      <DetailRow label={t("policeVerification")} value={agreement.policeVerified ? "Verified" : "Pending"} good={agreement.policeVerified} />
-                      <DetailRow label={t("nonOccupancyChargeLabel")} value={t("perMonthAmount", { amount: agreement.nonOccupancyCharge })} />
-                    </View>
-                    {active ? (
-                      <Button
-                        label={state.renewed ? t("renewalSent") : t("startRenewal")}
-                        kind="secondary"
-                        onPress={actions.startRenewal}
-                        height={44}
-                        style={{ marginTop: 13 }}
-                      />
-                    ) : null}
-                  </View>
+                  </StaggerItem>
                 );
               })}
             </View>
