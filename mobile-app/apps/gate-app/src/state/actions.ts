@@ -31,6 +31,24 @@ function uid(prefix: string): string {
 const DRILL_DOWNS: GateScreen[] = ["walkin", "alert", "plate", "handover"];
 const isDrillDownScreen = (s: GateScreen) => DRILL_DOWNS.includes(s);
 
+/**
+ * Stands in for the API round-trip a request will make once there is a backend.
+ *
+ * Resolves on the next tick, so nothing invents a wait: verifying a code against
+ * the handset's own cache completes immediately, and the button's "Checking…"
+ * state passes through too fast to see. That is correct for a lookup that never
+ * leaves the device — and on this handset most lookups never will, since it
+ * caches passes for 24h of offline autonomy.
+ *
+ * The seam is kept so the wiring already exists: when a lookup does reach the
+ * network, this is the one place it is awaited and the button shows the time it
+ * actually costs. It previously hardcoded 620ms, which made a local cache hit
+ * feel like a slow request.
+ */
+function whenRequestSettles(run: () => void): ReturnType<typeof setTimeout> {
+  return setTimeout(run, 0);
+}
+
 export function useGateActions(dispatch: Dispatch) {
   const toastTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const verifyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -182,13 +200,13 @@ export function useGateActions(dispatch: Dispatch) {
     (code: string) => {
       dispatch({ type: "SET", patch: { checking: true } });
       if (verifyTimer.current) clearTimeout(verifyTimer.current);
-      verifyTimer.current = setTimeout(() => {
+      verifyTimer.current = whenRequestSettles(() => {
         const result = verifyCode(code);
         dispatch({ type: "SET", patch: { checking: false, result } });
         if (result.type === "unknown") note(`Code ${code} rejected — no such pass`);
         else if (result.type === "expired") note(`Code ${code} rejected — expired`);
         else note(`Code ${code} verified — ${result.pass?.name}`);
-      }, motionDurationsMs.verify);
+      });
     },
     [dispatch, note]
   );
