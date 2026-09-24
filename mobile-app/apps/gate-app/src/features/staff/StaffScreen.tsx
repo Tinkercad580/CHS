@@ -2,7 +2,7 @@ import React from "react";
 import { View, ScrollView } from "react-native";
 import { GateText } from "../../components/GateText";
 import { FilterPill } from "../../components/FilterPill";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 import { colors } from "../../theme";
 import { useGate } from "../../state/GateProvider";
 import { filteredStaff, staffInsideCount } from "../../state/selectors";
@@ -21,7 +21,7 @@ export function StaffScreen() {
 
   return (
     <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 0, paddingBottom: 24 }}>
-      <StaggerItem index={0} tier="screenBlock">
+      <RevealItem tier="screenBlock">
         <GateText variant="screenTitleGate" style={{ marginBottom: 6 }}>
           Daily staff
         </GateText>
@@ -34,22 +34,22 @@ export function StaffScreen() {
             <FilterPill key={f.key} label={f.label} active={state.staffFilter === f.key} onPress={() => actions.setStaffFilter(f.key)} />
           ))}
         </View>
-      </StaggerItem>
+      </RevealItem>
 
-      <StaggerItem index={1} tier="screenBlock">
+      <RevealItem tier="screenBlock">
         <View style={{ gap: 9 }}>
           {list.map((member, i) => (
-            <StaggerItem key={member.passNo} index={i} tier="listRow">
+            <RevealItem key={member.passNo} tier="listRow">
               <StaffCard
                 member={member}
                 inside={!!state.staffInside[member.passNo]}
                 sinceLabel={state.staffSince[member.passNo] ?? "Not in today"}
                 onToggle={() => actions.toggleStaff(member, !!state.staffInside[member.passNo])}
               />
-            </StaggerItem>
+            </RevealItem>
           ))}
         </View>
-      </StaggerItem>
+      </RevealItem>
     </ScrollView>
   );
 }

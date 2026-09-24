@@ -9,7 +9,7 @@ import { ScreenHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
 import { Button } from "../../components/Button";
 import { OptionButton } from "../../components/FilterPill";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 
 export function BookScreen() {
   const { state, actions } = useResident();
@@ -42,9 +42,9 @@ export function BookScreen() {
             a fixed 4-day set on a 390px phone is; see OptionButton's doc comment. */}
         <View style={{ flexDirection: "row", gap: 8, marginBottom: 18 }}>
           {bookableDays.map((d, i) => (
-            <StaggerItem key={d} index={i} tier="listRow" style={{ flex: 1 }}>
+            <RevealItem key={d} tier="listRow" style={{ flex: 1 }}>
               <OptionButton label={d} active={state.bookDay === d} onPress={() => actions.setBookDay(d)} height={52} fontSize={12.5} />
-            </StaggerItem>
+            </RevealItem>
           ))}
         </View>
 
@@ -55,7 +55,7 @@ export function BookScreen() {
           {bookableSlots.map((slot, i) => {
             const taken = i === preTakenSlot.slotIndex && state.bookDay === preTakenSlot.day;
             return (
-              <StaggerItem key={slot} index={i} tier="listRow">
+              <RevealItem key={slot} tier="listRow">
                 <OptionButton
                   label={slot}
                   sub={taken ? t("takenLabel") : t("freeLabel")}
@@ -64,7 +64,7 @@ export function BookScreen() {
                   height={50}
                   fontSize={13.5}
                 />
-              </StaggerItem>
+              </RevealItem>
             );
           })}
         </View>

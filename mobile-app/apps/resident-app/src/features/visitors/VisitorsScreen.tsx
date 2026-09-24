@@ -12,7 +12,7 @@ import { Button } from "../../components/Button";
 import { EmptyState } from "../../components/EmptyState";
 import { iconPaths } from "../../components/iconPaths";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 
 function initialsOf(name: string): string {
   return name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
@@ -51,7 +51,7 @@ export function VisitorsScreen() {
               const stateFg = state2 === "Inside" ? colors.okInk : state2 === "Standing" ? colors.infoInk : colors.warnInk;
               const cancellable = pass.state === "expected" || pass.state === "standing";
               return (
-                <StaggerItem key={pass.id} index={i} tier="listRow">
+                <RevealItem key={pass.id} tier="listRow">
                 <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.surface, padding: 15 }}>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 12 }}>
                     <View style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: state2 === "Inside" ? colors.okWash : colors.subtle, alignItems: "center", justifyContent: "center" }}>
@@ -91,7 +91,7 @@ export function VisitorsScreen() {
                     ) : null}
                   </View>
                 </View>
-                </StaggerItem>
+                </RevealItem>
               );
             })}
           </View>

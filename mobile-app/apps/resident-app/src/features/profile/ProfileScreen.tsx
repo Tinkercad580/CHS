@@ -9,7 +9,7 @@ import { AppText } from "../../components/AppText";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 
 function initialsOf(name: string): string {
   return name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
@@ -67,7 +67,7 @@ export function ProfileScreen() {
         {ROLES.map((r, i) => {
           const active = state.role === r.key;
           return (
-            <StaggerItem key={r.key} index={i} tier="listRow">
+            <RevealItem key={r.key} tier="listRow">
               <AnimatedPressable
                 onPress={() => actions.setRole(r.key)}
                 style={{ borderWidth: 1, borderColor: active ? colors.accent : colors.border, backgroundColor: active ? colors.accentWash : colors.surface, borderRadius: 15, padding: 15, flexDirection: "row", alignItems: "center", gap: 13 }}
@@ -84,7 +84,7 @@ export function ProfileScreen() {
                   </AppText>
                 </View>
               </AnimatedPressable>
-            </StaggerItem>
+            </RevealItem>
           );
         })}
       </View>
@@ -94,7 +94,7 @@ export function ProfileScreen() {
       </AppText>
       <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.surface, overflow: "hidden" }}>
         {settings.map((row, i) => (
-          <StaggerItem key={row.label} index={i} tier="prefRow">
+          <RevealItem key={row.label} tier="prefRow">
             <AnimatedPressable
               onPress={row.go}
               style={{ padding: 15, paddingHorizontal: 16, borderBottomWidth: i === settings.length - 1 ? 0 : 1, borderBottomColor: colors.borderSoft, flexDirection: "row", alignItems: "center", gap: 12 }}
@@ -107,7 +107,7 @@ export function ProfileScreen() {
               </AppText>
               <Icon d={iconPaths.chevronRight} size={16} color={colors.inkDim} strokeWidth={2.2} />
             </AnimatedPressable>
-          </StaggerItem>
+          </RevealItem>
         ))}
       </View>
     </ScreenScroll>

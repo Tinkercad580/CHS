@@ -9,7 +9,7 @@ import { TitleHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
 import { StatusPill } from "../../components/StatusPill";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 
 const TAG_STYLE: Record<string, "bad" | "info" | "subtle"> = { Urgent: "bad", AGM: "info", Facility: "subtle", Billing: "subtle" };
 
@@ -29,7 +29,7 @@ export function NoticesScreen() {
             const bg = kind === "bad" ? colors.badWash : kind === "info" ? colors.infoWash : colors.subtle;
             const fg = kind === "bad" ? colors.badInk : kind === "info" ? colors.infoInk : colors.inkSoft;
             return (
-              <StaggerItem key={n.id} index={i} tier="listRow">
+              <RevealItem key={n.id} tier="listRow">
               <AnimatedPressable
                 onPress={() => actions.openNotice(n.id)}
                 style={{ borderWidth: 1, borderColor: n.unread ? colors.accent200 : colors.border, borderRadius: 16, backgroundColor: colors.surface, padding: 15 }}
@@ -48,7 +48,7 @@ export function NoticesScreen() {
                   {c(n.id, "blurb", n.blurb)}
                 </AppText>
               </AnimatedPressable>
-              </StaggerItem>
+              </RevealItem>
             );
           })}
         </View>

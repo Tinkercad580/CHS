@@ -9,7 +9,7 @@ import { TitleHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
 import { Button } from "../../components/Button";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 
 const STATE_LABEL: Record<string, string> = { open: "Open", in_progress: "In progress", resolved: "Resolved" };
 
@@ -34,7 +34,7 @@ export function HelpdeskScreen() {
             const bg = tk.status === "resolved" ? colors.okWash : tk.status === "open" ? colors.warnWash : colors.infoWash;
             const fg = tk.status === "resolved" ? colors.okInk : tk.status === "open" ? colors.warnInk : colors.infoInk;
             return (
-              <StaggerItem key={tk.id} index={i} tier="listRow">
+              <RevealItem key={tk.id} tier="listRow">
                 <AnimatedPressable onPress={() => actions.openTicket(tk.id)} style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.surface, padding: 15 }}>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 }}>
                     <AppText variant="eyebrow" color={colors.inkMuted} forceLatin>
@@ -56,7 +56,7 @@ export function HelpdeskScreen() {
                     {c(tk.id, "lastUpdate", tk.lastUpdate)}
                   </AppText>
                 </AnimatedPressable>
-              </StaggerItem>
+              </RevealItem>
             );
           })}
         </View>

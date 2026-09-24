@@ -6,7 +6,7 @@ import { GateCard } from "../../components/GateCard";
 import { GateInput } from "../../components/GateInput";
 import { GateButton } from "../../components/GateButton";
 import { ScreenHeader } from "../../components/ScreenHeader";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
 import { colors } from "../../theme";
@@ -27,16 +27,16 @@ export function HandoverScreen() {
 
   return (
     <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 0, paddingBottom: 24 }} keyboardShouldPersistTaps="handled">
-      <StaggerItem index={0} tier="screenBlock">
+      <RevealItem tier="screenBlock">
         <ScreenHeader title="Shift handover" onBack={() => actions.goBack()} />
         <GateText variant="bodySmall" color={colors.soft} style={{ marginBottom: 18 }}>
           {SHIFT_LINE} · closing at 10:00pm
         </GateText>
-      </StaggerItem>
+      </RevealItem>
 
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 18 }}>
         {stats.map((s, i) => (
-          <StaggerItem key={s.label} index={i} tier="listRow" style={{ flexBasis: "47%", flexGrow: 1 }}>
+          <RevealItem key={s.label} tier="listRow" style={{ flexBasis: "47%", flexGrow: 1 }}>
             <GateCard padding={15}>
               <GateText variant="gateCodeDisplay" color={s.fg} style={{ fontSize: 26, lineHeight: 26, marginBottom: 6, letterSpacing: 0 }}>
                 {s.value}
@@ -45,11 +45,11 @@ export function HandoverScreen() {
                 {s.label}
               </GateText>
             </GateCard>
-          </StaggerItem>
+          </RevealItem>
         ))}
       </View>
 
-      <StaggerItem index={2} tier="screenBlock">
+      <RevealItem tier="screenBlock">
         <GateText variant="label" color={colors.soft} style={{ marginBottom: 8 }}>
           Note for the next guard
         </GateText>
@@ -61,9 +61,9 @@ export function HandoverScreen() {
             onChangeText={actions.setHandoverNote}
           />
         </View>
-      </StaggerItem>
+      </RevealItem>
 
-      <StaggerItem index={3} tier="screenBlock">
+      <RevealItem tier="screenBlock">
         {state.handoverDone ? (
           <View
             style={{
@@ -92,7 +92,7 @@ export function HandoverScreen() {
         ) : (
           <GateButton label="Hand over the shift" onPress={actions.completeHandover} />
         )}
-      </StaggerItem>
+      </RevealItem>
     </ScrollView>
   );
 }

@@ -11,7 +11,7 @@ import { Button } from "../../components/Button";
 import { OptionButton, DayToggle } from "../../components/FilterPill";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 
 const PURPOSES: { key: "Guest" | "Delivery" | "Cab" | "Service"; labelKey: "guest" | "delivery" | "cab" | "service" }[] = [
   { key: "Guest", labelKey: "guest" },
@@ -68,18 +68,18 @@ export function InviteScreen() {
             <FieldLabel style={{ marginTop: 16 }}>{t("purpose")}</FieldLabel>
             <Grid2>
               {PURPOSES.map((p, i) => (
-                <StaggerItem key={p.key} index={i} tier="listRow" style={gridCell}>
+                <RevealItem key={p.key} tier="listRow" style={gridCell}>
                   <OptionButton label={t(p.labelKey)} active={state.guestForm.purpose === p.key} onPress={() => actions.setGuestPurpose(p.key)} height={44} />
-                </StaggerItem>
+                </RevealItem>
               ))}
             </Grid2>
 
             <FieldLabel style={{ marginTop: 16 }}>{t("validFor")}</FieldLabel>
             <Row>
               {WINDOWS.map((w, i) => (
-                <StaggerItem key={w.key} index={i} tier="listRow" style={{ flex: 1 }}>
+                <RevealItem key={w.key} tier="listRow" style={{ flex: 1 }}>
                   <OptionButton label={t(w.labelKey)} active={state.guestForm.window === w.key} onPress={() => actions.setGuestWindow(w.key)} />
-                </StaggerItem>
+                </RevealItem>
               ))}
             </Row>
 
@@ -107,27 +107,27 @@ export function InviteScreen() {
             <FieldLabel style={{ marginTop: 16 }}>{t("helpRole")}</FieldLabel>
             <Grid2>
               {HELP_ROLES.map((r, i) => (
-                <StaggerItem key={r.key} index={i} tier="listRow" style={gridCell}>
+                <RevealItem key={r.key} tier="listRow" style={gridCell}>
                   <OptionButton label={t(r.labelKey)} active={state.helpForm.role === r.key} onPress={() => actions.setHelpRole(r.key)} height={44} fontSize={12.5} />
-                </StaggerItem>
+                </RevealItem>
               ))}
             </Grid2>
 
             <FieldLabel style={{ marginTop: 16 }}>{t("daysTheyCome")}</FieldLabel>
             <View style={{ flexDirection: "row", gap: 7 }}>
               {WEEKDAYS.map((d, i) => (
-                <StaggerItem key={i} index={i} tier="listRow" style={{ flex: 1 }}>
+                <RevealItem key={i} tier="listRow" style={{ flex: 1 }}>
                   <DayToggle label={d} active={state.helpForm.days[i]} onPress={() => actions.toggleHelpDay(i)} />
-                </StaggerItem>
+                </RevealItem>
               ))}
             </View>
 
             <FieldLabel style={{ marginTop: 16 }}>{t("hoursTheyWork")}</FieldLabel>
             <View style={{ gap: 8 }}>
               {HELP_WINDOWS.map((w, i) => (
-                <StaggerItem key={w.key} index={i} tier="listRow">
+                <RevealItem key={w.key} tier="listRow">
                   <OptionButton label={t(w.labelKey)} sub={w.detail} active={state.helpForm.window === w.key} onPress={() => actions.setHelpWindow(w.key)} height={46} />
-                </StaggerItem>
+                </RevealItem>
               ))}
             </View>
 

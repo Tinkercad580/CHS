@@ -12,7 +12,7 @@ import { OptionButton } from "../../components/FilterPill";
 import { Toggle } from "../../components/Toggle";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 
 const CATEGORIES: { key: "Plumbing" | "Electrical" | "Lift" | "Housekeeping" | "Security" | "Other"; labelKey: "plumbing" | "electrical" | "lift" | "security" | "housekeeping" | "other" }[] = [
   { key: "Plumbing", labelKey: "plumbing" },
@@ -39,9 +39,9 @@ export function NewTicketScreen() {
         </AppText>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 9, marginBottom: 14 }}>
           {CATEGORIES.map((cat, i) => (
-            <StaggerItem key={cat.key} index={i} tier="listRow" style={{ flexGrow: 1, flexBasis: "45%" }}>
+            <RevealItem key={cat.key} tier="listRow" style={{ flexGrow: 1, flexBasis: "45%" }}>
               <OptionButton label={t(cat.labelKey)} active={state.ticketForm.category === cat.key} onPress={() => actions.setTicketCategory(cat.key)} height={44} />
-            </StaggerItem>
+            </RevealItem>
           ))}
         </View>
 

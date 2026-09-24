@@ -4,7 +4,7 @@ import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, useRedu
 import { GateText } from "../../components/GateText";
 import { GateCard } from "../../components/GateCard";
 import { ScreenHeader } from "../../components/ScreenHeader";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 import { Dot } from "../../components/Icon";
 import { colors } from "../../theme";
 import { useGate } from "../../state/GateProvider";
@@ -38,14 +38,14 @@ export function AlertScreen() {
 
   return (
     <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 0, paddingBottom: 24 }}>
-      <StaggerItem index={0} tier="screenBlock">
+      <RevealItem tier="screenBlock">
         <ScreenHeader title="Raise an alert" onBack={() => actions.goBack()} />
         <GateText variant="bodySmall" color={colors.soft} style={{ marginBottom: 20 }}>
           Hold the button for two seconds. A slip of the thumb should not wake the whole society.
         </GateText>
-      </StaggerItem>
+      </RevealItem>
 
-      <StaggerItem index={1} tier="screenBlock">
+      <RevealItem tier="screenBlock">
       <GateText variant="label" color={colors.soft} style={{ marginBottom: 10, fontSize: 12.5 }}>
         What is happening?
       </GateText>
@@ -76,9 +76,9 @@ export function AlertScreen() {
           );
         })}
       </View>
-      </StaggerItem>
+      </RevealItem>
 
-      <StaggerItem index={2} tier="screenBlock">
+      <RevealItem tier="screenBlock">
       <Pressable
         onPressIn={() => actions.holdStart(currentKind)}
         onPressOut={actions.holdEnd}
@@ -101,15 +101,15 @@ export function AlertScreen() {
           {state.holding ? `${Math.max(0, Math.ceil((100 - state.holdPct) / 50))} second to go` : "Two seconds. Reaches the committee and the security desk."}
         </GateText>
       </Pressable>
-      </StaggerItem>
+      </RevealItem>
 
-      <StaggerItem index={3} tier="screenBlock">
+      <RevealItem tier="screenBlock">
       <GateText variant="label" color={colors.soft} style={{ marginTop: 22, marginBottom: 11, fontSize: 12.5 }}>
         Recent alerts
       </GateText>
       <View style={{ gap: 9 }}>
         {state.alerts.map((alert, i) => (
-          <StaggerItem key={alert.id} index={i} tier="taggedCard">
+          <RevealItem key={alert.id} tier="taggedCard">
             <GateCard padding={13}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 9, marginBottom: 5 }}>
                 <Dot color={alertDotColor(alert.raisedAt)} />
@@ -126,10 +126,10 @@ export function AlertScreen() {
                 </GateText>
               ) : null}
             </GateCard>
-          </StaggerItem>
+          </RevealItem>
         ))}
       </View>
-      </StaggerItem>
+      </RevealItem>
     </ScrollView>
   );
 }

@@ -2,17 +2,23 @@ import { Easing } from "react-native-reanimated";
 import { easing, motionDurationsMs } from "@sahaj/shared";
 
 /**
- * The design's signature entrance choreography (README's "Motion" → the stagger-timing
- * table). Screens do not animate as one block — content cascades top to bottom, and
- * repeating cards cascade again inside each block, on their own faster clock.
+ * Entrance motion for a screen's content.
  *
- * Four tiers, each mapped straight off `motionDurationsMs` (already the README's numbers):
- *  - screenBlock: top-level sections of a screen (Home's header/dues-card/quick-actions/…) — `scIn`
- *  - listRow:     the common repeating-card tier (bills, notices, passes, tickets, …) — `cardIn`
- *  - taggedCard:  cards whose own tag is the point (AGM poll cards, poll options) — `cardIn`
- *  - prefRow:     settings/preference rows, delay floor 0.38s — `cardIn`
+ * The README's motion table gives each tier a per-item delay — 0.065-0.085s per
+ * index, capped at .78s for rows and .9s for blocks — and the prototypes do
+ * cascade that way. That is deliberately not implemented: the delay is what
+ * makes a list arrive one row at a time, and the further down the screen
+ * something is, the longer it withholds itself. On a screen opened daily that
+ * reads as lag rather than polish, so items keep their fade and rise and all
+ * play together. See docs/LOADING_AND_MOTION.md.
+ *
+ * The four tiers remain because their durations and travel differ:
+ *  - screenBlock: top-level sections of a screen — `scIn`, 10px, subtler scale
+ *  - listRow:     the common repeating-card tier (bills, notices, tickets) — `cardIn`
+ *  - taggedCard:  cards whose own tag is the point (AGM polls) — `cardIn`
+ *  - prefRow:     settings/preference rows — `cardIn`
  */
-export type StaggerTier = "screenBlock" | "listRow" | "taggedCard" | "prefRow";
+export type RevealTier = "screenBlock" | "listRow" | "taggedCard" | "prefRow";
 
 /** `scIn`/`gIn`: opacity 0→1, translate3d(0,10px,0) scale(.985)→none. */
 const SC_IN = { translateY: 10, scale: 0.985 };
@@ -22,55 +28,40 @@ const CARD_IN = { translateY: 18, scale: 0.965 };
 const EASE_OUT = Easing.bezier(easing.out[0], easing.out[1], easing.out[2], easing.out[3]);
 const EASE_STANDARD = Easing.bezier(easing.standard[0], easing.standard[1], easing.standard[2], easing.standard[3]);
 
-export interface StaggerSpec {
+export interface RevealSpec {
   duration: number;
-  delay: number;
   translateY: number;
   scale: number;
   easing: typeof EASE_OUT;
 }
 
-/**
- * Computes the entrance timing for the `index`-th (0-based) item of a `tier`, per the
- * README's table. `prefersReducedMotion` collapses duration *and* delay to near-zero —
- * duration alone is insufficient for a stagger, since the delay is the timing.
- */
-export function staggerSpec(tier: StaggerTier, index: number, prefersReducedMotion: boolean): StaggerSpec {
+/** Entrance timing for a `tier`. No index: everything in a tier plays together. */
+export function revealSpec(tier: RevealTier, prefersReducedMotion: boolean): RevealSpec {
   if (prefersReducedMotion) {
-    return { duration: 1, delay: 0, translateY: 0, scale: 1, easing: EASE_OUT };
+    return { duration: 1, translateY: 0, scale: 1, easing: EASE_OUT };
   }
   switch (tier) {
     case "screenBlock":
       return {
         duration: motionDurationsMs.screenContentBase,
-        delay: Math.min(index * motionDurationsMs.screenContentStaggerStep, motionDurationsMs.screenContentStaggerCap),
         ...SC_IN,
         easing: EASE_OUT,
       };
     case "listRow":
       return {
         duration: motionDurationsMs.listRowBase,
-        delay: Math.min(
-          motionDurationsMs.listRowStaggerDelayFloor + index * motionDurationsMs.listRowStaggerStep,
-          motionDurationsMs.listRowStaggerCap
-        ),
         ...CARD_IN,
         easing: EASE_OUT,
       };
     case "taggedCard":
       return {
         duration: motionDurationsMs.taggedCardBase,
-        delay: Math.min(
-          motionDurationsMs.taggedCardStaggerDelayFloor + index * motionDurationsMs.taggedCardStaggerStep,
-          motionDurationsMs.taggedCardStaggerCap
-        ),
         ...CARD_IN,
         easing: EASE_OUT,
       };
     case "prefRow":
       return {
         duration: motionDurationsMs.prefRowBase,
-        delay: motionDurationsMs.prefRowStaggerDelayFloor + index * motionDurationsMs.prefRowStaggerStep,
         ...CARD_IN,
         easing: EASE_OUT,
       };

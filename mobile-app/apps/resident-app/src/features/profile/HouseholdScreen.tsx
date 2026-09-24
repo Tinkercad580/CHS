@@ -12,7 +12,7 @@ import { Button } from "../../components/Button";
 import { OptionButton } from "../../components/FilterPill";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 
 const RELATIONS: { key: "Spouse" | "Child" | "Parent"; labelKey: "spouse" | "child" | "parent" }[] = [
   { key: "Spouse", labelKey: "spouse" },
@@ -41,7 +41,7 @@ export function HouseholdScreen() {
         </AppText>
         <View style={{ gap: 10, marginBottom: 18 }}>
           {members.map((m, i) => (
-            <StaggerItem key={m.id} index={i} tier="listRow">
+            <RevealItem key={m.id} tier="listRow">
               <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 15, backgroundColor: colors.surface, padding: 14, flexDirection: "row", alignItems: "center", gap: 12 }}>
                 <View style={{ width: 40, height: 40, borderRadius: 13, backgroundColor: colors.accentWash, alignItems: "center", justifyContent: "center" }}>
                   <AppText variant="cardTitleLarge" color={colors.accentInk} style={{ fontSize: 13 }} forceLatin>
@@ -68,7 +68,7 @@ export function HouseholdScreen() {
                   </Pressable>
                 )}
               </View>
-            </StaggerItem>
+            </RevealItem>
           ))}
         </View>
 

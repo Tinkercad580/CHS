@@ -11,7 +11,7 @@ import { AppText } from "../../components/AppText";
 import { Button } from "../../components/Button";
 import { EmptyState } from "../../components/EmptyState";
 import { iconPaths } from "../../components/iconPaths";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 
 export function DailyHelpScreen() {
   const { state, actions } = useResident();
@@ -96,13 +96,13 @@ function HelpAttendanceCard({ passNo }: { passNo: string }) {
           {sheet.days.map((day, i) => {
             const { bg, fg } = cellColor(day);
             return (
-              <StaggerItem key={i} index={i} tier="listRow" style={{ width: "9%", aspectRatio: 1 }}>
+              <RevealItem key={i} tier="listRow" style={{ width: "9%", aspectRatio: 1 }}>
                 <View style={{ flex: 1, borderRadius: 5, backgroundColor: bg, alignItems: "center", justifyContent: "center" }}>
                   <AppText variant="moneyMono" color={fg} style={{ fontSize: 8.5 }} forceLatin>
                     {i + 1}
                   </AppText>
                 </View>
-              </StaggerItem>
+              </RevealItem>
             );
           })}
         </View>

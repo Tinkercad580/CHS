@@ -8,7 +8,7 @@ import { ScreenHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 
 export function NotifsFeedScreen() {
   const { state, actions } = useResident();
@@ -32,7 +32,7 @@ export function NotifsFeedScreen() {
             const iconBg = n.kind === "warn" ? colors.warnWash : n.kind === "ok" ? colors.okWash : colors.infoWash;
             const iconFg = n.kind === "warn" ? colors.warnInk : n.kind === "ok" ? colors.okInk : colors.infoInk;
             return (
-              <StaggerItem key={n.id} index={i} tier="listRow">
+              <RevealItem key={n.id} tier="listRow">
                 <View
                   style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 14, backgroundColor: n.unread ? colors.accentWash : colors.surface, padding: 14, flexDirection: "row", gap: 12 }}
                 >
@@ -51,7 +51,7 @@ export function NotifsFeedScreen() {
                     </AppText>
                   </View>
                 </View>
-              </StaggerItem>
+              </RevealItem>
             );
           })}
         </View>

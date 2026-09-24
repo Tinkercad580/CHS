@@ -7,7 +7,7 @@ import { ScreenScroll } from "../../components/ScreenScroll";
 import { ScreenHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
 import { Button } from "../../components/Button";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 
 const STATE_LABEL: Record<string, string> = { open: "Open", in_progress: "In progress", resolved: "Resolved" };
 
@@ -44,7 +44,7 @@ export function TicketDetailScreen() {
 
         <View>
           {ticket.timeline.map((step, i) => (
-            <StaggerItem key={i} index={i} tier="listRow">
+            <RevealItem key={i} tier="listRow">
               <View style={{ flexDirection: "row", gap: 14 }}>
                 <View style={{ alignItems: "center", width: 22 }}>
                   <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: colors.accent, marginTop: 4 }} />
@@ -62,7 +62,7 @@ export function TicketDetailScreen() {
                   </AppText>
                 </View>
               </View>
-            </StaggerItem>
+            </RevealItem>
           ))}
         </View>
 

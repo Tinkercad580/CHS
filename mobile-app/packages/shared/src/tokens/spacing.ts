@@ -36,6 +36,14 @@ export const easing = {
   out: [0.22, 1, 0.36, 1] as const,
 };
 
+/**
+ * The README's motion numbers, transcribed.
+ *
+ * The `...StaggerStep`, `...StaggerDelayFloor` and `...StaggerCap` entries are
+ * kept as the record of what the design specified but are deliberately unread:
+ * the per-item delay they describe made lists arrive one row at a time, which is
+ * documented in docs/LOADING_AND_MOTION.md. The `...Base` durations are live.
+ */
 export const motionDurationsMs = {
   screenContentBase: 500,
   screenContentStaggerStep: 75,

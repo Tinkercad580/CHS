@@ -9,7 +9,7 @@ import { ScreenScroll } from "../../components/ScreenScroll";
 import { ScreenHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
 import { Button } from "../../components/Button";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 
 function initialsOf(name: string): string {
   return name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
@@ -66,7 +66,7 @@ export function PersonalDetailsScreen() {
         </AppText>
         <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.surface, overflow: "hidden", marginBottom: 16 }}>
           {contactRows.map((row, i) => (
-            <StaggerItem key={row.label} index={i} tier="listRow">
+            <RevealItem key={row.label} tier="listRow">
               <View style={{ padding: 14, paddingHorizontal: 16, borderBottomWidth: i === contactRows.length - 1 ? 0 : 1, borderBottomColor: colors.borderSoft }}>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 5 }}>
                   <AppText variant="meta" color={colors.inkMuted}>
@@ -92,7 +92,7 @@ export function PersonalDetailsScreen() {
                   </AppText>
                 )}
               </View>
-            </StaggerItem>
+            </RevealItem>
           ))}
         </View>
 
@@ -101,7 +101,7 @@ export function PersonalDetailsScreen() {
         </AppText>
         <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.surface, overflow: "hidden", marginBottom: 16 }}>
           {residenceRows.map((row, i) => (
-            <StaggerItem key={row.label} index={i} tier="listRow">
+            <RevealItem key={row.label} tier="listRow">
               <View style={{ padding: 14, paddingHorizontal: 16, borderBottomWidth: i === residenceRows.length - 1 ? 0 : 1, borderBottomColor: colors.borderSoft, flexDirection: "row", justifyContent: "space-between", gap: 12 }}>
                 <AppText variant="bodySmall" color={colors.inkSoft}>
                   {row.label}
@@ -110,7 +110,7 @@ export function PersonalDetailsScreen() {
                   {row.value}
                 </AppText>
               </View>
-            </StaggerItem>
+            </RevealItem>
           ))}
         </View>
 

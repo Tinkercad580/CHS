@@ -7,7 +7,7 @@ import { ScreenScroll } from "../../components/ScreenScroll";
 import { ScreenHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
 import { Toggle } from "../../components/Toggle";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 
 /** The notification *preference* toggles (Profile → Notifications) — distinct from the feed at Home's bell icon (`NotifsFeedScreen`). */
 export function NotificationsScreen() {
@@ -24,7 +24,7 @@ export function NotificationsScreen() {
         </AppText>
         <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.surface, overflow: "hidden" }}>
           {state.prefs.map((pref, i) => (
-            <StaggerItem key={pref.key} index={i} tier="prefRow">
+            <RevealItem key={pref.key} tier="prefRow">
               <View
                 style={{ padding: 15, paddingHorizontal: 16, borderBottomWidth: i === state.prefs.length - 1 ? 0 : 1, borderBottomColor: colors.borderSoft, flexDirection: "row", alignItems: "center", gap: 14 }}
               >
@@ -38,7 +38,7 @@ export function NotificationsScreen() {
                 </View>
                 <Toggle on={pref.on} onPress={() => actions.toggleNotifPref(pref.key)} />
               </View>
-            </StaggerItem>
+            </RevealItem>
           ))}
         </View>
       </ScreenScroll>

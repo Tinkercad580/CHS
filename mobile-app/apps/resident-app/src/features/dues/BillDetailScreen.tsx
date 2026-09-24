@@ -12,7 +12,7 @@ import { Card } from "../../components/Card";
 import { Button } from "../../components/Button";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 
 export function BillDetailScreen() {
   const { state, actions } = useResident();
@@ -43,7 +43,7 @@ export function BillDetailScreen() {
         </AppText>
         <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.surface, overflow: "hidden", marginBottom: 16 }}>
           {bill.lineItems.map((line, i) => (
-            <StaggerItem key={line.label + i} index={i} tier="listRow">
+            <RevealItem key={line.label + i} tier="listRow">
               <View
                 style={{ padding: 14, borderBottomWidth: 1, borderBottomColor: colors.borderSoft, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 }}
               >
@@ -61,7 +61,7 @@ export function BillDetailScreen() {
                   {formatInr(line.amount)}
                 </AppText>
               </View>
-            </StaggerItem>
+            </RevealItem>
           ))}
           <View style={{ padding: 14, backgroundColor: colors.subtle, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
             <AppText variant="cardTitle" style={{ fontSize: 13.5 }}>

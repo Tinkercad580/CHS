@@ -10,7 +10,7 @@ import { AppText } from "../../components/AppText";
 import { Button } from "../../components/Button";
 import { EmptyState } from "../../components/EmptyState";
 import { iconPaths } from "../../components/iconPaths";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 
 export function TenantsScreen() {
   const { state, actions } = useResident();
@@ -34,7 +34,7 @@ export function TenantsScreen() {
                 const active = new Date(agreement.endDate) > new Date();
                 const edge = active ? colors.ok : colors.borderStrong;
                 return (
-                  <StaggerItem key={agreement.tenantName + i} index={i} tier="listRow">
+                  <RevealItem key={agreement.tenantName + i} tier="listRow">
                     <View style={{ borderWidth: 1, borderColor: active ? colors.accent200 : colors.border, borderLeftWidth: 3, borderLeftColor: edge, borderRadius: 16, backgroundColor: colors.surface, padding: 16 }}>
                       <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 10, marginBottom: 12 }}>
                         <View style={{ flex: 1, minWidth: 0 }}>
@@ -69,7 +69,7 @@ export function TenantsScreen() {
                         />
                       ) : null}
                     </View>
-                  </StaggerItem>
+                  </RevealItem>
                 );
               })}
             </View>

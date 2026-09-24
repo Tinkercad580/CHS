@@ -8,7 +8,7 @@ import { ScreenHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 
 const UTILITY_ICON: Record<string, keyof typeof iconPaths> = { u_water: "water", u_liftb: "liftDoors", u_lifta: "liftDoors", u_power: "bolt", u_gen: "gauge" };
 
@@ -32,7 +32,7 @@ export function BuildingStatusScreen() {
             const bg = kind === "bad" ? colors.badWash : kind === "warn" ? colors.warnWash : colors.okWash;
             const fg = kind === "bad" ? colors.badInk : kind === "warn" ? colors.warnInk : colors.okInk;
             return (
-              <StaggerItem key={u.id} index={i} tier="listRow">
+              <RevealItem key={u.id} tier="listRow">
                 <View style={{ borderWidth: 1, borderColor: colors.border, borderLeftWidth: 3, borderLeftColor: edge, borderRadius: 15, backgroundColor: colors.surface, padding: 15 }}>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 9 }}>
                     <View style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: bg, alignItems: "center", justifyContent: "center" }}>
@@ -56,7 +56,7 @@ export function BuildingStatusScreen() {
                     {c(u.id, "cause", u.cause ?? "")}
                   </AppText>
                 </View>
-              </StaggerItem>
+              </RevealItem>
             );
           })}
         </View>

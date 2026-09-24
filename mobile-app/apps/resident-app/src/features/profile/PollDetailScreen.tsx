@@ -10,7 +10,7 @@ import { AppText } from "../../components/AppText";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 
 export function PollDetailScreen() {
   const { state, actions } = useResident();
@@ -37,7 +37,7 @@ export function PollDetailScreen() {
         </AppText>
         <View style={{ gap: 9, marginBottom: 16 }}>
           {options.map((o, i) => (
-            <StaggerItem key={o.key} index={i} tier="taggedCard">
+            <RevealItem key={o.key} tier="taggedCard">
             <AnimatedPressable
               onPress={() => actions.castVote(poll.id, o.key)}
               style={{ borderWidth: 1, borderColor: o.picked ? colors.accent : colors.border, borderRadius: 14, backgroundColor: o.picked ? colors.accentWash : colors.surface, padding: 14, overflow: "hidden" }}
@@ -59,7 +59,7 @@ export function PollDetailScreen() {
                 ) : null}
               </View>
             </AnimatedPressable>
-            </StaggerItem>
+            </RevealItem>
           ))}
         </View>
         {!voted ? (

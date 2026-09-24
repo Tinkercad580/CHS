@@ -7,7 +7,7 @@ import { GateInput } from "../../components/GateInput";
 import { StatusPill } from "../../components/StatusPill";
 import { ScreenHeader } from "../../components/ScreenHeader";
 import { EmptyState } from "../../components/EmptyState";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 import { colors } from "../../theme";
 import { useGate } from "../../state/GateProvider";
 
@@ -23,7 +23,7 @@ export function PlateLookupScreen() {
 
   return (
     <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 0, paddingBottom: 24 }} keyboardShouldPersistTaps="handled">
-      <StaggerItem index={0} tier="screenBlock">
+      <RevealItem tier="screenBlock">
         <ScreenHeader title="Plate lookup" onBack={() => actions.goBack()} />
         <GateText variant="bodySmall" color={colors.soft} style={{ marginBottom: 16 }}>
           Type any part of a number. Registered plates open the barrier.
@@ -32,9 +32,9 @@ export function PlateLookupScreen() {
         <View style={{ marginBottom: 16 }}>
           <GateInput mono placeholder="4471 or MH 12" value={state.plateQuery} onChangeText={actions.setPlateQuery} height={54} />
         </View>
-      </StaggerItem>
+      </RevealItem>
 
-      <StaggerItem index={1} tier="screenBlock">
+      <RevealItem tier="screenBlock">
         <GateText variant="label" color={colors.soft} style={{ marginBottom: 11 }}>
           {countLabel}
         </GateText>
@@ -44,7 +44,7 @@ export function PlateLookupScreen() {
         ) : (
           <View style={{ gap: 9 }}>
             {results.map((v, i) => (
-              <StaggerItem key={v.id} index={i} tier="taggedCard">
+              <RevealItem key={v.id} tier="taggedCard">
                 <GateCard edgeColor={colors.go}>
                   <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 7 }}>
                     <GateText variant="gateCodeKeypad" style={{ fontSize: 16, letterSpacing: 0.8 }}>
@@ -56,11 +56,11 @@ export function PlateLookupScreen() {
                     {v.ownerName} · {v.unit} · {v.model ?? v.type}
                   </GateText>
                 </GateCard>
-              </StaggerItem>
+              </RevealItem>
             ))}
           </View>
         )}
-      </StaggerItem>
+      </RevealItem>
     </ScrollView>
   );
 }

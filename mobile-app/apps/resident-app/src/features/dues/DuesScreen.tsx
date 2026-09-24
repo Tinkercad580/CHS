@@ -14,7 +14,7 @@ import { EmptyState } from "../../components/EmptyState";
 import { iconPaths } from "../../components/iconPaths";
 import { BillCard } from "./BillCard";
 import { Button } from "../../components/Button";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 
 export function DuesScreen() {
   const { state, actions } = useResident();
@@ -33,11 +33,11 @@ export function DuesScreen() {
         }
       />
       <ScreenScroll>
-        <StaggerItem index={0} tier="screenBlock" style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}>
+        <RevealItem tier="screenBlock" style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}>
           <FilterPill label={t("filterAll")} active={state.dueFilter === "all"} onPress={() => actions.setDueFilter("all")} />
           <FilterPill label={t("filterUnpaid")} active={state.dueFilter === "unpaid"} onPress={() => actions.setDueFilter("unpaid")} />
           <FilterPill label={t("filterPaid")} active={state.dueFilter === "paid"} onPress={() => actions.setDueFilter("paid")} />
-        </StaggerItem>
+        </RevealItem>
 
         {state.duesLoading ? (
           <View style={{ gap: 11 }}>
@@ -50,9 +50,9 @@ export function DuesScreen() {
         ) : (
           <View style={{ gap: 11 }}>
             {bills.map((b, i) => (
-              <StaggerItem key={b.id} index={i} tier="listRow">
+              <RevealItem key={b.id} tier="listRow">
                 <BillCard bill={b} amount={formatInr(b.amount)} onPress={() => actions.openBill(b.id)} />
-              </StaggerItem>
+              </RevealItem>
             ))}
           </View>
         )}

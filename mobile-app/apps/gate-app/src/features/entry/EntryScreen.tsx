@@ -5,7 +5,7 @@ import { DigitBoxes } from "../../components/DigitBoxes";
 import { Keypad } from "../../components/Keypad";
 import { GateButton } from "../../components/GateButton";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 import { EmptyState } from "../../components/EmptyState";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
@@ -23,7 +23,7 @@ export function EntryScreen() {
 
   return (
     <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 0, paddingBottom: 24 }} keyboardShouldPersistTaps="handled">
-      <StaggerItem index={0} tier="screenBlock">
+      <RevealItem tier="screenBlock">
         <GateText variant="screenTitleGate" style={{ marginBottom: 6 }}>
           Verify a visitor
         </GateText>
@@ -39,9 +39,9 @@ export function EntryScreen() {
             {hint}
           </GateText>
         </View>
-      </StaggerItem>
+      </RevealItem>
 
-      <StaggerItem index={1} tier="screenBlock">
+      <RevealItem tier="screenBlock">
         <Keypad onKey={actions.codeKey} keyHeight={62} fontSize={24} />
 
         <AnimatedPressable
@@ -76,9 +76,9 @@ export function EntryScreen() {
             onPress={() => actions.submitCode(state.code)}
           />
         </View>
-      </StaggerItem>
+      </RevealItem>
 
-      <StaggerItem index={2} tier="screenBlock">
+      <RevealItem tier="screenBlock">
         <View style={{ marginTop: 22, marginBottom: 11, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
           <GateText variant="label" color={colors.soft} style={{ fontSize: 12.5 }}>
             Expected in the next hour
@@ -93,13 +93,13 @@ export function EntryScreen() {
         ) : (
           <View style={{ gap: 9 }}>
             {expected.map((pass, i) => (
-              <StaggerItem key={pass.id} index={i} tier="listRow">
+              <RevealItem key={pass.id} tier="listRow">
                 <ExpectedPassRow pass={pass} onPress={() => actions.tapExpectedPass(pass.code, pass.name)} />
-              </StaggerItem>
+              </RevealItem>
             ))}
           </View>
         )}
-      </StaggerItem>
+      </RevealItem>
     </ScrollView>
   );
 }

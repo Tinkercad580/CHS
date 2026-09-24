@@ -84,11 +84,20 @@ What the admin design does use on entry is a single short fade applied once to a
 whole block: `fadeUp .26s cubic-bezier(.2,.7,.3,1)` — `web-app/src/lib/motion.ts`,
 `blockStyle()`. It takes no index, because every block fades together.
 
-**The two mobile prototypes are different.** `Resident Prototype.dc.html` and
-`Gate Prototype.dc.html` both use `cardIn` with per-index delays, and the app's
-`motionDurationsMs` reproduces those timings. Removing it there is a deliberate
-deviation from the design, not a correction — decide that explicitly rather than
-by analogy with the web.
+**The mobile apps keep the fade but not the cascade.** `Resident Prototype.dc.html`
+and `Gate Prototype.dc.html` both specify `cardIn` with per-index delays, and the
+app used to reproduce those timings exactly. The delay is the part that makes a
+list arrive one row at a time, so it is gone; the fade, travel and per-tier
+duration remain. This is a deliberate, recorded deviation from the prototypes —
+the same reasoning as the admin web, applied to screens people use daily.
+
+The component is `RevealItem` (`tier`, no index) in both apps, over
+`components/motion.ts` on resident and `motion/reveal.ts` on gate. It is not
+called `StaggerItem` any more because it no longer staggers.
+
+`motionDurationsMs` in `@sahaj/shared` still carries the stagger step, floor and
+cap values. They are a faithful transcription of the README's table and are kept
+as the record of what the design asked for; nothing reads them.
 
 **Keep motion that is causal.** A drawer opening, a row you just added arriving,
 a figure changing after you post a payment — that is feedback, and it tells the

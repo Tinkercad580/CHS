@@ -9,7 +9,7 @@ import { ScreenScroll } from "../../components/ScreenScroll";
 import { ScreenHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
 import { Button } from "../../components/Button";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 
 export function StatementScreen() {
   const { state, actions } = useResident();
@@ -50,7 +50,7 @@ export function StatementScreen() {
         </AppText>
         <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.surface, overflow: "hidden", marginBottom: 18 }}>
           {rows.map((l, i) => (
-            <StaggerItem key={l.id} index={i} tier="listRow">
+            <RevealItem key={l.id} tier="listRow">
               <View style={{ padding: 13, paddingHorizontal: 15, borderBottomWidth: i === rows.length - 1 ? 0 : 1, borderBottomColor: colors.borderSoft, flexDirection: "row", justifyContent: "space-between", gap: 12 }}>
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <AppText variant="cardTitle" style={{ fontSize: 13.5, fontWeight: "500" as const, marginBottom: 2 }}>
@@ -65,7 +65,7 @@ export function StatementScreen() {
                   {formatInr(Math.abs(l.amount))}
                 </AppText>
               </View>
-            </StaggerItem>
+            </RevealItem>
           ))}
         </View>
 

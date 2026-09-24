@@ -8,7 +8,7 @@ import { ScreenHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
 import { StatusPill } from "../../components/StatusPill";
 import { Button } from "../../components/Button";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 
 const TAG_STYLE: Record<string, "bad" | "info" | "subtle"> = { Urgent: "bad", AGM: "info", Facility: "subtle", Billing: "subtle" };
 
@@ -38,11 +38,11 @@ export function NoticeDetailScreen() {
         </AppText>
         <View style={{ gap: 14, marginBottom: 24 }}>
           {paragraphs.map((p, i) => (
-            <StaggerItem key={i} index={i} tier="listRow">
+            <RevealItem key={i} tier="listRow">
               <AppText variant="body" color={colors.inkSoft}>
                 {p}
               </AppText>
-            </StaggerItem>
+            </RevealItem>
           ))}
         </View>
         {notice.ackable ? (

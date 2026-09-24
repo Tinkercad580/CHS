@@ -5,7 +5,7 @@ import { GateText } from "../../components/GateText";
 import { DigitBoxes } from "../../components/DigitBoxes";
 import { Keypad } from "../../components/Keypad";
 import { GateButton } from "../../components/GateButton";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
 import { colors } from "../../theme";
@@ -29,7 +29,7 @@ export function SignInScreen() {
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 22, paddingTop: 26, paddingBottom: 30 }} keyboardShouldPersistTaps="handled">
-      <StaggerItem index={0} tier="screenBlock">
+      <RevealItem tier="screenBlock">
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 26 }}>
           <View style={{ width: 46, height: 46, borderRadius: 14, backgroundColor: colors.go, alignItems: "center", justifyContent: "center" }}>
             <Icon d={iconPaths.shield} color={colors.goInk} size={24} strokeWidth={2.1} />
@@ -49,9 +49,9 @@ export function SignInScreen() {
         <GateText variant="bodySmall" color={colors.soft} style={{ marginBottom: 24 }}>
           The handset is locked until a guard on the roster signs in. Everything you do is recorded against your name.
         </GateText>
-      </StaggerItem>
+      </RevealItem>
 
-      <StaggerItem index={1} tier="screenBlock">
+      <RevealItem tier="screenBlock">
         <View style={{ borderWidth: 1, borderColor: colors.line, borderRadius: 16, backgroundColor: colors.card, padding: 15, flexDirection: "row", alignItems: "center", gap: 13, marginBottom: 20 }}>
           <View style={{ width: 42, height: 42, borderRadius: 13, backgroundColor: colors.card2, alignItems: "center", justifyContent: "center" }}>
             <GateText variant="cardTitleLarge" color={colors.go} style={{ fontSize: 14 }}>
@@ -67,9 +67,9 @@ export function SignInScreen() {
             </GateText>
           </View>
         </View>
-      </StaggerItem>
+      </RevealItem>
 
-      <StaggerItem index={2} tier="screenBlock">
+      <RevealItem tier="screenBlock">
         <GateText variant="label" color={colors.soft} style={{ marginBottom: 10 }}>
           Duty PIN
         </GateText>
@@ -93,7 +93,7 @@ export function SignInScreen() {
         <GateText variant="meta" color={colors.dim} style={{ textAlign: "center", marginTop: 14 }}>
           Forgot it? The security desk can reset your PIN over the intercom.
         </GateText>
-      </StaggerItem>
+      </RevealItem>
     </ScrollView>
   );
 }

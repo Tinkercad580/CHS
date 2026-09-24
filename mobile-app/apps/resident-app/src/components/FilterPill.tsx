@@ -43,7 +43,7 @@ export function FilterPill({ label, active, onPress }: { label: string; active: 
  * and keeps its explicit height.
  *
  * This matters because RN's `flex: 1` shorthand means flexBasis 0, applied to the
- * parent's MAIN axis. A StaggerItem is a column, so a flexed child's basis lands on
+ * parent's MAIN axis. A RevealItem is a column, so a flexed child's basis lands on
  * the height — `height: 44` was being overridden and every wrapped option collapsed
  * to its text box (measured 20.8px against the design's 44px). The fix is to let the
  * wrapper carry the horizontal flex and the button carry the height.

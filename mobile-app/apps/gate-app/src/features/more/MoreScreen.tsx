@@ -3,7 +3,7 @@ import { View, ScrollView } from "react-native";
 import { vehicles } from "@sahaj/shared";
 import { GateText } from "../../components/GateText";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
 import { colors, withAlpha } from "../../theme";
@@ -30,18 +30,18 @@ export function MoreScreen() {
 
   return (
     <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 0, paddingBottom: 24 }}>
-      <StaggerItem index={0} tier="screenBlock">
+      <RevealItem tier="screenBlock">
         <GateText variant="screenTitleGate" style={{ marginBottom: 6 }}>
           More
         </GateText>
         <GateText variant="bodySmall" color={colors.soft} style={{ marginBottom: 18 }}>
           {state.guardName} · {SHIFT_LINE}
         </GateText>
-      </StaggerItem>
+      </RevealItem>
 
-      <StaggerItem index={1} tier="screenBlock" style={{ gap: 10 }}>
+      <RevealItem tier="screenBlock" style={{ gap: 10 }}>
         {items.map((item, i) => (
-          <StaggerItem key={item.key} index={i} tier="listRow">
+          <RevealItem key={item.key} tier="listRow">
             <AnimatedPressable
               onPress={item.go}
               style={({ pressed }) => ({
@@ -68,9 +68,9 @@ export function MoreScreen() {
               </View>
               <Icon d={iconPaths.forwardChevron} color={colors.dim} size={17} strokeWidth={2.2} />
             </AnimatedPressable>
-          </StaggerItem>
+          </RevealItem>
         ))}
-      </StaggerItem>
+      </RevealItem>
     </ScrollView>
   );
 }

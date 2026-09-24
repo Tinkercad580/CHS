@@ -10,7 +10,7 @@ import { ScreenHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 
 const KINDS: { key: SosKind; labelKey: "medical" | "fire" | "security" | "other" }[] = [
   { key: "Medical", labelKey: "medical" },
@@ -49,7 +49,7 @@ export function EmergencyScreen() {
           {KINDS.map((k, i) => {
             const active = kind === k.key;
             return (
-              <StaggerItem key={k.key} index={i} tier="listRow" style={{ width: "48%" }}>
+              <RevealItem key={k.key} tier="listRow" style={{ width: "48%" }}>
                 <Pressable
                   onPress={() => actions.setSosKind(k.key)}
                   style={{ height: 52, borderRadius: 13, borderWidth: 1, borderColor: active ? colors.bad : colors.borderStrong, backgroundColor: active ? colors.badWash : colors.surface, alignItems: "center", justifyContent: "center" }}
@@ -58,7 +58,7 @@ export function EmergencyScreen() {
                     {t(k.labelKey)}
                   </AppText>
                 </Pressable>
-              </StaggerItem>
+              </RevealItem>
             );
           })}
         </View>
@@ -98,7 +98,7 @@ export function EmergencyScreen() {
         </AppText>
         <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.surface, overflow: "hidden" }}>
           {contacts.map((row, i) => (
-            <StaggerItem key={row.label} index={i} tier="listRow">
+            <RevealItem key={row.label} tier="listRow">
               <View style={{ padding: 14, paddingHorizontal: 16, borderBottomWidth: i === contacts.length - 1 ? 0 : 1, borderBottomColor: colors.borderSoft, flexDirection: "row", justifyContent: "space-between", gap: 12 }}>
                 <AppText variant="body" style={{ fontWeight: "500" as const, fontSize: 13.5 }}>
                   {row.label}
@@ -107,7 +107,7 @@ export function EmergencyScreen() {
                   {row.value}
                 </AppText>
               </View>
-            </StaggerItem>
+            </RevealItem>
           ))}
         </View>
       </ScreenScroll>

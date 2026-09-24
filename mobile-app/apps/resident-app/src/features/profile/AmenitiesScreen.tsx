@@ -12,7 +12,7 @@ import { Button } from "../../components/Button";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 
 const AMENITY_ICON: Record<string, keyof typeof iconPaths> = { clubhouse: "amenity", gym: "amenityGym", terrace: "amenityTerrace", court: "amenityCourt" };
 
@@ -37,7 +37,7 @@ export function AmenitiesScreen() {
                 const amenity = state.amenities.find((a) => a.id === b.amenityId);
                 const name = amenity ? c(amenity.id, "name", amenity.name) : b.amenityId;
                 return (
-                  <StaggerItem key={b.id} index={i} tier="listRow">
+                  <RevealItem key={b.id} tier="listRow">
                   <View style={{ borderWidth: 1, borderColor: colors.accent200, borderRadius: 15, backgroundColor: colors.accentWash, padding: 15 }}>
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 7 }}>
                       <AppText variant="cardTitle" style={{ flex: 1, fontSize: 14 }}>
@@ -54,7 +54,7 @@ export function AmenitiesScreen() {
                     </AppText>
                     <Button label={t("cancelBooking")} kind="secondary" height={40} fontSize={12.5} weight={600} onPress={() => actions.cancelBooking(b, name)} />
                   </View>
-                  </StaggerItem>
+                  </RevealItem>
                 );
               })}
             </View>
@@ -66,7 +66,7 @@ export function AmenitiesScreen() {
         </AppText>
         <View style={{ gap: 10 }}>
           {state.amenities.map((a, i) => (
-            <StaggerItem key={a.id} index={i} tier="listRow">
+            <RevealItem key={a.id} tier="listRow">
               <AnimatedPressable onPress={() => actions.openAmenity(a.id)} style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.surface, padding: 15, flexDirection: "row", alignItems: "center", gap: 13 }}>
                 <View style={{ width: 42, height: 42, borderRadius: 13, backgroundColor: colors.accentWash, alignItems: "center", justifyContent: "center" }}>
                   <Icon d={iconPaths[AMENITY_ICON[a.id] ?? "amenity"]} size={21} color={colors.accentInk} strokeWidth={1.9} />
@@ -81,7 +81,7 @@ export function AmenitiesScreen() {
                 </View>
                 <Icon d={iconPaths.chevronRight} size={17} color={colors.inkDim} strokeWidth={2.2} />
               </AnimatedPressable>
-            </StaggerItem>
+            </RevealItem>
           ))}
         </View>
       </ScreenScroll>

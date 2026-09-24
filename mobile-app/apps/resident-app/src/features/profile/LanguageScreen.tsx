@@ -8,7 +8,7 @@ import { ScreenScroll } from "../../components/ScreenScroll";
 import { ScreenHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
 import { RadioRow } from "../../components/FilterPill";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 
 const LANGUAGES: { key: Language; label: string; native: string }[] = [
   { key: "en", label: "English", native: "Default across the app" },
@@ -30,9 +30,9 @@ export function LanguageScreen() {
         </AppText>
         <View style={{ gap: 9 }}>
           {LANGUAGES.map((lang, i) => (
-            <StaggerItem key={lang.key} index={i} tier="prefRow">
+            <RevealItem key={lang.key} tier="prefRow">
               <RadioRow label={lang.label} detail={lang.native} active={state.language === lang.key} onPress={() => actions.setLanguage(lang.key)} />
-            </StaggerItem>
+            </RevealItem>
           ))}
         </View>
       </ScreenScroll>

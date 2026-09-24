@@ -12,7 +12,7 @@ import { iconPaths } from "../../components/iconPaths";
 import { Card } from "../../components/Card";
 import { EmptyState } from "../../components/EmptyState";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 
 function initialsOf(name: string): string {
   return name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
@@ -40,7 +40,7 @@ export function HomeScreen() {
 
   return (
     <ScreenScroll contentPadded={false}>
-      <StaggerItem index={0} tier="screenBlock" style={{ paddingHorizontal: 22, paddingTop: 8, paddingBottom: 22, backgroundColor: colors.accent }}>
+      <RevealItem tier="screenBlock" style={{ paddingHorizontal: 22, paddingTop: 8, paddingBottom: 22, backgroundColor: colors.accent }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
           <AnimatedPressable onPress={() => actions.go("profile")} style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 12, minWidth: 0 }}>
             <View style={{ width: 42, height: 42, borderRadius: 13, backgroundColor: "rgba(255,255,255,0.16)", alignItems: "center", justifyContent: "center" }}>
@@ -67,9 +67,9 @@ export function HomeScreen() {
             ) : null}
           </AnimatedPressable>
         </View>
-      </StaggerItem>
+      </RevealItem>
 
-      <StaggerItem index={1} tier="screenBlock" style={{ paddingHorizontal: 22, marginTop: -14 }}>
+      <RevealItem tier="screenBlock" style={{ paddingHorizontal: 22, marginTop: -14 }}>
         <AnimatedPressable onPress={() => actions.go("dues")} style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 18, backgroundColor: colors.surface, padding: 19 }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
             <AppText variant="eyebrow" color={colors.inkMuted} forceLatin>
@@ -100,9 +100,9 @@ export function HomeScreen() {
             </View>
           </View>
         </AnimatedPressable>
-      </StaggerItem>
+      </RevealItem>
 
-      <StaggerItem index={2} tier="screenBlock" style={{ paddingHorizontal: 22, marginTop: 18 }}>
+      <RevealItem tier="screenBlock" style={{ paddingHorizontal: 22, marginTop: 18 }}>
         <AnimatedPressable onPress={() => actions.go("utilities", true)} style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 15, backgroundColor: colors.surface, padding: 14, flexDirection: "row", alignItems: "center", gap: 12 }}>
           <View style={{ width: 34, height: 34, borderRadius: 11, backgroundColor: isBad ? colors.badWash : colors.okWash, alignItems: "center", justifyContent: "center" }}>
             <Icon d={iconPaths.bolt} size={17} color={isBad ? colors.badInk : colors.okInk} strokeWidth={2} />
@@ -124,9 +124,9 @@ export function HomeScreen() {
           </View>
           <Icon d={iconPaths.chevronRight} size={16} color={colors.inkDim} strokeWidth={2.2} />
         </AnimatedPressable>
-      </StaggerItem>
+      </RevealItem>
 
-      <StaggerItem index={3} tier="screenBlock" style={{ paddingHorizontal: 22, marginTop: 20 }}>
+      <RevealItem tier="screenBlock" style={{ paddingHorizontal: 22, marginTop: 20 }}>
         <AppText variant="cardTitle" color={colors.inkSoft} style={{ fontSize: 13, marginBottom: 11 }}>
           {t("quickActions")}
         </AppText>
@@ -142,10 +142,10 @@ export function HomeScreen() {
             </AnimatedPressable>
           ))}
         </View>
-      </StaggerItem>
+      </RevealItem>
 
       {state.role === "owner_tenant" ? (
-        <StaggerItem index={4} tier="screenBlock" style={{ paddingHorizontal: 22, marginTop: 20 }}>
+        <RevealItem tier="screenBlock" style={{ paddingHorizontal: 22, marginTop: 20 }}>
           <View style={{ borderWidth: 1, borderColor: colors.accent200, borderRadius: 16, backgroundColor: colors.accentWash, padding: 15 }}>
             <AppText variant="cardTitle" color={colors.accentInk} style={{ fontSize: 13, marginBottom: 4 }}>
               {t("twoPositions")}
@@ -170,10 +170,10 @@ export function HomeScreen() {
               })}
             </View>
           </View>
-        </StaggerItem>
+        </RevealItem>
       ) : null}
 
-      <StaggerItem index={state.role === "owner_tenant" ? 5 : 4} tier="screenBlock" style={{ paddingHorizontal: 22, marginTop: 22 }}>
+      <RevealItem tier="screenBlock" style={{ paddingHorizontal: 22, marginTop: 22 }}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 11 }}>
           <AppText variant="cardTitle" color={colors.inkSoft} style={{ fontSize: 13 }}>
             {t("latestNotice")}
@@ -204,9 +204,9 @@ export function HomeScreen() {
             </AppText>
           </AnimatedPressable>
         ) : null}
-      </StaggerItem>
+      </RevealItem>
 
-      <StaggerItem index={state.role === "owner_tenant" ? 6 : 5} tier="screenBlock" style={{ paddingHorizontal: 22, marginTop: 22 }}>
+      <RevealItem tier="screenBlock" style={{ paddingHorizontal: 22, marginTop: 22 }}>
         <AnimatedPressable onPress={actions.goPolls} style={{ borderWidth: 1, borderColor: colors.accent200, borderRadius: 16, backgroundColor: colors.accentWash, padding: 15, flexDirection: "row", alignItems: "center", gap: 13 }}>
           <View style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: colors.surface, alignItems: "center", justifyContent: "center" }}>
             <Icon d={iconPaths.vote} size={19} color={colors.accentInk} strokeWidth={1.9} />
@@ -221,16 +221,16 @@ export function HomeScreen() {
           </View>
           <Icon d={iconPaths.chevronRight} size={17} color={colors.accentInk} strokeWidth={2.2} />
         </AnimatedPressable>
-      </StaggerItem>
+      </RevealItem>
 
-      <StaggerItem index={state.role === "owner_tenant" ? 7 : 6} tier="screenBlock" style={{ paddingHorizontal: 22, marginTop: 22 }}>
+      <RevealItem tier="screenBlock" style={{ paddingHorizontal: 22, marginTop: 22 }}>
         <AppText variant="cardTitle" color={colors.inkSoft} style={{ fontSize: 13, marginBottom: 11 }}>
           {t("expectedToday")}
         </AppText>
         {expected.length > 0 ? (
           <View style={{ gap: 9 }}>
             {expected.map((p, i) => (
-              <StaggerItem key={p.id} index={i} tier="listRow">
+              <RevealItem key={p.id} tier="listRow">
                 <Card>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
                     <View style={{ width: 36, height: 36, borderRadius: 11, backgroundColor: colors.subtle, alignItems: "center", justifyContent: "center" }}>
@@ -251,13 +251,13 @@ export function HomeScreen() {
                     </AppText>
                   </View>
                 </Card>
-              </StaggerItem>
+              </RevealItem>
             ))}
           </View>
         ) : (
           <EmptyState iconPath={iconPaths.household} title={t("noOneExpected")} body={t("noOneExpectedSub")} actionLabel={t("inviteAGuest")} onAction={actions.goInvite} />
         )}
-      </StaggerItem>
+      </RevealItem>
     </ScreenScroll>
   );
 }

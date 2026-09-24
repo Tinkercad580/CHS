@@ -11,7 +11,7 @@ import { Button } from "../../components/Button";
 import { OptionButton } from "../../components/FilterPill";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 
 export function VehiclesScreen() {
   const { state, actions } = useResident();
@@ -29,7 +29,7 @@ export function VehiclesScreen() {
         </AppText>
         <View style={{ gap: 10, marginBottom: 18 }}>
           {vehicles.map((v, i) => (
-            <StaggerItem key={v.id} index={i} tier="listRow">
+            <RevealItem key={v.id} tier="listRow">
               <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 15, backgroundColor: colors.surface, padding: 14 }}>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 11 }}>
                   <View style={{ width: 40, height: 40, borderRadius: 13, backgroundColor: colors.subtle, alignItems: "center", justifyContent: "center" }}>
@@ -51,7 +51,7 @@ export function VehiclesScreen() {
                 </View>
                 <Button label="Remove vehicle" kind="danger" fontSize={12.5} weight={600} onPress={() => actions.removeVehicle(v)} height={40} />
               </View>
-            </StaggerItem>
+            </RevealItem>
           ))}
         </View>
 

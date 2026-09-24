@@ -2,7 +2,7 @@ import React from "react";
 import { View, ScrollView } from "react-native";
 import { GateText } from "../../components/GateText";
 import { GateButton } from "../../components/GateButton";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 import { colors } from "../../theme";
 import { useGate } from "../../state/GateProvider";
 import { heldParcelsCount } from "../../state/selectors";
@@ -14,32 +14,32 @@ export function ParcelsScreen() {
 
   return (
     <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 0, paddingBottom: 24 }}>
-      <StaggerItem index={0} tier="screenBlock">
+      <RevealItem tier="screenBlock">
         <GateText variant="screenTitleGate" style={{ marginBottom: 6 }}>
           Parcels held
         </GateText>
         <GateText variant="bodySmall" color={colors.soft} style={{ marginBottom: 18 }}>
           {held} waiting for collection · {state.parcels.length} today
         </GateText>
-      </StaggerItem>
+      </RevealItem>
 
-      <StaggerItem index={1} tier="screenBlock" style={{ marginBottom: 16 }}>
+      <RevealItem tier="screenBlock" style={{ marginBottom: 16 }}>
         <GateButton label="Log a new parcel" height={52} radius={15} fontSize={15.5} onPress={actions.openLogParcel} />
-      </StaggerItem>
+      </RevealItem>
 
-      <StaggerItem index={2} tier="screenBlock">
+      <RevealItem tier="screenBlock">
         <View style={{ gap: 9 }}>
           {state.parcels.map((parcel, i) => (
-            <StaggerItem key={parcel.id} index={i} tier="listRow">
+            <RevealItem key={parcel.id} tier="listRow">
               <ParcelCard
                 parcel={parcel}
                 preference={actions.unitDeliveryPref(parcel.unit) ?? "No standing preference"}
                 onCollect={() => actions.collectParcel(parcel)}
               />
-            </StaggerItem>
+            </RevealItem>
           ))}
         </View>
-      </StaggerItem>
+      </RevealItem>
     </ScrollView>
   );
 }

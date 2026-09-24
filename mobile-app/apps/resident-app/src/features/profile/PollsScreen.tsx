@@ -8,7 +8,7 @@ import { ScreenScroll } from "../../components/ScreenScroll";
 import { ScreenHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
-import { StaggerItem } from "../../components/StaggerItem";
+import { RevealItem } from "../../components/RevealItem";
 
 export function PollsScreen() {
   const { state, actions } = useResident();
@@ -30,7 +30,7 @@ export function PollsScreen() {
               {state.polls.map((poll, i) => {
                 const voted = !!state.votes[poll.id];
                 return (
-                  <StaggerItem key={poll.id} index={i} tier="taggedCard">
+                  <RevealItem key={poll.id} tier="taggedCard">
                   <AnimatedPressable
                     onPress={() => actions.openPoll(poll.id)}
                     style={{ borderWidth: 1, borderColor: voted ? colors.border : colors.accent200, borderRadius: 16, backgroundColor: colors.surface, padding: 16 }}
@@ -52,7 +52,7 @@ export function PollsScreen() {
                       {poll.options.reduce((a, o) => a + o.votes, 0)} of {poll.totalUnits} owners voted
                     </AppText>
                   </AnimatedPressable>
-                  </StaggerItem>
+                  </RevealItem>
                 );
               })}
             </View>
