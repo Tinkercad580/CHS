@@ -3,6 +3,7 @@ import { View, ScrollView, Pressable } from "react-native";
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, useReducedMotion } from "react-native-reanimated";
 import { GateText } from "../../components/GateText";
 import { GateCard } from "../../components/GateCard";
+import { ScreenHeader } from "../../components/ScreenHeader";
 import { StaggerItem } from "../../components/StaggerItem";
 import { Dot } from "../../components/Icon";
 import { colors } from "../../theme";
@@ -38,9 +39,7 @@ export function AlertScreen() {
   return (
     <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 0, paddingBottom: 24 }}>
       <StaggerItem index={0} tier="screenBlock">
-        <GateText variant="screenTitleGate" style={{ marginBottom: 6 }}>
-          Raise an alert
-        </GateText>
+        <ScreenHeader title="Raise an alert" onBack={() => actions.goBack()} />
         <GateText variant="bodySmall" color={colors.soft} style={{ marginBottom: 20 }}>
           Hold the button for two seconds. A slip of the thumb should not wake the whole society.
         </GateText>

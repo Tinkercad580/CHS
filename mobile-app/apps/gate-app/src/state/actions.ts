@@ -28,6 +28,9 @@ function uid(prefix: string): string {
  * near-simultaneous timers (a toast expiring while a verify resolves) can never
  * clobber each other with a stale snapshot.
  */
+const DRILL_DOWNS: GateScreen[] = ["walkin", "alert", "plate", "handover"];
+const isDrillDownScreen = (s: GateScreen) => DRILL_DOWNS.includes(s);
+
 export function useGateActions(dispatch: Dispatch) {
   const toastTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const verifyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -128,9 +131,32 @@ export function useGateActions(dispatch: Dispatch) {
   }, [clearAllTimers, dispatch, note, toast]);
 
   // ---- Navigation ---------------------------------------------------------
+
   const go = useCallback(
     (screen: GateScreen, noteText?: string) => {
-      dispatch({ type: "SET", patch: { screen } });
+      // Record the screen being left, but only when moving INTO a drill-down.
+      // Otherwise tabbing around would overwrite the origin and back would return
+      // to whichever tab was touched last rather than the one that opened it.
+      const isDrillDown = screen === "walkin" || screen === "alert" || screen === "plate" || screen === "handover";
+      dispatch({
+        type: "UPDATE",
+        updater: (prev) => (isDrillDown && !isDrillDownScreen(prev.screen) ? { screen, cameFrom: prev.screen } : { screen }),
+      });
+      if (noteText) note(noteText);
+    },
+    [dispatch, note]
+  );
+
+  /**
+   * Back out of a drill-down to whatever opened it, defaulting to More.
+   *
+   * Walk-in is reachable from Entry ("No code? Log a walk-in") and from More
+   * ("Walk-in entry"), so a hardcoded target is wrong for half the journeys —
+   * that is what sent back to Entry from the More menu.
+   */
+  const goBack = useCallback(
+    (noteText?: string) => {
+      dispatch({ type: "UPDATE", updater: (prev) => ({ screen: isDrillDownScreen(prev.cameFrom) ? "more" : prev.cameFrom }) });
       if (noteText) note(noteText);
     },
     [dispatch, note]
@@ -455,6 +481,7 @@ export function useGateActions(dispatch: Dispatch) {
       startShift,
       signOut,
       go,
+      goBack,
       codeKey,
       submitCode,
       tapExpectedPass,
@@ -495,6 +522,7 @@ export function useGateActions(dispatch: Dispatch) {
       startShift,
       signOut,
       go,
+      goBack,
       codeKey,
       submitCode,
       tapExpectedPass,

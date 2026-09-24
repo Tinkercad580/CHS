@@ -19,7 +19,7 @@ export function WalkinScreen() {
 
   return (
     <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 0, paddingBottom: 24 }} keyboardShouldPersistTaps="handled">
-      <ScreenHeader title="Walk-in" onBack={() => actions.go("entry")} />
+      <ScreenHeader title="Walk-in" onBack={() => actions.goBack()} />
 
       {walkinStage === "form" ? (
         <StaggerItem index={0} tier="screenBlock">

@@ -40,6 +40,13 @@ export interface GateState {
   pinError: string | null;
 
   screen: GateScreen;
+  /**
+   * The screen a drill-down was opened from, so its back control returns there.
+   * Walk-in is reachable both from Entry ("No code? Log a walk-in") and from More
+   * ("Walk-in entry"); a hardcoded target sends half those journeys to the wrong
+   * place, which is what made back feel like it jumped to Entry.
+   */
+  cameFrom: GateScreen;
   code: string;
   checking: boolean;
   result: VerifyResult | null;

@@ -11,6 +11,7 @@ export function createInitialState(): AppGateState {
     pinError: null,
 
     screen: "entry",
+    cameFrom: "entry",
     code: "",
     checking: false,
     result: null,

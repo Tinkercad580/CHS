@@ -24,7 +24,7 @@ export function PlateLookupScreen() {
   return (
     <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 0, paddingBottom: 24 }} keyboardShouldPersistTaps="handled">
       <StaggerItem index={0} tier="screenBlock">
-        <ScreenHeader title="Plate lookup" onBack={() => actions.go("more")} />
+        <ScreenHeader title="Plate lookup" onBack={() => actions.goBack()} />
         <GateText variant="bodySmall" color={colors.soft} style={{ marginBottom: 16 }}>
           Type any part of a number. Registered plates open the barrier.
         </GateText>

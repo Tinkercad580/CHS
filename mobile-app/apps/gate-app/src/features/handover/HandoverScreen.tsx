@@ -28,7 +28,7 @@ export function HandoverScreen() {
   return (
     <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 0, paddingBottom: 24 }} keyboardShouldPersistTaps="handled">
       <StaggerItem index={0} tier="screenBlock">
-        <ScreenHeader title="Shift handover" onBack={() => actions.go("more")} />
+        <ScreenHeader title="Shift handover" onBack={() => actions.goBack()} />
         <GateText variant="bodySmall" color={colors.soft} style={{ marginBottom: 18 }}>
           {SHIFT_LINE} · closing at 10:00pm
         </GateText>
