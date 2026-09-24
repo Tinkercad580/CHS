@@ -66,13 +66,13 @@ export function InviteScreen() {
             <TextField value={state.guestForm.name} onChangeText={actions.setGuestName} placeholder={t("guestNamePh")} />
 
             <FieldLabel style={{ marginTop: 16 }}>{t("purpose")}</FieldLabel>
-            <Row wrap>
+            <Grid2>
               {PURPOSES.map((p, i) => (
-                <StaggerItem key={p.key} index={i} tier="listRow">
-                  <OptionButton label={t(p.labelKey)} active={state.guestForm.purpose === p.key} onPress={() => actions.setGuestPurpose(p.key)} flex={0} height={38} />
+                <StaggerItem key={p.key} index={i} tier="listRow" style={gridCell}>
+                  <OptionButton label={t(p.labelKey)} active={state.guestForm.purpose === p.key} onPress={() => actions.setGuestPurpose(p.key)} height={44} />
                 </StaggerItem>
               ))}
-            </Row>
+            </Grid2>
 
             <FieldLabel style={{ marginTop: 16 }}>{t("validFor")}</FieldLabel>
             <Row>
@@ -105,13 +105,13 @@ export function InviteScreen() {
             <TextField value={state.helpForm.name} onChangeText={actions.setHelpName} placeholder={t("helpNamePh")} />
 
             <FieldLabel style={{ marginTop: 16 }}>{t("helpRole")}</FieldLabel>
-            <Row wrap>
+            <Grid2>
               {HELP_ROLES.map((r, i) => (
-                <StaggerItem key={r.key} index={i} tier="listRow">
-                  <OptionButton label={t(r.labelKey)} active={state.helpForm.role === r.key} onPress={() => actions.setHelpRole(r.key)} flex={0} height={38} />
+                <StaggerItem key={r.key} index={i} tier="listRow" style={gridCell}>
+                  <OptionButton label={t(r.labelKey)} active={state.helpForm.role === r.key} onPress={() => actions.setHelpRole(r.key)} height={44} fontSize={12.5} />
                 </StaggerItem>
               ))}
-            </Row>
+            </Grid2>
 
             <FieldLabel style={{ marginTop: 16 }}>{t("daysTheyCome")}</FieldLabel>
             <View style={{ flexDirection: "row", gap: 7 }}>
@@ -170,6 +170,24 @@ function FieldLabel({ children, style }: { children: React.ReactNode; style?: ob
 function Row({ children, wrap }: { children: React.ReactNode; wrap?: boolean }) {
   return <View style={{ flexDirection: "row", gap: 9, flexWrap: wrap ? "wrap" : "nowrap" }}>{children}</View>;
 }
+
+/**
+ * The prototype lays Purpose and Role out as `grid-template-columns:repeat(2,1fr)`.
+ * React Native has no grid, so two columns come from a wrapping row whose children
+ * each take a basis under half the width and then grow to fill: 45% + 45% + the 9px
+ * gap fits on one line, a third would need 135% and wraps. flexGrow then shares the
+ * remainder equally, so the two columns end up the same width.
+ *
+ * This replaces `<Row wrap>` with `flex={0}` children, which collapsed every option
+ * to zero width — RN's `flex: 0` shorthand sets flexBasis 0, not "size to content",
+ * so the label overflowed its own 1px border and rendered as a line struck through
+ * the text.
+ */
+function Grid2({ children }: { children: React.ReactNode }) {
+  return <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 9 }}>{children}</View>;
+}
+
+const gridCell = { flexGrow: 1, flexBasis: "45%" } as const;
 
 function TextField({ value, onChangeText, placeholder, keyboardType, mono }: { value: string; onChangeText: (v: string) => void; placeholder: string; keyboardType?: "default" | "number-pad"; mono?: boolean }) {
   const { colors, type } = useTheme();

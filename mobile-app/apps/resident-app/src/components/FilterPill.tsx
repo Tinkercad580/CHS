@@ -37,13 +37,24 @@ export function FilterPill({ label, active, onPress }: { label: string; active: 
  * fights over space before wrapping resolves and overlaps them (RN Yoga,
  * not a web-flexbox behaviour), so a wrapping row needs content-sized chips.
  */
-export function OptionButton({ label, sub, active, onPress, flex = 1, height = 44 }: { label: string; sub?: string; active: boolean; onPress: () => void; flex?: number; height?: number }) {
+/**
+ * `flex` is only for an OptionButton that sits DIRECTLY in a row and shares its
+ * width with siblings. Left unset, the button stretches to whatever its parent is
+ * and keeps its explicit height.
+ *
+ * This matters because RN's `flex: 1` shorthand means flexBasis 0, applied to the
+ * parent's MAIN axis. A StaggerItem is a column, so a flexed child's basis lands on
+ * the height — `height: 44` was being overridden and every wrapped option collapsed
+ * to its text box (measured 20.8px against the design's 44px). The fix is to let the
+ * wrapper carry the horizontal flex and the button carry the height.
+ */
+export function OptionButton({ label, sub, active, onPress, flex, height = 44, fontSize = 13 }: { label: string; sub?: string; active: boolean; onPress: () => void; flex?: number; height?: number; fontSize?: number }) {
   const { colors } = useTheme();
   return (
     <AnimatedPressable
       onPress={onPress}
       style={{
-        flex,
+        ...(flex === undefined ? { alignSelf: "stretch" as const } : { flex }),
         height,
         borderRadius: radius.button + 2,
         borderWidth: 1,
@@ -55,11 +66,11 @@ export function OptionButton({ label, sub, active, onPress, flex = 1, height = 4
         paddingHorizontal: sub ? 15 : 12,
       }}
     >
-      <AppText variant="cardTitle" color={active ? colors.accentInk : colors.ink} style={{ fontSize: 13 }}>
+      <AppText variant="cardTitle" color={active ? colors.accentInk : colors.ink} style={{ fontSize }}>
         {label}
       </AppText>
       {sub ? (
-        <AppText variant="meta" color={active ? colors.accentInk : colors.inkSoft} style={{ opacity: 0.8 }}>
+        <AppText variant="medium" color={active ? colors.accentInk : colors.inkSoft} style={{ opacity: 0.75 }}>
           {sub}
         </AppText>
       ) : null}

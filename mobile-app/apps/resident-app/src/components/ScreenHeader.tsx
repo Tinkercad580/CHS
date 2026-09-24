@@ -12,7 +12,8 @@ export function ScreenHeader({ title, onBack, right }: { title: string; onBack: 
     <View
       style={{
         paddingHorizontal: 18,
-        paddingVertical: 12,
+        paddingTop: 12,
+        paddingBottom: 16,
         backgroundColor: colors.surface,
         borderBottomWidth: 1,
         borderBottomColor: colors.border,
@@ -35,8 +36,17 @@ export function ScreenHeader({ title, onBack, right }: { title: string; onBack: 
   );
 }
 
-/** Tab-root screen title bar (no back button) — Dues/Notices/Visitors/Helpdesk. */
-export function TitleHeader({ title, subtitle, right }: { title: string; subtitle?: string; right?: React.ReactNode }) {
+/**
+ * Tab-root screen title bar — Dues/Notices/Visitors/Helpdesk.
+ *
+ * `onBack` is a deliberate deviation from the prototype, which gives this header no
+ * back control at all. In the prototype that is fine: you move between screens with
+ * the "jump to a screen" panel beside the phone. In the built app the same header is
+ * also used by Amenities, which is not a tab and is reached from Home or Profile, so
+ * without it the screen is a dead end. It renders above the title rather than beside
+ * it, so the 24px title block keeps the design's exact type and spacing.
+ */
+export function TitleHeader({ title, subtitle, right, onBack }: { title: string; subtitle?: string; right?: React.ReactNode; onBack?: () => void }) {
   const { colors } = useTheme();
   return (
     <View
@@ -47,11 +57,17 @@ export function TitleHeader({ title, subtitle, right }: { title: string; subtitl
         backgroundColor: colors.surface,
         borderBottomWidth: 1,
         borderBottomColor: colors.border,
-        flexDirection: "row",
-        alignItems: "flex-start",
-        gap: 12,
       }}
     >
+      {onBack ? (
+        <Pressable
+          onPress={onBack}
+          style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: colors.subtle, alignItems: "center", justifyContent: "center", marginBottom: 10 }}
+        >
+          <Icon d={iconPaths.chevronLeft} size={19} color={colors.ink} strokeWidth={2.1} />
+        </Pressable>
+      ) : null}
+      <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 12 }}>
       <View style={{ flex: 1, minWidth: 0 }}>
         <AppText variant="screenTitleMobile" style={{ marginBottom: 3 }}>
           {title}
@@ -63,6 +79,7 @@ export function TitleHeader({ title, subtitle, right }: { title: string; subtitl
         ) : null}
       </View>
       {right}
+      </View>
     </View>
   );
 }

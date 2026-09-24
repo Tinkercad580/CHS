@@ -43,7 +43,7 @@ export function BookScreen() {
         <View style={{ flexDirection: "row", gap: 8, marginBottom: 18 }}>
           {bookableDays.map((d, i) => (
             <StaggerItem key={d} index={i} tier="listRow" style={{ flex: 1 }}>
-              <OptionButton label={d} active={state.bookDay === d} onPress={() => actions.setBookDay(d)} height={52} flex={1} />
+              <OptionButton label={d} active={state.bookDay === d} onPress={() => actions.setBookDay(d)} height={52} fontSize={12.5} />
             </StaggerItem>
           ))}
         </View>
@@ -62,6 +62,7 @@ export function BookScreen() {
                   active={state.bookSlot === i}
                   onPress={() => actions.setBookSlot(i, taken)}
                   height={50}
+                  fontSize={13.5}
                 />
               </StaggerItem>
             );

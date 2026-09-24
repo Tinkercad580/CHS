@@ -39,8 +39,8 @@ export function NewTicketScreen() {
         </AppText>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 9, marginBottom: 14 }}>
           {CATEGORIES.map((cat, i) => (
-            <StaggerItem key={cat.key} index={i} tier="listRow">
-              <OptionButton label={t(cat.labelKey)} active={state.ticketForm.category === cat.key} onPress={() => actions.setTicketCategory(cat.key)} flex={0} height={38} />
+            <StaggerItem key={cat.key} index={i} tier="listRow" style={{ flexGrow: 1, flexBasis: "45%" }}>
+              <OptionButton label={t(cat.labelKey)} active={state.ticketForm.category === cat.key} onPress={() => actions.setTicketCategory(cat.key)} height={44} />
             </StaggerItem>
           ))}
         </View>

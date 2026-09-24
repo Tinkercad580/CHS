@@ -25,7 +25,7 @@ export function AmenitiesScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.canvas }}>
-      <TitleHeader title={t("amenitiesTitle")} subtitle={t("amenitySummary", { n: num(myBookings.length), s: myBookings.length === 1 ? "" : "s" })} />
+      <TitleHeader onBack={actions.back} title={t("amenitiesTitle")} subtitle={t("amenitySummary", { n: num(myBookings.length), s: myBookings.length === 1 ? "" : "s" })} />
       <ScreenScroll>
         {myBookings.length > 0 ? (
           <>

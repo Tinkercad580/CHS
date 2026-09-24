@@ -67,8 +67,8 @@ export function VehiclesScreen() {
             style={[{ height: 46, paddingHorizontal: 13, borderWidth: 1, borderColor: colors.borderStrong, borderRadius: 11, backgroundColor: colors.surface, color: colors.ink, marginBottom: 10, letterSpacing: 1 }, type("moneyMono")]}
           />
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 12 }}>
-            <OptionButton label={t("car")} active={state.vehicleTypeInput === "Car"} onPress={() => actions.setVehicleTypeInput("Car")} height={40} />
-            <OptionButton label={t("twoWheeler")} active={state.vehicleTypeInput === "Two-wheeler"} onPress={() => actions.setVehicleTypeInput("Two-wheeler")} height={40} />
+            <OptionButton label={t("car")} active={state.vehicleTypeInput === "Car"} onPress={() => actions.setVehicleTypeInput("Car")} flex={1} height={40} />
+            <OptionButton label={t("twoWheeler")} active={state.vehicleTypeInput === "Two-wheeler"} flex={1} onPress={() => actions.setVehicleTypeInput("Two-wheeler")} height={40} />
           </View>
           <Button label={t("register")} onPress={actions.addVehicle} height={46} fontSize={14.5} weight={700} />
         </View>

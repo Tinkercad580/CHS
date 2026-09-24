@@ -35,6 +35,7 @@ export const typeScale = {
   bodySmall: { fontFamily: fontFamily.sans, fontWeight: 400, fontSize: 13, lineHeight: 19.5 },
   label: { fontFamily: fontFamily.sans, fontWeight: 600, fontSize: 12.5, lineHeight: 12.5 },
   meta: { fontFamily: fontFamily.sans, fontWeight: 400, fontSize: 11.5, lineHeight: 15.5 },
+  medium: { fontFamily: fontFamily.sans, fontWeight: 500, fontSize: 12, lineHeight: 15.6 },
   eyebrow: { fontFamily: fontFamily.mono, fontWeight: 600, fontSize: 11.5, lineHeight: 11.5, letterSpacing: 0.1 * 11.5 },
   tabLabel: { fontFamily: fontFamily.sans, fontWeight: 600, fontSize: 10.5, lineHeight: 10.5 },
   gateCodeDisplay: { fontFamily: fontFamily.mono, fontWeight: 700, fontSize: 40, lineHeight: 40, letterSpacing: 0.2 * 40 },
