@@ -3,7 +3,6 @@ import { useAdminStore } from "../../store/AdminStore";
 import { MDAYS, STAFF_ROLES } from "../../mock/staff";
 import { money } from "../../lib/format";
 import { ModalShell, ModalHeader, ModalFooter, GhostButton, PrimaryButton } from "../../components/ModalShell";
-import { taggedCardStyle } from "../../lib/motion";
 
 /**
  * Staff & help — the 30-column clickable attendance sheet (README section
@@ -68,11 +67,11 @@ export function StaffPage() {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", gap: 12, marginBottom: 16 }}>
-        {stats.map((s, i) => (
+        {stats.map((s) => (
           <div
             key={s.label}
             className="hover-lift theme-transition"
-            style={{ background: "var(--surface,#fff)", border: "1px solid var(--border,#E3E9E6)", borderRadius: 14, padding: "16px 18px", ...taggedCardStyle(i) }}
+            style={{ background: "var(--surface,#fff)", border: "1px solid var(--border,#E3E9E6)", borderRadius: 14, padding: "16px 18px" }}
           >
             <div style={{ font: "600 11px/1 Figtree, sans-serif", letterSpacing: ".09em", textTransform: "uppercase", color: "var(--ink-soft,#5A6B66)", marginBottom: 10 }}>{s.label}</div>
             <div style={{ font: "700 22px/1 Figtree, sans-serif", letterSpacing: "-.02em", fontVariantNumeric: "tabular-nums" }}>{s.value}</div>

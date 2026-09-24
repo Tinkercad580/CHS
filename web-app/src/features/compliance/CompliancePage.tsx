@@ -2,7 +2,6 @@ import { useState, type CSSProperties } from "react";
 import { COMPLIANCE_ITEMS } from "../../mock/compliance";
 import { PANELS } from "../../mock/panels";
 import { PanelModal } from "../../components/PanelModal";
-import { listRowStyle } from "../../lib/motion";
 
 /** Compliance calendar — statutory obligations with a regulatory-update
  * banner and an "Apply fix" action (README section 2, "compliance"). */
@@ -38,7 +37,7 @@ export function CompliancePage() {
 
       <div style={{ background: "var(--surface,#fff)", border: "1px solid var(--border,#E3E9E6)", borderRadius: 15, overflow: "hidden" }}>
         {COMPLIANCE_ITEMS.map((c, i) => (
-          <div key={c.item} className="row-hover" style={{ padding: "14px 20px", borderBottom: i < COMPLIANCE_ITEMS.length - 1 ? "1px solid var(--border-soft,#F1F4F3)" : "none", display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap", ...listRowStyle(i) }}>
+          <div key={c.item} className="row-hover" style={{ padding: "14px 20px", borderBottom: i < COMPLIANCE_ITEMS.length - 1 ? "1px solid var(--border-soft,#F1F4F3)" : "none", display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
             <span style={{ width: 9, height: 9, borderRadius: "50%", flex: "none", background: c.dot }} />
             <div style={{ flex: 1, minWidth: 180 }}>
               <div style={{ font: "600 14px/1.4 Figtree, sans-serif" }}>{c.item}</div>

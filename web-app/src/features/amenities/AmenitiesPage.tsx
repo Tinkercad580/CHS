@@ -3,7 +3,6 @@ import { useAdminStore } from "../../store/AdminStore";
 import { CAL_DAYS, CAL_SLOTS } from "../../mock/amenities";
 import { money } from "../../lib/format";
 import { ModalShell, ModalHeader, ModalFooter, GhostButton, PrimaryButton } from "../../components/ModalShell";
-import { taggedCardStyle } from "../../lib/motion";
 
 /**
  * Amenities — the booking calendar (three slots × five days) plus the
@@ -71,8 +70,7 @@ export function AmenitiesPage() {
             {CAL_SLOTS.map((slot, si) => (
               <div key={slot} style={{ display: "grid", gridTemplateColumns: "92px repeat(5,1fr)", gap: 9, marginBottom: 9 }}>
                 <div style={{ display: "flex", alignItems: "center", font: "600 11.5px/1.3 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>{slot}</div>
-                {CAL_DAYS.map((d, di) => {
-                  const cellIdx = si * CAL_DAYS.length + di;
+                {CAL_DAYS.map((d) => {
                   const bk = state.bookings.find((b) => b.day === d.n && b.slot === si && (calFilter === "All" || b.state === calFilter));
                   if (!bk) {
                     return (
@@ -84,7 +82,7 @@ export function AmenitiesPage() {
                           setBlockOpen(true);
                         }}
                         className="hover-lift-sm press-scale"
-                        style={{ minHeight: 76, border: "1px solid var(--border,#E3E9E6)", borderRadius: 12, background: "var(--canvas,#F7F9F8)", padding: "9px 10px", cursor: "pointer", textAlign: "left", display: "flex", flexDirection: "column", gap: 4, ...taggedCardStyle(cellIdx) }}
+                        style={{ minHeight: 76, border: "1px solid var(--border,#E3E9E6)", borderRadius: 12, background: "var(--canvas,#F7F9F8)", padding: "9px 10px", cursor: "pointer", textAlign: "left", display: "flex", flexDirection: "column", gap: 4 }}
                       >
                         <span style={{ margin: "auto", font: "500 11.5px/1 Figtree, sans-serif", color: "var(--ink-dim,#A8B5B0)" }}>Free</span>
                       </button>
@@ -97,7 +95,7 @@ export function AmenitiesPage() {
                       type="button"
                       onClick={() => setActiveBookingId(bk.id)}
                       className="hover-lift-sm press-scale"
-                      style={{ minHeight: 76, border: `1px solid ${pending ? "var(--warn-border,#F5DFBE)" : "var(--accent-200,#C9E4DC)"}`, borderRadius: 12, background: pending ? "var(--warn-wash,#FDF3E7)" : "var(--accent-wash,#E6F2EF)", padding: "9px 10px", cursor: "pointer", textAlign: "left", display: "flex", flexDirection: "column", gap: 4, ...taggedCardStyle(cellIdx) }}
+                      style={{ minHeight: 76, border: `1px solid ${pending ? "var(--warn-border,#F5DFBE)" : "var(--accent-200,#C9E4DC)"}`, borderRadius: 12, background: pending ? "var(--warn-wash,#FDF3E7)" : "var(--accent-wash,#E6F2EF)", padding: "9px 10px", cursor: "pointer", textAlign: "left", display: "flex", flexDirection: "column", gap: 4 }}
                     >
                       <span style={{ font: "600 12px/1.3 Figtree, sans-serif", color: "var(--ink,#0F1A17)" }}>{bk.amenity}</span>
                       <span style={{ font: "400 11px/1.3 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>{bk.unit}</span>

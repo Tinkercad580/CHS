@@ -71,3 +71,37 @@ a { color: var(--accent, #0E6B5C); text-decoration: none; }
 button, input, textarea, select, table, tr, td, th {
   transition: background-color 280ms var(--ease, cubic-bezier(.2,.7,.3,1)), border-color 280ms var(--ease, cubic-bezier(.2,.7,.3,1)), color 280ms var(--ease, cubic-bezier(.2,.7,.3,1));
 }
+
+/* Loading placeholders (README "Loading"). These appear only while a request is
+   actually in flight — see lib/loadState.ts. Nothing here is driven by a timer,
+   so on a screen whose data is already in memory they never render at all.
+
+   The sheen is deliberately restrained: 55% white in light, 5% in dark, on a
+   flat --subtle bar. It should read as "working", not as an effect. A 1.4s
+   sweep is slow enough to look considered rather than urgent. Reduced motion is
+   already neutralised globally in tokens.css, which leaves the bar flat and
+   still legible as a placeholder. */
+@keyframes skeletonSheen { from { transform: translate3d(-100%, 0, 0); } to { transform: translate3d(100%, 0, 0); } }
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--subtle, #EDF1EF);
+  border-radius: 6px;
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, var(--skeleton-sheen, rgba(255,255,255,.55)) 50%, transparent 100%);
+  animation: skeletonSheen 1.4s linear infinite;
+}
+
+/* The button spinner. Sized and coloured by the caller so it inherits the
+   button's own ink rather than carrying a palette of its own. */
+.spinner {
+  display: inline-block;
+  border: 2px solid;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  flex: none;
+}

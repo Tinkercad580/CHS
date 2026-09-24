@@ -7,7 +7,6 @@ import { SOCIETIES } from "../mock/societies";
 import { NOTIFS } from "../mock/dashboard";
 import { Toaster } from "../components/Toaster";
 import { ModalShell } from "../components/ModalShell";
-import { listRowStyle } from "../lib/motion";
 
 const BREAKPOINT = 1100;
 
@@ -292,7 +291,6 @@ function SocietyModal({ onClose }: { onClose: () => void }) {
                 display: "flex",
                 alignItems: "center",
                 gap: 13,
-                ...listRowStyle(i),
               }}
             >
               <span style={{ width: 38, height: 38, flex: "none", borderRadius: 11, background: current ? "var(--accent,#0E6B5C)" : "var(--subtle,#EDF1EF)", display: "flex", alignItems: "center", justifyContent: "center", font: "700 12px/1 Figtree, sans-serif", color: current ? "#ffffff" : "var(--ink-soft,#4A5B56)" }}>{soc.mark}</span>
@@ -330,7 +328,7 @@ function NotifDrawer({ onClose }: { onClose: () => void }) {
         </div>
         <div style={{ flex: 1, overflowY: "auto", padding: "8px 0" }}>
           {NOTIFS.map((n, i) => (
-            <div key={i} className="row-hover" style={{ padding: "14px 22px", borderBottom: "1px solid var(--border-soft,#F5F7F6)", display: "flex", gap: 12, cursor: "pointer", ...listRowStyle(i) }}>
+            <div key={i} className="row-hover" style={{ padding: "14px 22px", borderBottom: "1px solid var(--border-soft,#F5F7F6)", display: "flex", gap: 12, cursor: "pointer" }}>
               <span style={{ width: 8, height: 8, borderRadius: "50%", flex: "none", marginTop: 6, background: n.dot }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ font: "600 13.5px/1.4 Figtree, sans-serif" }}>{n.t}</div>

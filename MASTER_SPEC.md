@@ -855,6 +855,7 @@ Suggested team: 2 backend, 1 web frontend, 1–2 React Native, 1 QA, part-time C
 - **Feature flags** — per society and per plan
 - **Localisation** — every user-facing string and PDF template in EN and MR
 - **Empty states and inline hints** on every screen; the admin is a volunteer, not a trained operator
+- **Loading** — a skeleton describes a real wait and never creates one. Screens carry `LoadState<T>` (`ready` / `loading` / `error`); nothing holds content behind a timer, and `error` always offers a retry. Skeleton for content areas, spinner inside the button for an action, nothing at all for data already in memory. Per-item entrance stagger is not used in the admin web. See `docs/LOADING_AND_MOTION.md`
 - **Offline tolerance** — gate app fully offline; user app caches dues, notices and passes read-only
 
 ## E2. Database conventions

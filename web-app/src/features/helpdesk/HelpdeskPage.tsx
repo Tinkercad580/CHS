@@ -4,7 +4,6 @@ import { PANELS } from "../../mock/panels";
 import { PanelModal } from "../../components/PanelModal";
 import { ModalShell, ModalHeader, ModalFooter, GhostButton, PrimaryButton } from "../../components/ModalShell";
 import { useAdminStore } from "../../store/AdminStore";
-import { taggedCardStyle } from "../../lib/motion";
 
 /**
  * Helpdesk kanban — one of the three screens the README places outside the
@@ -39,11 +38,11 @@ export function HelpdeskPage() {
               <span style={{ padding: "1px 8px", borderRadius: 999, background: "var(--surface,#fff)", font: "700 11px/1.7 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>{col.count}</span>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-              {col.cards.map((c, i) => (
+              {col.cards.map((c) => (
                 <div
                   key={c.id}
                   className="hover-lift theme-transition"
-                  style={{ background: "var(--surface,#fff)", border: "1px solid var(--border,#E3E9E6)", borderRadius: 11, padding: 13, cursor: "pointer", ...taggedCardStyle(i) }}
+                  style={{ background: "var(--surface,#fff)", border: "1px solid var(--border,#E3E9E6)", borderRadius: 11, padding: 13, cursor: "pointer" }}
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 7 }}>
                     <span style={{ font: "500 10.5px/1.4 'IBM Plex Mono',monospace", color: "var(--ink-soft,#5A6B66)" }}>{c.id}</span>

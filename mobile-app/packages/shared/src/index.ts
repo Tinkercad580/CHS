@@ -27,3 +27,4 @@ export * from "./i18n/numerals";
 export * from "./i18n/copy";
 export * from "./i18n/content";
 export * from "./utils/currency";
+export * from "./utils/loadState";

@@ -10,7 +10,6 @@ import { QuickModal } from "../../components/QuickModal";
 import type { EditTarget } from "../../lib/formLogic";
 import type { QuickSpec, RecordActionKind } from "../../lib/types";
 import { LIST_COLS, QUICK_BLURB, QUICK_PH, QUICK_SEED } from "../../mock/record";
-import { listRowStyle, taggedCardStyle } from "../../lib/motion";
 
 const actionColors: Record<RecordActionKind, { bg: string; fg: string; bd: string }> = {
   primary: { bg: "var(--accent,#0E6B5C)", fg: "#ffffff", bd: "0" },
@@ -271,8 +270,8 @@ export function RecordPage() {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(208px,1fr))", gap: 1, background: "var(--border,#E3E9E6)", border: "1px solid var(--border,#E3E9E6)", borderRadius: 14, overflow: "hidden" }}>
-        {rec.tiles.map((t, i) => (
-          <div key={t.label} className="theme-transition" style={{ background: "var(--surface,#fff)", padding: "18px 20px 17px", ...taggedCardStyle(i) }}>
+        {rec.tiles.map((t) => (
+          <div key={t.label} className="theme-transition" style={{ background: "var(--surface,#fff)", padding: "18px 20px 17px" }}>
             <div style={{ display: "flex", alignItems: "flex-start", gap: 7, marginBottom: 13, minHeight: 26 }}>
               <span style={{ width: 5, height: 5, borderRadius: "50%", background: t.accent, flex: "none", marginTop: 4 }} />
               <span style={{ font: "600 10.5px/1.25 Figtree, sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: "var(--ink-muted,#8A9995)" }}>{t.label}</span>
@@ -361,7 +360,7 @@ function SectionCard({ s, onAdd }: { s: ReturnType<typeof deriveRecord>["left"][
       {s.type === "people" && (
         <div>
           {s.rows.map((x, i) => (
-            <div key={i} className="row-hover" style={{ padding: "13px 18px", borderBottom: "1px solid var(--border-soft,#F1F4F3)", display: "flex", alignItems: "center", gap: 13, ...listRowStyle(i) }}>
+            <div key={i} className="row-hover" style={{ padding: "13px 18px", borderBottom: "1px solid var(--border-soft,#F1F4F3)", display: "flex", alignItems: "center", gap: 13 }}>
               <span style={{ width: 34, height: 34, flex: "none", borderRadius: "50%", background: "var(--subtle,#EDF1EF)", display: "flex", alignItems: "center", justifyContent: "center", font: "600 12px/1 Figtree, sans-serif", color: "var(--ink-soft,#4A5B56)" }}>{x.mark}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ font: "600 13.5px/1.35 Figtree, sans-serif", marginBottom: 2 }}>{x.a}</div>
@@ -376,7 +375,7 @@ function SectionCard({ s, onAdd }: { s: ReturnType<typeof deriveRecord>["left"][
       {s.type === "grid" && (
         <div style={{ padding: 18, display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: "18px 16px" }}>
           {s.rows.map((x, i) => (
-            <div key={i} style={{ minWidth: 0, ...listRowStyle(i) }}>
+            <div key={i} style={{ minWidth: 0 }}>
               <div style={{ font: "600 10.5px/1 Figtree, sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: "var(--ink-muted,#8A9995)", marginBottom: 7 }}>{x.a}</div>
               <div style={{ font: "600 13.5px/1.4 Figtree, sans-serif" }}>{x.b}</div>
             </div>
@@ -388,7 +387,7 @@ function SectionCard({ s, onAdd }: { s: ReturnType<typeof deriveRecord>["left"][
         <div>
           {s.rows.length === 0 && <div style={{ padding: "18px 18px", font: "400 12.5px/1.5 Figtree, sans-serif", color: "var(--ink-muted,#8A9995)" }}>Nothing here yet.</div>}
           {s.rows.map((x, i) => (
-            <div key={i} className="row-hover" style={{ padding: "13px 18px", borderBottom: "1px solid var(--border-soft,#F1F4F3)", display: "flex", alignItems: "center", gap: 12, ...listRowStyle(i) }}>
+            <div key={i} className="row-hover" style={{ padding: "13px 18px", borderBottom: "1px solid var(--border-soft,#F1F4F3)", display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ font: "600 13px/1.35 Figtree, sans-serif", marginBottom: 2 }}>{x.a}</div>
                 <div style={{ font: "400 12px/1.4 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>{x.b}</div>
@@ -402,7 +401,7 @@ function SectionCard({ s, onAdd }: { s: ReturnType<typeof deriveRecord>["left"][
       {s.type === "trail" && (
         <div style={{ padding: "16px 18px" }}>
           {s.rows.map((x, i) => (
-            <div key={i} style={{ display: "flex", gap: 12, ...listRowStyle(i) }}>
+            <div key={i} style={{ display: "flex", gap: 12 }}>
               <div style={{ flex: "none", display: "flex", flexDirection: "column", alignItems: "center", width: 10 }}>
                 <span style={{ width: 9, height: 9, borderRadius: "50%", background: i === 0 ? "var(--accent,#0E6B5C)" : "var(--border-strong,#CCD6D2)", flex: "none", marginTop: 4 }} />
                 <span style={{ flex: 1, width: 1.5, background: "var(--border,#E3E9E6)", minHeight: 12 }} />

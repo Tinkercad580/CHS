@@ -1,47 +1,32 @@
 import type { CSSProperties } from "react";
 
 /**
- * Stagger timings for the "cardIn" tier of the motion system (see
- * project/design_handoff_sahaj/README.md, "Motion" — the stagger-timing
- * table). Each repeating unit — a table row, a kanban card, a calendar
- * cell, a stat tile — gets a delay computed from its own index and passed
- * as an inline `animationDelay`, never selected on an inline style string.
+ * Admin-web motion.
  *
- * `animation-fill-mode: both` is baked into every animation shorthand
- * below so an item stays invisible through its delay rather than flashing
- * in at 0, matching the README's reduced-motion note.
+ * The per-item stagger that used to live here is gone. It applied a `cardIn`
+ * keyframe with a delay computed from each item's index — up to .78s for list
+ * rows and .9s for screen blocks — so the further down the page something was,
+ * the longer it withheld itself. Admin Web.dc.html does not do this: across the
+ * design's tables there is not one animated row, `cardIn` never appears, and the
+ * only `animation-delay` in the file is the reduced-motion reset. It was also
+ * the wrong idea for the surface, since a staggered reveal is a first-run
+ * flourish and this is a screen the committee opens every day.
+ *
+ * What the design does use on entry is a single short fade, which is what is
+ * left: `fadeUp .26s` for a screen block, applied once to the block rather than
+ * to each of its children.
  */
 
-const EASE_OUT = "cubic-bezier(.22,1,.36,1)";
+const EASE = "cubic-bezier(.2,.7,.3,1)";
 
-/** List rows inside a screen block (table rows, notification lists). */
-export function listRowDelay(i: number): number {
-  return Math.min(0.78, 0.14 + i * 0.065);
-}
-export function listRowStyle(i: number): CSSProperties {
-  return { animation: `cardIn .46s ${EASE_OUT} both`, animationDelay: `${listRowDelay(i)}s` };
-}
-
-/** Tagged/repeating cards (kanban cards, calendar cells, stat tiles). */
-export function taggedCardDelay(i: number): number {
-  return Math.min(0.78, 0.1 + i * 0.085);
-}
-export function taggedCardStyle(i: number): CSSProperties {
-  return { animation: `cardIn .56s ${EASE_OUT} both`, animationDelay: `${taggedCardDelay(i)}s` };
-}
-
-/** Settings/preference rows — uncapped per the README's table. */
-export function prefRowDelay(i: number): number {
-  return 0.38 + i * 0.07;
-}
-export function prefRowStyle(i: number): CSSProperties {
-  return { animation: `cardIn .56s ${EASE_OUT} both`, animationDelay: `${prefRowDelay(i)}s` };
-}
-
-/** Screen content blocks — capped at .9s. */
-export function blockDelay(i: number): number {
-  return Math.min(0.9, i * 0.075);
-}
-export function blockStyle(i: number): CSSProperties {
-  return { animation: `cardIn .5s ${EASE_OUT} both`, animationDelay: `${blockDelay(i)}s` };
+/**
+ * One fade for a whole screen block, matching the design's
+ * `animation:fadeUp .26s cubic-bezier(.2,.7,.3,1)`.
+ *
+ * It takes no index: every block on a screen fades together. The old version
+ * took one and multiplied it into a delay, which is precisely the effect being
+ * removed.
+ */
+export function blockStyle(): CSSProperties {
+  return { animation: `fadeUp .26s ${EASE} both` };
 }

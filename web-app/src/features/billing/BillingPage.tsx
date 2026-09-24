@@ -4,7 +4,6 @@ import { PANELS } from "../../mock/panels";
 import { PanelModal } from "../../components/PanelModal";
 import { ModalShell, GhostButton, PrimaryButton } from "../../components/ModalShell";
 import { useAdminStore } from "../../store/AdminStore";
-import { listRowStyle, taggedCardStyle } from "../../lib/motion";
 
 const card: CSSProperties = { background: "var(--surface,#fff)", border: "1px solid var(--border,#E3E9E6)", borderRadius: 15 };
 
@@ -77,8 +76,8 @@ export function BillingPage() {
             <span style={{ font: "600 15px/1.3 Figtree, sans-serif" }}>Head-wise totals</span>
             <span style={{ font: "400 12.5px/1.3 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>Apportionment basis</span>
           </div>
-          {CHARGE_HEADS.map((h, i) => (
-            <div key={h.name} className="row-hover" style={{ padding: "12px 20px", borderBottom: "1px solid var(--border-soft,#F1F4F3)", display: "flex", gap: 14, alignItems: "center", ...listRowStyle(i) }}>
+          {CHARGE_HEADS.map((h) => (
+            <div key={h.name} className="row-hover" style={{ padding: "12px 20px", borderBottom: "1px solid var(--border-soft,#F1F4F3)", display: "flex", gap: 14, alignItems: "center" }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ font: "600 13.5px/1.4 Figtree, sans-serif" }}>{h.name}</div>
                 <div style={{ marginTop: 2, font: "500 11px/1.4 'IBM Plex Mono',monospace", color: "var(--ink-soft,#5A6B66)" }}>{h.method}</div>
@@ -99,8 +98,8 @@ export function BillingPage() {
           <div style={{ ...card, padding: 20 }}>
             <div style={{ font: "600 15px/1.3 Figtree, sans-serif", marginBottom: 14 }}>Variance vs September</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
-              {WING_VARIANCE.map((w, i) => (
-                <div key={w.wing} style={{ display: "flex", alignItems: "center", gap: 12, ...listRowStyle(i) }}>
+              {WING_VARIANCE.map((w) => (
+                <div key={w.wing} style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <span style={{ width: 110, flex: "none", font: "500 13px/1.3 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>{w.wing}</span>
                   <div style={{ flex: 1, height: 7, borderRadius: 4, background: "var(--subtle,#EDF1EF)", overflow: "hidden" }}>
                     <div style={{ height: "100%", width: `${w.pct}%`, background: w.color, transformOrigin: "left", animation: "grow .6s cubic-bezier(.2,.7,.3,1)" }} />
@@ -126,8 +125,8 @@ export function BillingPage() {
               <span style={{ padding: "2px 8px", borderRadius: 999, background: "var(--bad-wash,#FCEDEC)", color: "var(--bad-ink,#9B2B22)", font: "700 11px/1.6 Figtree, sans-serif" }}>{BILLING_EXCEPTIONS.length}</span>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {BILLING_EXCEPTIONS.map((ex, i) => (
-                <div key={ex.title} className="hover-lift-sm" style={{ padding: "12px 13px", border: "1px solid var(--warn-border,#F5DFBE)", background: "var(--warn-wash,#FDF9F3)", borderRadius: 11, ...taggedCardStyle(i) }}>
+              {BILLING_EXCEPTIONS.map((ex) => (
+                <div key={ex.title} className="hover-lift-sm" style={{ padding: "12px 13px", border: "1px solid var(--warn-border,#F5DFBE)", background: "var(--warn-wash,#FDF9F3)", borderRadius: 11 }}>
                   <div style={{ font: "600 13px/1.4 Figtree, sans-serif", color: "var(--warn-ink,#7C3D06)" }}>{ex.title}</div>
                   <div style={{ marginTop: 3, font: "400 12.5px/1.5 Figtree, sans-serif", color: "var(--warn-ink,#8F4A0A)" }}>{ex.body}</div>
                 </div>
