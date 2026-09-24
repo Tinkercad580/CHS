@@ -11,10 +11,14 @@ const SLICE_COUNT = 14;
 const SLICE_OPACITIES = Array.from({ length: SLICE_COUNT }, (_, i) => Math.sin((i / (SLICE_COUNT - 1)) * Math.PI) * 0.4);
 
 /**
- * The 520ms dues-filter loading placeholder (README's "skeleton shimmer" — `shimmer`:
- * `background-position -260px→260px`, a moving highlight sweep, not a bare opacity
- * pulse). Built from plain Views translating across the skeleton's own measured width,
- * looping while `duesLoading` is true.
+ * Loading placeholder — a moving highlight sweep (README's `shimmer`:
+ * `background-position -260px→260px`), built from plain Views translating across
+ * the skeleton's own measured width, not a bare opacity pulse.
+ *
+ * Nothing renders this today. It used to sit behind the dues filter on a 520ms
+ * timer, which put a placeholder in front of bills the app already had in
+ * memory. It is kept for the case it is actually for: a real wait on data coming
+ * from the API. See docs/LOADING_AND_MOTION.md.
  */
 export function Skeleton({ height = 82, radius = 15 }: { height?: number; radius?: number }) {
   const { colors } = useTheme();

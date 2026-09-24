@@ -9,7 +9,6 @@ import { ScreenScroll } from "../../components/ScreenScroll";
 import { TitleHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
 import { FilterPill } from "../../components/FilterPill";
-import { Skeleton } from "../../components/Skeleton";
 import { EmptyState } from "../../components/EmptyState";
 import { iconPaths } from "../../components/iconPaths";
 import { BillCard } from "./BillCard";
@@ -39,13 +38,7 @@ export function DuesScreen() {
           <FilterPill label={t("filterPaid")} active={state.dueFilter === "paid"} onPress={() => actions.setDueFilter("paid")} />
         </RevealItem>
 
-        {state.duesLoading ? (
-          <View style={{ gap: 11 }}>
-            <Skeleton />
-            <Skeleton />
-            <Skeleton />
-          </View>
-        ) : bills.length === 0 ? (
+        {bills.length === 0 ? (
           <EmptyState iconPath={iconPaths.check} title={t("nothingOutstanding")} body={t("nothingOutstandingSub")} dashed />
         ) : (
           <View style={{ gap: 11 }}>

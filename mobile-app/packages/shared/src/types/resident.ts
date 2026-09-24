@@ -68,7 +68,6 @@ export interface ResidentState {
   bills: Bill[];
   activeBillId: string | null;
   dueFilter: "all" | "unpaid" | "paid";
-  duesLoading: boolean;
   lastPaidBillId: string | null;
 
   notices: Notice[];

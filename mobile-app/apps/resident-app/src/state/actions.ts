@@ -23,12 +23,28 @@ function fourDigitCode(): string {
  * form, and every timer this hook starts (toasts, the QR countdown, the SOS
  * hold) is torn down by `clearAllTimers`.
  */
+/**
+ * Stands in for the API round-trip an action will make once there is a backend.
+ *
+ * It resolves on the next tick, so nothing invents a wait: today creating a pass
+ * or filing a ticket completes immediately, and the button's "Creating pass…"
+ * state simply passes through too fast to see. That is the correct behaviour for
+ * data that never leaves the device.
+ *
+ * The seam is kept so the spinner wiring already exists: when the call becomes
+ * real, this is the one place it is awaited, and the button shows the wait the
+ * network actually costs. Previously both callers hardcoded their own delay —
+ * 620ms and 680ms — which made a local action feel like a slow request.
+ */
+function whenRequestSettles(run: () => void): void {
+  setTimeout(run, 0);
+}
+
 export function useResidentActions(dispatch: Dispatch, getState: GetState) {
   const toastTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const qrTick = useRef<ReturnType<typeof setInterval> | null>(null);
   const sosTick = useRef<ReturnType<typeof setInterval> | null>(null);
   const sosStartedAt = useRef<number>(0);
-  const duesShimmer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const note = useCallback(
     (text: string) => {
@@ -56,7 +72,6 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
     toastTimers.current = {};
     if (qrTick.current) clearInterval(qrTick.current);
     if (sosTick.current) clearInterval(sosTick.current);
-    if (duesShimmer.current) clearTimeout(duesShimmer.current);
   }, []);
 
   // ---- Navigation ---------------------------------------------------------
@@ -117,10 +132,12 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
   // ---- Dues / bills ---------------------------------------------------------
   const setDueFilter = useCallback(
     (filter: AppResidentState["dueFilter"]) => {
-      dispatch({ type: "SET", patch: { dueFilter: filter, duesLoading: true } });
+      // Filtering bills already in memory. The list swaps on the next render;
+      // there is nothing to wait for, so nothing is shown waiting. This used to
+      // set duesLoading and clear it on a 520ms timer, which put a skeleton in
+      // front of data the app already had. See docs/LOADING_AND_MOTION.md.
+      dispatch({ type: "SET", patch: { dueFilter: filter } });
       note(`Filtered dues by ${filter}`);
-      if (duesShimmer.current) clearTimeout(duesShimmer.current);
-      duesShimmer.current = setTimeout(() => dispatch({ type: "SET", patch: { duesLoading: false } }), motionDurationsMs.skeletonShimmer);
     },
     [dispatch, note]
   );
@@ -255,7 +272,7 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
       return;
     }
     dispatch({ type: "SET", patch: { creatingPass: true } });
-    setTimeout(() => {
+    whenRequestSettles(() => {
       const code = fourDigitCode();
       const unit = currentUnit(getState()).code;
       const pass: VisitorPass = {
@@ -274,7 +291,7 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
       });
       go("passDone");
       note(`Created pass ${code} for ${pass.name}`);
-    }, motionDurationsMs.createGuestPass);
+    });
   }, [dispatch, getState, go, note]);
 
   const sharePass = useCallback(() => toast("Code sent to your guest over WhatsApp."), [toast]);
@@ -371,7 +388,7 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
       return;
     }
     dispatch({ type: "SET", patch: { submittingTicket: true } });
-    setTimeout(() => {
+    whenRequestSettles(() => {
       const id = "TKT-" + (2292 + s.tickets.length);
       const unit = currentUnit(s).code;
       const ticket: Ticket = {
@@ -393,7 +410,7 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
       go("helpdesk");
       toast(`${id} raised. Expect a reply within 4 hours.`);
       note(`Raised ${id} under ${s.ticketForm.category}`);
-    }, 680);
+    });
   }, [dispatch, getState, go, note, toast]);
 
   const openTicket = useCallback(

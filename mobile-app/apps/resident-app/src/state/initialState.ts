@@ -36,7 +36,6 @@ export function createInitialState(): AppResidentState {
     bills: clone(billsSeed),
     activeBillId: "b1",
     dueFilter: "all",
-    duesLoading: false,
     lastPaidBillId: null,
 
     notices: clone(noticesSeed),
