@@ -49,7 +49,7 @@ export function VehiclesScreen() {
                     </AppText>
                   </View>
                 </View>
-                <Button label="Remove vehicle" kind="danger" onPress={() => actions.removeVehicle(v)} height={40} />
+                <Button label="Remove vehicle" kind="danger" fontSize={12.5} weight={600} onPress={() => actions.removeVehicle(v)} height={40} />
               </View>
             </StaggerItem>
           ))}
@@ -70,7 +70,7 @@ export function VehiclesScreen() {
             <OptionButton label={t("car")} active={state.vehicleTypeInput === "Car"} onPress={() => actions.setVehicleTypeInput("Car")} height={40} />
             <OptionButton label={t("twoWheeler")} active={state.vehicleTypeInput === "Two-wheeler"} onPress={() => actions.setVehicleTypeInput("Two-wheeler")} height={40} />
           </View>
-          <Button label={t("register")} onPress={actions.addVehicle} height={46} />
+          <Button label={t("register")} onPress={actions.addVehicle} height={46} fontSize={14.5} weight={700} />
         </View>
       </ScreenScroll>
     </View>

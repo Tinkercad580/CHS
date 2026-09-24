@@ -25,7 +25,7 @@ export function HelpdeskScreen() {
       <TitleHeader
         title={t("helpdeskTitle")}
         subtitle={t("openOfTotal", { open: openTicketCount(state), total: tickets.length })}
-        right={<Button label={t("raise")} onPress={actions.goNewTicket} height={40} style={{ paddingHorizontal: 15 }} />}
+        right={<Button label={t("raise")} onPress={actions.goNewTicket} height={40} fontSize={13.5} weight={600} style={{ paddingHorizontal: 15 }} />}
       />
       <ScreenScroll>
         <View style={{ gap: 11 }}>

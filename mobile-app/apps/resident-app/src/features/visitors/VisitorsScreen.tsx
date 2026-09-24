@@ -38,7 +38,7 @@ export function VisitorsScreen() {
       <TitleHeader
         title={t("visitorsTitle")}
         subtitle={t("visitorCountLine", { n: passesForUnit.length, expected })}
-        right={<Button label={t("invite")} onPress={actions.goInvite} height={40} style={{ paddingHorizontal: 15 }} />}
+        right={<Button label={t("invite")} onPress={actions.goInvite} height={40} fontSize={13.5} weight={600} style={{ paddingHorizontal: 15 }} />}
       />
       <ScreenScroll>
         {passesForUnit.length === 0 ? (

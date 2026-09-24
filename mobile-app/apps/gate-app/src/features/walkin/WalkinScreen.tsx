@@ -92,7 +92,7 @@ export function WalkinScreen() {
             </GateText>
           </View>
           <View style={{ marginTop: 16 }}>
-            <GateButton label="Cancel the request" variant="outline" height={50} onPress={actions.cancelWalkin} />
+            <GateButton label="Cancel the request" variant="outline" height={50} radius={14} fontSize={14.5} weight={600} onPress={actions.cancelWalkin} />
           </View>
         </StaggerItem>
       ) : null}

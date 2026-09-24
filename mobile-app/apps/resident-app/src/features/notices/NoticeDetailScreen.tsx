@@ -51,6 +51,9 @@ export function NoticeDetailScreen() {
             kind={notice.acked ? "ghost" : "primary"}
             onPress={actions.ackNotice}
             disabled={notice.acked}
+            height={50}
+            fontSize={15}
+            weight={700}
           />
         ) : null}
       </ScreenScroll>

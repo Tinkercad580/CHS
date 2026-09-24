@@ -24,7 +24,7 @@ export function ParcelsScreen() {
       </StaggerItem>
 
       <StaggerItem index={1} tier="screenBlock" style={{ marginBottom: 16 }}>
-        <GateButton label="Log a new parcel" height={52} onPress={actions.openLogParcel} />
+        <GateButton label="Log a new parcel" height={52} radius={15} fontSize={15.5} onPress={actions.openLogParcel} />
       </StaggerItem>
 
       <StaggerItem index={2} tier="screenBlock">

@@ -130,18 +130,18 @@ export function ResultSheet() {
       {view.allow ? (
         <>
           <View style={{ marginBottom: 10 }}>
-            <GateButton label="Allow in" pulsing onPress={() => actions.allowIn(state)} />
+            <GateButton label="Allow in" pulsing height={58} radius={16} fontSize={17} onPress={() => actions.allowIn(state)} />
           </View>
-          <GateButton label="Turn away" variant="dangerOutline" height={50} onPress={() => actions.denyIn(state)} />
+          <GateButton label="Turn away" variant="dangerOutline" height={50} radius={14} fontSize={15} weight={600} onPress={() => actions.denyIn(state)} />
         </>
       ) : null}
 
       {view.retry ? (
         <>
           <View style={{ marginBottom: 10 }}>
-            <GateButton label="Try another code" variant="secondary" height={54} onPress={actions.closeResult} />
+            <GateButton label="Try another code" variant="secondary" height={54} radius={15} fontSize={16} onPress={actions.closeResult} />
           </View>
-          <GateButton label="Call the flat instead" variant="outline" height={50} onPress={actions.callResident} />
+          <GateButton label="Call the flat instead" variant="outline" height={50} radius={14} fontSize={15} weight={600} onPress={actions.callResident} />
         </>
       ) : null}
     </BottomSheet>

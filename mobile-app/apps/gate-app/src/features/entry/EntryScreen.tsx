@@ -70,6 +70,9 @@ export function EntryScreen() {
             label={state.checking ? "Checking…" : "Verify"}
             loading={state.checking}
             variant={canVerify ? "primary" : "disabled"}
+            height={58}
+            radius={16}
+            fontSize={17}
             onPress={() => actions.submitCode(state.code)}
           />
         </View>

@@ -43,7 +43,7 @@ export function EmptyState({
       <AppText variant="bodySmall" color={colors.inkSoft} style={{ textAlign: "center", marginBottom: actionLabel ? 16 : 0 }}>
         {body}
       </AppText>
-      {actionLabel && onAction ? <Button label={actionLabel} onPress={onAction} height={44} style={{ paddingHorizontal: 20, alignSelf: "stretch" }} /> : null}
+      {actionLabel && onAction ? <Button label={actionLabel} onPress={onAction} height={44} fontSize={14} weight={600} style={{ paddingHorizontal: 20, alignSelf: "stretch" }} /> : null}
     </View>
   );
 }

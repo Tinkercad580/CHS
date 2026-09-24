@@ -63,6 +63,8 @@ export function TenantsScreen() {
                           kind="secondary"
                           onPress={actions.startRenewal}
                           height={44}
+                          fontSize={13.5}
+                          weight={600}
                           style={{ marginTop: 13 }}
                         />
                       ) : null}

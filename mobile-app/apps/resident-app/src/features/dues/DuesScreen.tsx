@@ -29,7 +29,7 @@ export function DuesScreen() {
         title={t("duesTitle")}
         subtitle={unit.line}
         right={
-          <Button label={t("statement")} onPress={actions.goStatement} kind="secondary" height={40} style={{ paddingHorizontal: 14 }} />
+          <Button label={t("statement")} onPress={actions.goStatement} kind="secondary" height={40} fontSize={13} weight={600} style={{ paddingHorizontal: 14 }} />
         }
       />
       <ScreenScroll>

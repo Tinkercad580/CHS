@@ -88,7 +88,7 @@ export function HouseholdScreen() {
               <OptionButton key={r.key} label={t(r.labelKey)} active={state.relationInput === r.key} onPress={() => actions.setRelationInput(r.key)} height={40} />
             ))}
           </View>
-          <Button label={t("addToHousehold")} onPress={actions.addHouseholdMember} height={46} />
+          <Button label={t("addToHousehold")} onPress={actions.addHouseholdMember} height={46} fontSize={14.5} weight={700} />
         </View>
       </ScreenScroll>
     </View>

@@ -2,14 +2,14 @@ import React, { useEffect, useRef } from "react";
 import { Pressable, Animated, ActivityIndicator, StyleSheet, type ViewStyle } from "react-native";
 import Reanimated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing, useReducedMotion } from "react-native-reanimated";
 import { GateText } from "./GateText";
-import { colors, radius } from "../theme";
+import { colors } from "../theme";
 
 /**
  * `pulseGo` (README.md's Motion table) — "an expanding box-shadow ring, on the gate's
  * Allow-in button". RN has no animatable box-shadow, so this is a ring that scales up and
  * fades out behind the button, on an infinite loop, in the gate's `go` colour.
  */
-function PulseRing() {
+function PulseRing({ radius: ringRadius }: { radius: number }) {
   const reducedMotion = useReducedMotion();
   const progress = useSharedValue(0);
 
@@ -26,7 +26,7 @@ function PulseRing() {
     transform: [{ scale: 1 + progress.value * 0.32 }],
   }));
 
-  return <Reanimated.View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.ring, ringStyle]} />;
+  return <Reanimated.View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.ring, { borderRadius: ringRadius }, ringStyle]} />;
 }
 
 type Variant = "primary" | "secondary" | "outline" | "dangerOutline" | "disabled";
@@ -40,10 +40,33 @@ interface Props {
   /** The Allow-in / Ask-the-resident CTA pulses gently to draw the thumb — `pulseGo` in the source. */
   pulsing?: boolean;
   height?: number;
+  /**
+   * Type size and corner radius are per call site, not per component. The gate
+   * prototype runs its buttons from 12.5px/r9 (theme toggle, code chips) up to
+   * 17px/r16 (Allow in), and unlike the resident app its radii do not follow a
+   * formula — 38→12, 50→14 and 52→15 all break floor(h/4)+1 — so both are read
+   * off the prototype and passed rather than derived.
+   */
+  fontSize?: number;
+  /** 600 for secondary/compact, 700 for the screen's committing action. */
+  weight?: 600 | 700;
+  radius?: number;
   style?: ViewStyle;
 }
 
-export function GateButton({ label, onPress, variant = "primary", loading = false, disabled = false, pulsing = false, height = 56, style }: Props) {
+export function GateButton({
+  label,
+  onPress,
+  variant = "primary",
+  loading = false,
+  disabled = false,
+  pulsing = false,
+  height = 56,
+  fontSize = 16.5,
+  weight = 700,
+  radius: radiusProp = 15,
+  style,
+}: Props) {
   const scale = useRef(new Animated.Value(1)).current;
   const isDisabled = disabled || loading || variant === "disabled";
 
@@ -71,7 +94,7 @@ export function GateButton({ label, onPress, variant = "primary", loading = fals
 
   return (
     <Animated.View style={{ transform: [{ scale }] }}>
-      {pulsing && !isDisabled ? <PulseRing /> : null}
+      {pulsing && !isDisabled ? <PulseRing radius={radiusProp} /> : null}
       <Pressable
         onPress={isDisabled ? undefined : onPress}
         disabled={isDisabled}
@@ -79,6 +102,7 @@ export function GateButton({ label, onPress, variant = "primary", loading = fals
           styles.base,
           {
             height,
+            borderRadius: radiusProp,
             backgroundColor: palette.bg,
             borderWidth: palette.border ? 1 : 0,
             borderColor: palette.border,
@@ -89,7 +113,13 @@ export function GateButton({ label, onPress, variant = "primary", loading = fals
         ]}
       >
         {loading ? <ActivityIndicator color={palette.fg} /> : null}
-        <GateText variant="screenTitleGate" color={palette.fg} style={styles.label}>
+        {/* Weight comes from the variant: each weight is its own loaded font file, so a
+            fontWeight style on a custom family silently renders the same face. */}
+        <GateText
+          variant={weight === 700 ? "screenTitleGate" : "label"}
+          color={palette.fg}
+          style={{ fontSize, lineHeight: fontSize * 1.2 }}
+        >
           {label}
         </GateText>
       </Pressable>
@@ -99,7 +129,6 @@ export function GateButton({ label, onPress, variant = "primary", loading = fals
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: radius.card + 2,
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "row",
@@ -107,12 +136,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   ring: {
-    borderRadius: radius.card + 2,
     borderWidth: 2,
     borderColor: colors.go,
-  },
-  label: {
-    fontSize: 16.5,
-    lineHeight: 20,
   },
 });

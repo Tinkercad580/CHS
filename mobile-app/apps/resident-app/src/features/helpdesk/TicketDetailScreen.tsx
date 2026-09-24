@@ -66,7 +66,7 @@ export function TicketDetailScreen() {
           ))}
         </View>
 
-        {ticket.status !== "resolved" ? <Button label={t("markResolved")} kind="secondary" onPress={actions.resolveTicket} /> : null}
+        {ticket.status !== "resolved" ? <Button label={t("markResolved")} kind="secondary" height={50} fontSize={15} weight={600} onPress={actions.resolveTicket} /> : null}
       </ScreenScroll>
     </View>
   );

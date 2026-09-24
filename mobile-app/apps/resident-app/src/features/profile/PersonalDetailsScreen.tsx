@@ -42,7 +42,7 @@ export function PersonalDetailsScreen() {
       <ScreenHeader
         title={t("personalTitle")}
         onBack={actions.back}
-        right={<Button label={editing ? t("cancelEdit") : t("edit")} kind="secondary" onPress={actions.toggleEditPersonal} height={36} style={{ paddingHorizontal: 13 }} />}
+        right={<Button label={editing ? t("cancelEdit") : t("edit")} kind="secondary" height={36} fontSize={12.5} weight={600} onPress={actions.toggleEditPersonal} style={{ paddingHorizontal: 13 }} />}
       />
       <ScreenScroll>
         <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 18, backgroundColor: colors.surface, padding: 18, flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 16 }}>

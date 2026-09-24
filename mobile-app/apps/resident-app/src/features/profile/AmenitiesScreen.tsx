@@ -52,7 +52,7 @@ export function AmenitiesScreen() {
                     <AppText variant="bodySmall" color={colors.inkSoft} style={{ marginBottom: 11 }}>
                       {b.day} · {b.charge > 0 ? formatInr(b.charge) : t("free")}
                     </AppText>
-                    <Button label={t("cancelBooking")} kind="secondary" height={40} onPress={() => actions.cancelBooking(b, name)} />
+                    <Button label={t("cancelBooking")} kind="secondary" height={40} fontSize={12.5} weight={600} onPress={() => actions.cancelBooking(b, name)} />
                   </View>
                   </StaggerItem>
                 );

@@ -69,7 +69,7 @@ export function StatementScreen() {
           ))}
         </View>
 
-        <Button label={t("downloadPdf")} kind="secondary" onPress={actions.downloadStatement} />
+        <Button label={t("downloadPdf")} kind="secondary" onPress={actions.downloadStatement} height={50} fontSize={15} weight={600} />
       </ScreenScroll>
     </View>
   );

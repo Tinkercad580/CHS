@@ -44,7 +44,7 @@ export function PaymentSheets() {
           <PayMethodRow icon="phoneApp" title={t("payUsingApp")} sub={t("payUsingAppSub")} onPress={actions.payApp} />
         </View>
         <View style={{ marginTop: 16 }}>
-          <Button label={t("cancel")} kind="ghost" onPress={actions.closeSheet} height={48} />
+          <Button label={t("cancel")} kind="ghost" onPress={actions.closeSheet} height={48} fontSize={14.5} weight={600} />
         </View>
       </BottomSheet>
 
@@ -84,7 +84,7 @@ export function PaymentSheets() {
           ))}
         </View>
         <View style={{ marginTop: 16 }}>
-          <Button label={t("back")} kind="ghost" onPress={actions.closeSheet} height={48} />
+          <Button label={t("back")} kind="ghost" onPress={actions.closeSheet} height={48} fontSize={14.5} weight={600} />
         </View>
       </BottomSheet>
 
@@ -179,12 +179,12 @@ function QrSheetBody() {
               {t("waitingBank")}
             </AppText>
           </View>
-          <Button label={t("iHavePaid")} onPress={actions.simulatePaid} style={{ marginBottom: 10 }} />
+          <Button label={t("iHavePaid")} onPress={actions.simulatePaid} height={50} fontSize={15} weight={700} style={{ marginBottom: 10 }} />
         </>
       ) : (
-        <Button label={t("generateNewCode")} onPress={actions.restartQr} style={{ marginBottom: 10 }} />
+        <Button label={t("generateNewCode")} onPress={actions.restartQr} height={50} fontSize={15} weight={700} style={{ marginBottom: 10 }} />
       )}
-      <Button label={t("cancelPayment")} kind="secondary" onPress={actions.cancelQr} height={48} />
+      <Button label={t("cancelPayment")} kind="secondary" onPress={actions.cancelQr} height={48} fontSize={14.5} weight={600} />
       <AppText variant="meta" color={colors.inkMuted} style={{ textAlign: "center", marginTop: 12 }}>
         {t("cancelNothing")}
       </AppText>
@@ -234,7 +234,7 @@ function SuccessBody() {
           ))}
         </View>
       </View>
-      <Button label={t("downloadReceipt")} kind="secondary" onPress={actions.downloadReceipt} style={{ marginBottom: 11 }} />
+      <Button label={t("downloadReceipt")} kind="secondary" onPress={actions.downloadReceipt} height={50} fontSize={15} weight={600} style={{ marginBottom: 11 }} />
       <Button label={t("done")} onPress={actions.finishPay} />
     </View>
   );

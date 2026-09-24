@@ -39,8 +39,8 @@ export function PassDoneScreen() {
           {code}
         </AppText>
       </View>
-      <Button label={standing ? t("sendPassToThem") : t("shareWithGuest")} onPress={actions.sharePass} style={{ alignSelf: "stretch", marginBottom: 11 }} />
-      <Button label={standing ? t("seeAttendance") : t("backToVisitors")} kind="secondary" onPress={actions.goAfterPassDone} style={{ alignSelf: "stretch" }} />
+      <Button label={standing ? t("sendPassToThem") : t("shareWithGuest")} onPress={actions.sharePass} height={50} fontSize={15} weight={700} style={{ alignSelf: "stretch", marginBottom: 11 }} />
+      <Button label={standing ? t("seeAttendance") : t("backToVisitors")} kind="secondary" height={50} fontSize={15} weight={600} onPress={actions.goAfterPassDone} style={{ alignSelf: "stretch" }} />
     </View>
   );
 }

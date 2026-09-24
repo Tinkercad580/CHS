@@ -38,7 +38,7 @@ export function ParcelCard({ parcel, preference, onCollect }: Props) {
         </View>
         <StatusPill label={pending ? "HELD" : "COLLECTED"} color={pending ? colors.hold : colors.go} />
       </View>
-      {pending ? <GateButton label="Handed to resident" variant="secondary" height={42} onPress={onCollect} /> : null}
+      {pending ? <GateButton label="Handed to resident" variant="secondary" height={42} radius={11} fontSize={13} weight={600} onPress={onCollect} /> : null}
     </GateCard>
   );
 }

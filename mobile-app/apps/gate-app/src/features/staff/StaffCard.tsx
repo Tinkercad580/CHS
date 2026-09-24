@@ -42,7 +42,7 @@ export function StaffCard({ member, inside, sinceLabel, onToggle }: Props) {
       <GateText variant="meta" color={colors.dim} style={{ marginBottom: 11 }}>
         Works at {flats} · {sinceLabel}
       </GateText>
-      <GateButton label={inside ? "Mark out" : "Mark in"} variant={inside ? "secondary" : "primary"} height={44} onPress={onToggle} />
+      <GateButton label={inside ? "Mark out" : "Mark in"} variant={inside ? "secondary" : "primary"} radius={12} fontSize={13.5} height={44} onPress={onToggle} />
     </GateCard>
   );
 }
