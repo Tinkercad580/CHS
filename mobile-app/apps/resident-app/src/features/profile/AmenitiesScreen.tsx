@@ -1,6 +1,6 @@
 import React from "react";
 import { View } from "react-native";
-import { formatInr } from "@sahaj/shared";
+import { formatInr, bookableSlots } from "@sahaj/shared";
 import { useResident } from "../../state/ResidentProvider";
 import { useTheme } from "../../hooks/useTheme";
 import { useT } from "../../hooks/useT";
@@ -14,7 +14,7 @@ import { iconPaths } from "../../components/iconPaths";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
 import { StaggerItem } from "../../components/StaggerItem";
 
-const AMENITY_ICON: Record<string, keyof typeof iconPaths> = { clubhouse: "amenity", gym: "bolt", terrace: "household", court: "vote" };
+const AMENITY_ICON: Record<string, keyof typeof iconPaths> = { clubhouse: "amenity", gym: "amenityGym", terrace: "amenityTerrace", court: "amenityCourt" };
 
 export function AmenitiesScreen() {
   const { state, actions } = useResident();
@@ -50,7 +50,7 @@ export function AmenitiesScreen() {
                       </View>
                     </View>
                     <AppText variant="bodySmall" color={colors.inkSoft} style={{ marginBottom: 11 }}>
-                      {b.day} · {b.charge > 0 ? formatInr(b.charge) : t("free")}
+                      {b.day} · {bookableSlots[b.slot] ?? ""} · {b.charge > 0 ? formatInr(b.charge) : t("free")}
                     </AppText>
                     <Button label={t("cancelBooking")} kind="secondary" height={40} fontSize={12.5} weight={600} onPress={() => actions.cancelBooking(b, name)} />
                   </View>
@@ -76,7 +76,7 @@ export function AmenitiesScreen() {
                     {c(a.id, "name", a.name)}
                   </AppText>
                   <AppText variant="meta" color={colors.inkSoft}>
-                    {c(a.id, "detail", `${a.capacity} capacity · ${a.hours} · ${a.rate > 0 ? formatInr(a.rate) : t("free")}`)}
+                    {c(a.id, "detail", a.detail)}
                   </AppText>
                 </View>
                 <Icon d={iconPaths.chevronRight} size={17} color={colors.inkDim} strokeWidth={2.2} />

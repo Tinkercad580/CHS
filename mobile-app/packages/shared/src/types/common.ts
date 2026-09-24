@@ -127,6 +127,8 @@ export interface Amenity {
   name: string;
   capacity: number;
   hours: string;
+  /** The prototype's own summary line — phrased per amenity, not composed from the fields. */
+  detail: string;
   rate: number;
   deposit: number;
   open: boolean;

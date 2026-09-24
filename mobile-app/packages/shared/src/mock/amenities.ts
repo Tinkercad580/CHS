@@ -2,10 +2,10 @@ import type { Amenity, Booking } from "../types/common";
 import { FOCUS_UNIT_OWNER } from "./society";
 
 export const amenities: Amenity[] = [
-  { id: "clubhouse", name: "Clubhouse hall", capacity: 80, hours: "4 hours", rate: 2000, deposit: 500, open: true },
-  { id: "gym", name: "Gym", capacity: 30, hours: "6am – 10pm", rate: 0, deposit: 0, open: true },
-  { id: "terrace", name: "Terrace garden", capacity: 40, hours: "1 evening", rate: 1200, deposit: 500, open: true },
-  { id: "court", name: "Badminton court", capacity: 4, hours: "1 hour", rate: 150, deposit: 0, open: true },
+  { id: "clubhouse", name: "Clubhouse hall", detail: "Seats 80 · ₹2,000 for 4 hours", capacity: 80, hours: "4 hours", rate: 2000, deposit: 500, open: true },
+  { id: "gym", name: "Gym", detail: "Free for residents · 6am to 10pm", capacity: 30, hours: "6am – 10pm", rate: 0, deposit: 0, open: true },
+  { id: "terrace", name: "Terrace garden", detail: "₹1,200 for an evening", capacity: 40, hours: "1 evening", rate: 1200, deposit: 500, open: true },
+  { id: "court", name: "Badminton court", detail: "₹150 an hour", capacity: 4, hours: "1 hour", rate: 150, deposit: 0, open: true },
 ];
 
 export const bookableDays = ["Sat 20", "Sun 21", "Mon 22", "Tue 23"];
