@@ -1,6 +1,7 @@
 import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { useAdminStore } from "../../store/AdminStore";
 import { MDAYS, STAFF_ROLES } from "../../mock/staff";
+import { useFlashRefresh } from "../../lib/useFlashRefresh";
 import { money } from "../../lib/format";
 import { ModalShell, ModalHeader, ModalFooter, GhostButton, PrimaryButton } from "../../components/ModalShell";
 import { listRowStyle, taggedCardStyle } from "../../lib/motion";
@@ -14,6 +15,7 @@ import { listRowStyle, taggedCardStyle } from "../../lib/motion";
 export function StaffPage() {
   const { state, dispatch, toast } = useAdminStore();
   const [role, setRole] = useState("All");
+  const [refreshing, flashRefresh] = useFlashRefresh();
   const [addOpen, setAddOpen] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -87,7 +89,7 @@ export function StaffPage() {
           {roleChips.map((r) => {
             const activeChip = role === r;
             return (
-              <button key={r} type="button" onClick={() => setRole(r)} className="press-scale" style={{ height: 32, padding: "0 12px", borderRadius: 999, border: `1px solid ${activeChip ? "var(--accent,#0E6B5C)" : "var(--border-strong,#CCD6D2)"}`, background: activeChip ? "var(--accent,#0E6B5C)" : "var(--surface,#fff)", color: activeChip ? "#fff" : "var(--ink,#0F1A17)", font: "600 12.5px/1 Figtree, sans-serif", cursor: "pointer" }}>
+              <button key={r} type="button" onClick={() => { setRole(r); flashRefresh(); }} className="press-scale" style={{ height: 32, padding: "0 12px", borderRadius: 999, border: `1px solid ${activeChip ? "var(--accent,#0E6B5C)" : "var(--border-strong,#CCD6D2)"}`, background: activeChip ? "var(--accent,#0E6B5C)" : "var(--surface,#fff)", color: activeChip ? "#fff" : "var(--ink,#0F1A17)", font: "600 12.5px/1 Figtree, sans-serif", cursor: "pointer" }}>
                 {r}
               </button>
             );
@@ -106,7 +108,26 @@ export function StaffPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((p, ri) => {
+              {refreshing
+                ? Array.from({ length: Math.min(5, rows.length || 5) }, (_, i) => (
+                    <tr key={`sk${i}`} style={{ borderTop: "1px solid var(--border-soft,#F1F4F3)" }}>
+                      <td style={{ padding: "11px 16px", position: "sticky", left: 0, background: "var(--surface,#fff)", zIndex: 1 }}>
+                        <div className="skeleton" style={{ height: 14, width: 150 }} />
+                      </td>
+                      {Array.from({ length: MDAYS }, (_, d) => (
+                        <td key={d} style={{ padding: "11px 0" }}>
+                          <div className="skeleton" style={{ height: 14, width: 14, margin: "0 auto", borderRadius: 4 }} />
+                        </td>
+                      ))}
+                      <td style={{ padding: "11px 16px" }}>
+                        <div className="skeleton" style={{ height: 14, width: 40, marginLeft: "auto" }} />
+                      </td>
+                      <td style={{ padding: "11px 20px 11px 16px" }}>
+                        <div className="skeleton" style={{ height: 14, width: 60, marginLeft: "auto" }} />
+                      </td>
+                    </tr>
+                  ))
+                : rows.map((p, ri) => {
                 const present = p.days.filter((d) => d === 1).length;
                 const payable = Math.round((p.salary / MDAYS) * present);
                 return (

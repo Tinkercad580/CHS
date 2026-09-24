@@ -11,6 +11,7 @@
   --canvas-deep: #EFF3F1;
   --surface-hover: #FAFCFB;
   --subtle: #EDF1EF;
+  --skeleton-sheen: rgba(255, 255, 255, 0.85);
   --border: #E3E9E6;
   --border-soft: #F1F4F3;
   --border-strong: #CCD6D2;
@@ -64,6 +65,7 @@
   --canvas-deep: #090E0D;
   --surface-hover: #1B2422;
   --subtle: #1D2624;
+  --skeleton-sheen: rgba(255, 255, 255, 0.07);
   --border: #2B3532;
   --border-soft: #222B29;
   --border-strong: #3A453F;

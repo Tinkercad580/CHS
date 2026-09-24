@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { PAGES } from "../../mock/pages";
 import { PANELS } from "../../mock/panels";
+import { useFlashRefresh } from "../../lib/useFlashRefresh";
 import { mergedRows } from "../../lib/rows";
 import { rowMatches, rowMatchesChip, sortRows } from "../../lib/format";
 import { useAdminStore } from "../../store/AdminStore";
@@ -30,20 +31,7 @@ export function GenericPage() {
   const [pageNo, setPageNo] = useState<1 | 2>(1);
   const [formOpen, setFormOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const refreshTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-
-  // A search or filter change briefly shows a 520ms skeleton shimmer over
-  // the table before the (already-computed) result settles in — README,
-  // "Loading" ("a 520ms skeleton shimmer (dues filter)").
-  const flashRefresh = () => {
-    setRefreshing(true);
-    if (refreshTimer.current) clearTimeout(refreshTimer.current);
-    refreshTimer.current = setTimeout(() => setRefreshing(false), 520);
-  };
-  useEffect(() => () => {
-    if (refreshTimer.current) clearTimeout(refreshTimer.current);
-  }, []);
+  const [refreshing, flashRefresh] = useFlashRefresh();
 
   const all = useMemo(() => mergedRows(pageKey, state.added, state.edits), [pageKey, state.added, state.edits]);
 

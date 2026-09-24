@@ -44,7 +44,7 @@ button {
 @keyframes riseBar { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 @keyframes pulseRing { 0% { box-shadow: 0 0 0 0 rgba(192,52,43,.4); } 70% { box-shadow: 0 0 0 9px rgba(192,52,43,0); } 100% { box-shadow: 0 0 0 0 rgba(192,52,43,0); } }
 @keyframes spin { to { transform: rotate(360deg); } }
-@keyframes shimmer { 0% { background-position: -420px 0; } 100% { background-position: 420px 0; } }
+@keyframes shimmer { from { transform: translate3d(-100%, 0, 0); } to { transform: translate3d(100%, 0, 0); } }
 /* Repeating list cards — table rows, kanban cards, calendar cells, stat
    tiles. Distinct from fadeUp (screen content blocks): a bigger rise and a
    slight scale, per README "Motion" table. Stagger delay is computed in JS
@@ -65,12 +65,30 @@ a { color: var(--accent, #0E6B5C); text-decoration: none; }
 .press-scale { transition: transform 150ms var(--ease, cubic-bezier(.2,.7,.3,1)); }
 .press-scale:active { transform: scale(.98); }
 
-/* 520ms skeleton shimmer for loading states (README "Loading"). */
+/* 520ms skeleton shimmer for loading states (README "Loading", `shimmer`).
+   A bright band travelling across a flat base, which is what the resident app
+   does (components/Skeleton.tsx translates a white strip over colors.subtle) and
+   what the README's "background-position -260px->260px" describes.
+
+   It previously animated between --subtle (#EDF1EF) and --border-soft (#F1F4F3):
+   two greys about 2% apart, so the sweep was invisible on the admin tables even
+   though it was running. It also played `both` for a single 520ms pass, where the
+   resident app loops the sweep for as long as the placeholder is on screen, so the
+   web version stopped moving almost as soon as it appeared. The band is now its own
+   layer, near-white, and repeats — reduced motion is already neutralised globally
+   by the prefers-reduced-motion rule in tokens.css. */
 .skeleton {
-  background: linear-gradient(90deg, var(--subtle,#EDF1EF) 25%, var(--border-soft,#F1F4F3) 37%, var(--subtle,#EDF1EF) 63%);
-  background-size: 840px 100%;
-  animation: shimmer 520ms ease-out both;
+  position: relative;
+  overflow: hidden;
+  background: var(--subtle, #EDF1EF);
   border-radius: 6px;
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, var(--skeleton-sheen, rgba(255,255,255,.85)) 50%, transparent 100%);
+  animation: shimmer 520ms linear infinite;
 }
 
 /* Broadens the 280ms theme-switch ease (tokens.css .theme-transition) to
