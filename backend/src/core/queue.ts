@@ -1,6 +1,6 @@
 import { Queue, Worker, type ConnectionOptions } from "bullmq";
 import { env } from "../config/env";
-import { runWithContext, systemContext } from "./context";
+import { runAfterCommit, runWithContext, systemContext } from "./context";
 import { events } from "./events";
 import { logger } from "./logger";
 
@@ -54,6 +54,7 @@ async function runHandler(def: JobDef<unknown>, data: unknown, meta: { attempt: 
   const ctx = systemContext(`job:${def.name}:${meta.jobId}`);
   await runWithContext(ctx, () => def.handler(data, meta));
   events.flush(ctx.pendingEvents);
+  runAfterCommit(ctx, (err) => logger.error({ err, job: def.name }, "after-commit task failed"));
 }
 
 async function enqueue(name: string, data: unknown, o: { delayMs?: number; jobId?: string }): Promise<void> {

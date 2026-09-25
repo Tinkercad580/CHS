@@ -13,6 +13,7 @@ import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
 import { RevealItem } from "../../components/RevealItem";
+import { LocalOnlyNote } from "../../components/LocalOnlyNote";
 
 const AMENITY_ICON: Record<string, keyof typeof iconPaths> = { clubhouse: "amenity", gym: "amenityGym", terrace: "amenityTerrace", court: "amenityCourt" };
 
@@ -27,6 +28,7 @@ export function AmenitiesScreen() {
     <View style={{ flex: 1, backgroundColor: colors.canvas }}>
       <TitleHeader onBack={actions.back} title={t("amenitiesTitle")} subtitle={t("amenitySummary", { n: num(myBookings.length), s: myBookings.length === 1 ? "" : "s" })} />
       <ScreenScroll>
+        <LocalOnlyNote>Not connected to the office yet. These bookings are samples or ones kept on this phone, and nothing is charged.</LocalOnlyNote>
         {myBookings.length > 0 ? (
           <>
             <AppText variant="cardTitle" color={colors.inkSoft} style={{ fontSize: 13, marginBottom: 11 }}>

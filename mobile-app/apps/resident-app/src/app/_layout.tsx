@@ -5,7 +5,7 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ResidentProvider } from "../state/ResidentProvider";
 import { useResidentFonts } from "../theme/fonts";
-import { lightColors } from "@sahaj/shared";
+import { useTheme } from "../hooks/useTheme";
 import { ApiProvider } from "@chs/api-client/react";
 import { apiClient, realtime, session } from "../api/client";
 
@@ -27,10 +27,20 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ApiProvider client={apiClient} session={session} realtime={realtime}>
         <ResidentProvider>
-          <StatusBar style="dark" />
-          <View style={{ flex: 1, backgroundColor: lightColors.canvas }}>{fontsLoaded ? <Slot /> : null}</View>
+          <Canvas>{fontsLoaded ? <Slot /> : null}</Canvas>
         </ResidentProvider>
       </ApiProvider>
     </SafeAreaProvider>
+  );
+}
+
+/** The app's backdrop, in the theme this phone remembers (Profile → Dark mode). */
+function Canvas({ children }: { children: React.ReactNode }) {
+  const { colors, dark } = useTheme();
+  return (
+    <>
+      <StatusBar style={dark ? "light" : "dark"} />
+      <View style={{ flex: 1, backgroundColor: colors.canvas }}>{children}</View>
+    </>
   );
 }

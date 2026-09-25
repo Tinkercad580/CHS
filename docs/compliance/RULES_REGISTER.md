@@ -8,8 +8,8 @@ rows it depends on are verified against primary sources and this table says so.
 
 | # | Obligation (plain English) | Rule reference | Config key | Current value | Source | Verified | Code |
 |---|---|---|---|---|---|---|---|
-| 1 | Interest on defaulted dues is simple, ≤ 12% p.a., rate set by the general body | MCS Rules 2026, 106C-12 | `interest_cap_percent` | 12 | MASTER_SPEC B2/B3.1 | ✗ | `society.service.ts` updateBillingConfig |
-| 2 | Non-occupancy charge ≤ 10% of service charges, only when TENANTED | 106C-12 | `non_occupancy_percent`, `non_occupancy_base` | 10, SERVICE_CHARGES | MASTER_SPEC B3.2 | ✗ | occupancy model (billing pending) |
+| 1 | Interest on defaulted dues is simple, ≤ 12% p.a., rate set by the general body | MCS Rules 2026, 106C-12 | `interest_cap_percent` | 12 | MASTER_SPEC B2/B3.1 | ✗ | `society.service.ts` updateBillingConfig; re-checked per run in `billing/engine.ts`; `billing/domain/interest.ts` |
+| 2 | Non-occupancy charge ≤ 10% of service charges, only when TENANTED | 106C-12 | `non_occupancy_percent`, `non_occupancy_base` | 10, SERVICE_CHARGES | MASTER_SPEC B3.2 | ✗ | `billing/domain/apportion.ts`; base must be a SERVICE head (`heads.service.ts`) |
 | 3 | Sinking fund ≥ 0.25% p.a. of construction cost | 106C-12 | `sinking_fund_min_percent` | 0.25 | MASTER_SPEC B2 | ✗ | `core/statutory.ts` (min bound) |
 | 4 | Repair & maintenance fund ≥ 0.75% p.a. of construction cost | 106C-12 | `repair_fund_min_percent` | 0.75 | MASTER_SPEC B2 | ✗ | `core/statutory.ts` |
 | 5 | Education & training fund ≥ ₹10 per member or government rate | 106C-12 | `education_fund_min_amount_paise` | 1000 | MASTER_SPEC B2 | ✗ | — |
@@ -21,6 +21,8 @@ rows it depends on are verified against primary sources and this table says so.
 | 11 | Structural and fire audit periodicity | Bye-laws / Fire Act 2006 — verify | `structural_audit_intervals`, `fire_audit_frequency` | placeholders | — | ✗ | — |
 | 12 | Visitor PII retained ≤ 90 days then anonymised | MASTER_SPEC B3.12, DPDP | `visitor_data_retention_days` | 90 | MASTER_SPEC | ✗ | `society.service.ts` updateSettings |
 | 13 | One primary owner per unit; tenants don't vote | C3 | — | — | MASTER_SPEC C3 | n/a | DB index `memberships_one_primary_per_unit` |
+| 15 | Each charge apportioned only as 106C-12(3) allows (service charges equally per flat, water by inlet, …) | 106C-12(3) | — | — | MASTER_SPEC B2 | ✗ | `schemas.billing.ALLOWED_METHODS`, enforced in `heads.service.ts` and again in `domain/apportion.ts` |
+| 16 | Published bills, receipts and ledger are immutable; corrections by reversal | B3.11 | — | — | MASTER_SPEC | n/a | DB triggers in `*_billing_integrity` migration |
 | 14 | Lift charges follow the building, not the floor | 106C-12 | — | — | MASTER_SPEC B3.3 | ✗ | `units.lift_served` follows `buildings.lift_present` |
 
 ## Needs legal confirmation

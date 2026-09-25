@@ -33,9 +33,10 @@ Screens describe data with `LoadState<T>`:
 The two are duplicated on purpose — web-app is not part of the mobile workspace.
 Change both together.
 
-Today every call site uses `ready(...)`, so the loading and error branches are
-unreachable and the cost at runtime is nothing. The value is that the wiring
-already exists when the API lands.
+API-backed screens get their `LoadState<T>` from `toLoadState(query)`
+(`@chs/api-client/react`): `loading` lasts exactly as long as the request,
+`error` carries the server's message and a retry. Screens still on local
+fixtures wrap their data in `ready(...)` and never show a loading state.
 
 `error` is a first-class branch, not an afterthought. A loading state that cannot
 fail is the usual way this goes wrong: the request errors, nothing resolves, and
@@ -83,8 +84,9 @@ console is opened every day by the same people — the last row of a list used t
 wait 780ms, and screen blocks up to 900ms, for no information gain.
 
 What the admin design does use on entry is a single short fade applied once to a
-whole block: `fadeUp .26s cubic-bezier(.2,.7,.3,1)` — `web-app/src/lib/motion.ts`,
-`blockStyle()`. It takes no index, because every block fades together.
+whole block: `fadeUp .26s cubic-bezier(.2,.7,.3,1)` (the keyframe is in
+`web-app/src/styles/globals.css`; modals and empty states apply it inline). It
+takes no index, because every block fades together.
 
 **The mobile apps keep the fade but not the cascade.** `Resident Prototype.dc.html`
 and `Gate Prototype.dc.html` both specify `cardIn` with per-index delays, and the

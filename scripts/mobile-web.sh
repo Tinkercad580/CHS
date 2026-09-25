@@ -139,9 +139,10 @@ cat <<TXT
      Narrow the browser window to about 400px, or use the device toolbar in
      devtools, or the layout you review is not the layout anyone gets.
 
-     There is no backend. Every screen renders fixtures, so the flows are real
-     and the data is not. Anything that would call an API — sign-in, payment
-     confirmation, a live visitor approval — is a mock and stops at the screen.
+     Needs the API (./scripts/api.sh). Sign-in, dues, payments (test gateway),
+     notices, notifications and household are live; helpdesk, visitors,
+     amenities, parcels and staff still run on fixtures.
+     resident: 9822041155 / Sahaj@2026   gate: 9890012345 / Sahaj@2026
 
      The other app runs at the same time:
        resident  ./scripts/mobile-web.sh resident   :${CHS_RESIDENT_PORT:-8181}

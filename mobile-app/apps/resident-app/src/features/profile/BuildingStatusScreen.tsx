@@ -9,6 +9,7 @@ import { AppText } from "../../components/AppText";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
 import { RevealItem } from "../../components/RevealItem";
+import { LocalOnlyNote } from "../../components/LocalOnlyNote";
 
 const UTILITY_ICON: Record<string, keyof typeof iconPaths> = { u_water: "water", u_liftb: "liftDoors", u_lifta: "liftDoors", u_power: "bolt", u_gen: "gauge" };
 
@@ -22,6 +23,7 @@ export function BuildingStatusScreen() {
     <View style={{ flex: 1, backgroundColor: colors.canvas }}>
       <ScreenHeader title={t("buildingStatusTitle")} onBack={actions.back} />
       <ScreenScroll>
+        <LocalOnlyNote>Sample status. Building status isn't connected to the society yet.</LocalOnlyNote>
         <AppText variant="body" color={colors.inkSoft} style={{ marginBottom: 16 }}>
           {down > 0 ? t("thingsDown", { n: down }) : t("allNormal")}
         </AppText>

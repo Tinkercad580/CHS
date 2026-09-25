@@ -10,6 +10,7 @@ import { AppText } from "../../components/AppText";
 import { Button } from "../../components/Button";
 import { OptionButton } from "../../components/FilterPill";
 import { RevealItem } from "../../components/RevealItem";
+import { LocalOnlyNote } from "../../components/LocalOnlyNote";
 
 export function BookScreen() {
   const { state, actions } = useResident();
@@ -69,10 +70,8 @@ export function BookScreen() {
           })}
         </View>
 
+        <LocalOnlyNote>The booking is saved on this phone only. The office isn't told and nothing is charged.</LocalOnlyNote>
         <Button label={t("confirmBooking")} onPress={actions.confirmBooking} />
-        <AppText variant="meta" color={colors.inkMuted} style={{ textAlign: "center", marginTop: 11 }}>
-          {t("chargeNote")}
-        </AppText>
       </ScreenScroll>
     </View>
   );

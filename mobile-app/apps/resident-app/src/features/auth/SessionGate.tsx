@@ -11,6 +11,8 @@ import { Button } from "../../components/Button";
 import { iconPaths } from "../../components/iconPaths";
 import { ResidentShell } from "../shell/ResidentShell";
 import { deriveIdentity, useResidentAccount } from "../../api/identity";
+import { isLanguage } from "../../state/devicePrefs";
+import { bindPushToSession, signOut } from "../../push/bridge";
 import { SignInFlow } from "./SignInFlow";
 import { AuthField, AuthLead, AuthNote, AuthScreen, AuthTitle, IconTile, NoteBox, splitError } from "./authUi";
 
@@ -24,7 +26,9 @@ import { AuthField, AuthLead, AuthNote, AuthScreen, AuthTitle, IconTile, NoteBox
  *   signedIn       → the resident app
  *
  * Leaving `signedIn` for any reason — sign out, a revoked session, an expired
- * refresh token — drops that account's cached server data and local state.
+ * refresh token — drops that account's cached server data and local state,
+ * and unregisters the phone from push. Arriving at it registers the phone,
+ * without waiting on the answer (push/bridge.ts `bindPushToSession`).
  */
 export function SessionGate() {
   const session = useSession();
@@ -51,6 +55,10 @@ export function SessionGate() {
     started.current = true;
     restore();
   }, [restore]);
+
+  // Subscribed straight to the controller rather than to React state, so no
+  // transition is missed between renders.
+  useEffect(() => bindPushToSession(controller), [controller]);
 
   const status = session.status;
   const previous = useRef(status);
@@ -104,6 +112,11 @@ function SignedInApp() {
     if (derived) actions.adoptIdentity(derived.identity, derived.role);
   }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // The account's language, until one is chosen on this phone (Profile → Language).
+  useEffect(() => {
+    if (isLanguage(me.language)) actions.defaultLanguage(me.language);
+  }, [me.language, actions]);
+
   if (!membership) return <NoResidentHome />;
   if (state.identity?.userId !== me.id) return null;
   return <ResidentShell />;
@@ -127,7 +140,7 @@ function NoResidentHome() {
             radius={13}
             onPress={() => {
               setBusy(true);
-              void controller.logout();
+              void signOut(controller);
             }}
           />
         }

@@ -53,7 +53,20 @@ export async function lookup(mobile: string) {
   return { next: temp ? ("ENTER_PASSWORD" as const) : ("CREATE_PASSWORD" as const) };
 }
 
+/**
+ * The gate app is for guards (MASTER_SPEC A1.2): anyone else is refused there
+ * even with the right password, rather than handed a session the app can't use.
+ */
+async function assertCanUseClient(userId: string, device: DeviceInfo): Promise<void> {
+  if (device.client !== "gate") return;
+  const guard = await prisma.societyUser.count({
+    where: { userId, deletedAt: null, suspendedAt: null, OR: [{ userType: "GUARD" }, { permissions: { has: "gate.operate" } }] },
+  });
+  if (!guard) throw new AppError("SURFACE_NOT_ALLOWED", "This account can't sign in to the gate app. Use the Sahaj resident app instead.");
+}
+
 async function signedIn(userId: string, device: DeviceInfo): Promise<LoginResult> {
+  await assertCanUseClient(userId, device);
   const user = await prisma.user.update({
     where: { id: userId },
     data: { lastLoginAt: new Date(), failedAttempts: 0, lockedUntil: null },
@@ -77,6 +90,7 @@ export async function activate(
   const user = await findUser(input.mobile);
   if (!canSignIn(user)) throw new AppError("MOBILE_NOT_REGISTERED", "Your number is not registered. Please contact your society office.");
   if (user.passwordHash) throw new AppError("PASSWORD_ALREADY_SET", "This number already has a password. Sign in instead.");
+  await assertCanUseClient(user.id, device);
   assertPasswordPolicy(input.password, { mobile: input.mobile });
 
   const hash = await hashPassword(input.password);
@@ -147,6 +161,8 @@ export async function login(input: { mobile: string; password: string }, device:
       await attempt(false);
       throw new AppError("TEMP_PASSWORD_EXPIRED", "This temporary password has expired. Ask your society office for a new one.");
     }
+    // Refuse the wrong app before the single-use password is spent.
+    await assertCanUseClient(user.id, device);
     const consumed = await prisma.tempPassword.updateMany({ where: { id: temp.id, usedAt: null }, data: { usedAt: new Date() } });
     if (consumed.count !== 1) throw INVALID();
     const updated = await prisma.user.update({
@@ -165,6 +181,7 @@ export async function login(input: { mobile: string; password: string }, device:
   }
   await attempt(true);
 
+  await assertCanUseClient(user.id, device);
   if (user.mustChangePassword) return passwordChangeStep(user);
   if (user.totpEnabledAt) {
     const { token, expiresAt } = await signRestrictedToken(user.id, "two_factor", user.tokenVersion, 5 * 60);

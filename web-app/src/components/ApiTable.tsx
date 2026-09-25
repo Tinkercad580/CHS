@@ -62,7 +62,6 @@ export interface Chip {
   onClick: () => void;
 }
 
-
 export function ApiTable<T>({
   searchHint,
   search,
@@ -215,7 +214,8 @@ export function ApiTable<T>({
   );
 }
 
-function PagerButtons({ pager }: { pager: Pager }) {
+/** Prev, the numbered pages already reachable, Next. */
+export function PagerButtons({ pager }: { pager: Pager }) {
   const { pageNo, pageCount, onPage } = pager;
   const canPrev = pageNo > 1;
   const canNext = pageNo < pageCount;

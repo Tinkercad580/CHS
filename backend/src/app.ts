@@ -10,7 +10,12 @@ import { errorHandler, notFoundHandler } from "./core/http/error-handler";
 import { buildOpenApi } from "./core/http/openapi";
 import { logger } from "./core/logger";
 import { authBindings } from "./modules/auth/auth.routes";
+import { billingBindings } from "./modules/billing/billing.routes";
 import { membersBindings } from "./modules/members/members.routes";
+import { noticeBindings } from "./modules/notifications/notices.routes";
+import { notificationBindings } from "./modules/notifications/notifications.routes";
+import { paymentBindings } from "./modules/payments/payments.routes";
+import { reportBindings } from "./modules/reports/reports.routes";
 import { platformBindings } from "./modules/platform/platform.routes";
 import { societyBindings } from "./modules/society/society.routes";
 import { structureBindings } from "./modules/structure/structure.routes";
@@ -52,7 +57,15 @@ export function createApp(): Express {
   );
   app.use(compression());
   // 8 MB: import uploads arrive as base64 JSON (5 MB file ≈ 6.7 MB encoded).
-  app.use(express.json({ limit: "8mb" }));
+  app.use(
+    express.json({
+      limit: "8mb",
+      // Webhook signatures are over the exact bytes received, so keep them.
+      verify: (req, _res, buf) => {
+        if (req.url?.startsWith(`${API_PREFIX}/webhooks/`)) (req as { rawBody?: string }).rawBody = buf.toString("utf8");
+      },
+    }),
+  );
 
   app.get(`${API_PREFIX}/openapi.json`, (_req, res) => void res.json(buildOpenApi()));
   if (!env.isProd) {
@@ -66,7 +79,19 @@ export function createApp(): Express {
 
   app.use(
     API_PREFIX,
-    mountApi([...platformBindings, ...authBindings, ...usersBindings, ...societyBindings, ...structureBindings, ...membersBindings]),
+    mountApi([
+      ...platformBindings,
+      ...authBindings,
+      ...notificationBindings,
+      ...usersBindings,
+      ...societyBindings,
+      ...structureBindings,
+      ...membersBindings,
+      ...noticeBindings,
+      ...billingBindings,
+      ...paymentBindings,
+      ...reportBindings,
+    ]),
   );
   app.use(notFoundHandler);
   app.use(errorHandler);

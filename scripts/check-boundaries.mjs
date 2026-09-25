@@ -29,10 +29,19 @@ function walk(dir) {
   return out;
 }
 
-function check(file, rule, pattern, message) {
+/** Code only: comments and string contents are blanked, so a rule citation like "106C-12" isn't mistaken for a literal. */
+function codeOf(line) {
+  return line
+    .replace(/\/\/.*$/, "")
+    .replace(/^\s*(\/?\*|\*\/).*$/, "")
+    .replace(/"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`/g, '""');
+}
+
+function check(file, rule, pattern, message, { codeOnly = false } = {}) {
   const text = readFileSync(file, "utf8");
   text.split("\n").forEach((line, i) => {
-    if (pattern.test(line) && !line.includes("boundary-ok:")) failures.push(`${relative(root, file)}:${i + 1}  [${rule}] ${message}\n    ${line.trim()}`);
+    const subject = codeOnly ? codeOf(line) : line;
+    if (pattern.test(subject) && !line.includes("boundary-ok:")) failures.push(`${relative(root, file)}:${i + 1}  [${rule}] ${message}\n    ${line.trim()}`);
   });
 }
 
@@ -52,7 +61,7 @@ for (const f of backend) {
     check(f, "4", /\$(queryRawUnsafe|executeRawUnsafe)\(/, "raw SQL belongs in core/");
   }
   if (rel.startsWith("modules/billing/") || rel.startsWith("modules/compliance/")) {
-    check(f, "5", /(?<![\w.])(12|0\.25|0\.75|7500|20_00_000|2000000)(?![\w.])/, "statutory numbers come from statutory_config");
+    check(f, "5", /(?<![\w.])(12|0\.25|0\.75|7500|20_00_000|2000000)(?![\w.])/, "statutory numbers come from statutory_config", { codeOnly: true });
   }
 }
 

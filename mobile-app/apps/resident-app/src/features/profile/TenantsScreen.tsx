@@ -1,11 +1,11 @@
 import React from "react";
 import { View } from "react-native";
-import { formatInr } from "@sahaj/shared";
 import type { Tenancy } from "@chs/contract";
 import { useResident } from "../../state/ResidentProvider";
 import { useTheme } from "../../hooks/useTheme";
 import { useT } from "../../hooks/useT";
 import { landlordUnits, shortDate, useResidentAccount } from "../../api/identity";
+import { formatPaise } from "../../api/billing";
 import { ScreenScroll } from "../../components/ScreenScroll";
 import { ScreenHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
@@ -81,7 +81,7 @@ function AgreementCard({ tenancy, unitLabel, renewed, onRenew }: { tenancy: Tena
   const { colors } = useTheme();
   const { t } = useT();
   const active = tenancy.active;
-  const rent = tenancy.monthlyRentPaise !== null ? `${formatInr(Math.round(tenancy.monthlyRentPaise / 100))} a month` : "Rent not recorded";
+  const rent = tenancy.monthlyRentPaise !== null ? `${formatPaise(tenancy.monthlyRentPaise)} a month` : "Rent not recorded";
   return (
     <View style={{ borderWidth: 1, borderColor: active ? colors.accent200 : colors.border, borderLeftWidth: 3, borderLeftColor: active ? colors.ok : colors.borderStrong, borderRadius: 16, backgroundColor: colors.surface, padding: 16 }}>
       <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 10, marginBottom: 12 }}>
@@ -104,11 +104,11 @@ function AgreementCard({ tenancy, unitLabel, renewed, onRenew }: { tenancy: Tena
         {active ? <DetailRow label={t("expiresLabel")} value={shortDate(tenancy.endDate)} highlight /> : <DetailRow label="Ended" value={shortDate(tenancy.endedOn ?? tenancy.endDate)} />}
         {/* The API records the police intimation reference, not a verified/unverified flag — show what is on file. */}
         <DetailRow label="Police intimation" value={tenancy.policeIntimationRef ?? "Not filed"} good={tenancy.policeIntimationRef !== null} />
-        {tenancy.depositPaise !== null ? <DetailRow label="Deposit" value={formatInr(Math.round(tenancy.depositPaise / 100))} /> : null}
+        {tenancy.depositPaise !== null ? <DetailRow label="Deposit" value={formatPaise(tenancy.depositPaise)} /> : null}
         <DetailRow label="Society bills paid by" value={tenancy.billPayer === "TENANT" ? "Tenant" : "Owner"} />
       </View>
       {active ? (
-        <Button label={renewed ? t("renewalSent") : t("startRenewal")} kind="secondary" onPress={onRenew} height={44} fontSize={13.5} weight={600} style={{ marginTop: 13 }} />
+        <Button label={renewed ? "Renewal noted on this phone" : t("startRenewal")} kind="secondary" onPress={onRenew} height={44} fontSize={13.5} weight={600} style={{ marginTop: 13 }} />
       ) : null}
     </View>
   );

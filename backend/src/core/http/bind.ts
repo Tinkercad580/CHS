@@ -9,7 +9,8 @@ import {
 import { Router, type NextFunction, type Request, type Response } from "express";
 import { z } from "zod";
 import type { Actor, RequestContext, SocietyScope } from "../context";
-import { runWithContext } from "../context";
+import { runAfterCommit, runWithContext } from "../context";
+import { logger } from "../logger";
 import { Prisma, prisma } from "../db";
 import { AppError } from "../errors";
 import { events } from "../events";
@@ -69,6 +70,7 @@ function makeHandler(binding: Binding) {
       society: null,
       permissionUsed: null,
       pendingEvents: [],
+      afterCommit: [],
     };
     try {
       await runWithContext(ctx, async () => {
@@ -142,8 +144,10 @@ function makeHandler(binding: Binding) {
         res.json(payload);
       });
       events.flush(ctx.pendingEvents);
+      runAfterCommit(ctx, (err) => logger.error({ err, endpoint: endpoint.id }, "after-commit task failed"));
     } catch (err) {
       ctx.pendingEvents.length = 0;
+      ctx.afterCommit.length = 0;
       next(err);
     }
   };

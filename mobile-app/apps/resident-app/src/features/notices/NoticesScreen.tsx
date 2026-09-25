@@ -1,58 +1,96 @@
 import React from "react";
 import { View } from "react-native";
+import { toLoadState } from "@chs/api-client/react";
 import { useResident } from "../../state/ResidentProvider";
 import { useTheme } from "../../hooks/useTheme";
 import { useT } from "../../hooks/useT";
-import { unreadNoticeCount } from "../../state/selectors";
+import { timeAgo } from "../../api/billing";
+import { isUnread, noticeBlurb, noticeTag, noticeTagTone, useNoticeFeed, type Notice } from "../../api/notices";
 import { ScreenScroll } from "../../components/ScreenScroll";
 import { TitleHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
 import { StatusPill } from "../../components/StatusPill";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
 import { RevealItem } from "../../components/RevealItem";
+import { Skeleton } from "../../components/Skeleton";
+import { LoadError } from "../../components/LoadError";
+import { EmptyState } from "../../components/EmptyState";
+import { iconPaths } from "../../components/iconPaths";
 
-const TAG_STYLE: Record<string, "bad" | "info" | "subtle"> = { Urgent: "bad", AGM: "info", Facility: "subtle", Billing: "subtle" };
-
+/** Notices sent to this resident (notices.feed) — pinned first, then newest; an unread one keeps the accent border and dot. */
 export function NoticesScreen() {
-  const { state, actions } = useResident();
+  const { actions } = useResident();
   const { colors } = useTheme();
-  const { t, c, num } = useT();
-  const unread = unreadNoticeCount(state);
+  const { t, num } = useT();
+  const feed = toLoadState(useNoticeFeed());
+  const items = feed.status === "ready" ? feed.data.items : [];
+  const unread = items.filter(isUnread).length;
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.canvas }}>
-      <TitleHeader title={t("noticesTitle")} subtitle={t("unreadOf", { n: unread, total: num(state.notices.length) })} />
+      <TitleHeader title={t("noticesTitle")} subtitle={feed.status === "ready" ? t("unreadOf", { n: num(unread), total: num(items.length) }) : " "} />
       <ScreenScroll>
-        <View style={{ gap: 11 }}>
-          {state.notices.map((n, i) => {
-            const kind = TAG_STYLE[n.tag] ?? "subtle";
-            const bg = kind === "bad" ? colors.badWash : kind === "info" ? colors.infoWash : colors.subtle;
-            const fg = kind === "bad" ? colors.badInk : kind === "info" ? colors.infoInk : colors.inkSoft;
-            return (
+        {feed.status === "loading" ? (
+          <View style={{ gap: 11 }}>
+            {[0, 1, 2].map((i) => (
+              <Skeleton key={i} height={112} radius={16} />
+            ))}
+          </View>
+        ) : feed.status === "error" ? (
+          <LoadError title="Couldn't load notices" message={feed.message} onRetry={feed.retry} />
+        ) : items.length === 0 ? (
+          <EmptyState iconPath={iconPaths.notices} title="No notices yet" body="Anything the committee posts will show here." dashed />
+        ) : (
+          <View style={{ gap: 11 }}>
+            {items.map((n) => (
               <RevealItem key={n.id} tier="listRow">
-              <AnimatedPressable
-                onPress={() => actions.openNotice(n.id)}
-                style={{ borderWidth: 1, borderColor: n.unread ? colors.accent200 : colors.border, borderRadius: 16, backgroundColor: colors.surface, padding: 15 }}
-              >
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 7, marginBottom: 7 }}>
-                  <StatusPill label={c(n.id, "tag", n.tag)} bg={bg} fg={fg} />
-                  <AppText variant="meta" color={colors.inkMuted}>
-                    {c(n.id, "when", n.postedAt)}
-                  </AppText>
-                  {n.unread ? <View style={{ marginLeft: "auto", width: 8, height: 8, borderRadius: 4, backgroundColor: colors.accent }} /> : null}
-                </View>
-                <AppText variant="cardTitle" style={{ fontSize: 14.5, marginBottom: 4 }}>
-                  {c(n.id, "title", n.title)}
-                </AppText>
-                <AppText variant="bodySmall" color={colors.inkSoft}>
-                  {c(n.id, "blurb", n.blurb)}
-                </AppText>
-              </AnimatedPressable>
+                <NoticeCard notice={n} onPress={() => actions.openNotice(n.id)} />
               </RevealItem>
-            );
-          })}
-        </View>
+            ))}
+          </View>
+        )}
       </ScreenScroll>
     </View>
+  );
+}
+
+function NoticeCard({ notice, onPress }: { notice: Notice; onPress: () => void }) {
+  const { colors } = useTheme();
+  const tag = noticeTag(notice);
+  const tone = noticeTagTone(tag);
+  const bg = tone === "bad" ? colors.badWash : tone === "info" ? colors.infoWash : colors.subtle;
+  const fg = tone === "bad" ? colors.badInk : tone === "info" ? colors.infoInk : colors.inkSoft;
+  const unread = isUnread(notice);
+  const needsAck = notice.ackRequired && notice.mine !== null && !notice.mine.acknowledged;
+
+  return (
+    <AnimatedPressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${tag}${notice.pinned ? ", pinned" : ""}${unread ? ", unread" : ""}: ${notice.title}`}
+      style={{ borderWidth: 1, borderColor: unread ? colors.accent200 : colors.border, borderRadius: 16, backgroundColor: colors.surface, padding: 15 }}
+    >
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 7, marginBottom: 7 }}>
+        <StatusPill label={tag} bg={bg} fg={fg} />
+        {notice.pinned ? <StatusPill label="Pinned" bg={colors.accentWash} fg={colors.accentInk} /> : null}
+        {notice.publishedAt ? (
+          <AppText variant="meta" color={colors.inkMuted}>
+            {timeAgo(notice.publishedAt)}
+          </AppText>
+        ) : null}
+        {unread ? <View style={{ marginLeft: "auto", width: 8, height: 8, borderRadius: 4, backgroundColor: colors.accent }} /> : null}
+      </View>
+      <AppText variant="cardTitle" style={{ fontSize: 14.5, marginBottom: 4 }}>
+        {notice.title}
+      </AppText>
+      <AppText variant="bodySmall" color={colors.inkSoft}>
+        {noticeBlurb(notice.body)}
+      </AppText>
+      {needsAck ? (
+        <AppText variant="meta" color={colors.warnInk} style={{ marginTop: 8 }}>
+          Needs your acknowledgement
+        </AppText>
+      ) : null}
+    </AnimatedPressable>
   );
 }

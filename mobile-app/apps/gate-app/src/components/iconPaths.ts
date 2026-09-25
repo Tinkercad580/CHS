@@ -18,4 +18,10 @@ export const iconPaths = {
   plate: "M5 16.5V12l1.8-4.2h10.4L19 12v4.5M5 16.5h14M7.5 16.5v1.8M16.5 16.5v1.8",
   handover: "M4 7h16M4 12h16M4 17h9M17 15l3 2-3 2",
   arrowUpRight: "M7 17 17 7M7 7h10v10",
+  // Not in the prototype, which had no sign-in by password, no office notices and no call-the-office step; drawn in the same 24px line style.
+  lock: "M6.5 10.5h11v9h-11zM8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5",
+  eye: "M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.5 6.5-9.5 6.5S2.5 12 2.5 12ZM12 14.8a2.8 2.8 0 1 0 0-5.6 2.8 2.8 0 0 0 0 5.6",
+  eyeOff: "M3.5 3.5 20.5 20.5M10.6 5.6A9.7 9.7 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a16.5 16.5 0 0 1-3 3.8M6.6 6.6C3.9 8.3 2.5 12 2.5 12s3.5 6.5 9.5 6.5a9.2 9.2 0 0 0 4.4-1.1M9.9 10a2.8 2.8 0 0 0 4.1 4",
+  notice: "M6 16.5V11a6 6 0 1 1 12 0v5.5l1.5 2h-15ZM10 21h4",
+  phone: "M5.2 4h3.3l1.7 4.3-2.2 1.4a10.6 10.6 0 0 0 5.3 5.3l1.4-2.2 4.3 1.7v3.3a2 2 0 0 1-2.1 2A15.4 15.4 0 0 1 3.2 6.1 2 2 0 0 1 5.2 4Z",
 } as const;

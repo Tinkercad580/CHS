@@ -36,30 +36,65 @@ export function unitByLabel(home: MyHome, label: string): UnitOverview | undefin
   return home.units.find((u) => u.unit.label === label);
 }
 
+/** How the resident holds the flat they live in, from the membership's user type. */
+export type HomeHolding = "owner" | "coOwner" | "family" | "tenant";
+
+/** Another flat of the resident's: one they are a current owner-member of, let out or not. */
+export interface OtherUnit {
+  label: string;
+  /** It has an active tenancy, so it is someone else's home and the resident is its landlord. */
+  letOut: boolean;
+}
+
 export interface ResidentIdentity {
   userId: string;
   societyId: string;
   societyName: string;
   /** The flat the resident lives in — `/me`'s membership unit. */
   homeUnit: string;
-  /** A flat they own and have let out, which gets its own ledger and tenancy screens. */
-  letOutUnit: string | null;
+  homeHolding: HomeHolding;
+  /** Every other flat of theirs in myHome, in its order. Each gets its own ledger in the unit switcher. */
+  otherUnits: OtherUnit[];
 }
 
+const HOLDING_BY_USER_TYPE: Partial<Record<SocietyMembership["userType"], HomeHolding>> = {
+  OWNER: "owner",
+  CO_OWNER: "coOwner",
+  FAMILY: "family",
+  TENANT: "tenant",
+};
+
 /**
- * Maps the real account onto the app's three viewing roles, which scope the
- * (still local) bills, polls and home cards. Tenant comes from the user type;
- * "owner and landlord" needs myHome to show another flat of theirs with an
- * active tenancy, so an owner starts as plain owner and gains the second
- * ledger when that data arrives.
+ * Maps the real account onto the app's three viewing roles. Tenant comes from
+ * the user type; "owner and landlord" needs myHome to show another flat of
+ * theirs with an active tenancy, so an owner starts as plain owner and gains
+ * the other ledgers when that data arrives. A second flat that isn't let out
+ * (vacant, or lived in by family) is listed too, but doesn't make them a
+ * landlord. A co-owner or family member keeps the owner role, which only
+ * decides what they may do (vote, register household); how they hold the flat
+ * is `homeHolding`, and that is what the app prints.
  */
 export function deriveIdentity(me: Me, membership: SocietyMembership, home: MyHome | undefined): { identity: ResidentIdentity; role: Role } {
-  const homeUnit = membership.unitLabel ?? "";
-  const base = { userId: me.id, societyId: membership.societyId, societyName: membership.societyName, homeUnit };
-  if (membership.userType === "TENANT") return { identity: { ...base, letOutUnit: null }, role: "tenant" };
-  const letOut =
-    home?.units.find((u) => u.unit.id !== membership.unitId && u.activeTenancy !== null && u.currentMembers.some((m) => m.person.userId === me.id)) ?? null;
-  return { identity: { ...base, letOutUnit: letOut?.unit.label ?? null }, role: letOut ? "owner_tenant" : "owner" };
+  const homeHolding = HOLDING_BY_USER_TYPE[membership.userType] ?? "owner";
+  const base = { userId: me.id, societyId: membership.societyId, societyName: membership.societyName, homeUnit: membership.unitLabel ?? "", homeHolding };
+  if (homeHolding === "tenant") return { identity: { ...base, otherUnits: [] }, role: "tenant" };
+  const otherUnits: OtherUnit[] = (home?.units ?? [])
+    .filter((u) => u.unit.id !== membership.unitId && u.currentMembers.some((m) => m.person.userId === me.id))
+    .map((u) => ({ label: u.unit.label, letOut: u.activeTenancy !== null }));
+  return { identity: { ...base, otherUnits }, role: otherUnits.some((u) => u.letOut) ? "owner_tenant" : "owner" };
+}
+
+/** How the flat they live in is held, as the app prints it. */
+export const HOLDING_LABEL: Record<HomeHolding, string> = {
+  owner: "Owner",
+  coOwner: "Co-owner",
+  family: "Family member",
+  tenant: "Tenant",
+};
+
+/** Every flat the resident can view, the one they live in first. */
+export function heldUnits(identity: ResidentIdentity | null): string[] {
+  return identity ? [identity.homeUnit, ...identity.otherUnits.map((u) => u.label)] : [];
 }
 
 /** Units where the resident is an owner-member and a tenancy exists or existed — the "My tenants" screen. */

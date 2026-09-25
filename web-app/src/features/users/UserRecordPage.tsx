@@ -86,9 +86,9 @@ function UserRecordView({ societyId, user, onBack }: { societyId: string; user: 
   const doReactivate = () => reactivate.mutate({ params }, report(`${user.name} reactivated.`));
 
   const actions: RecordAction[] = [];
-  // Someone who has never signed in has no password to reset: sign-in sends
-  // them to create one, and a temporary password would never be asked for.
-  if (!self && !neverSignedIn) actions.push({ label: "Reset password", kind: "primary", onClick: () => setModal("temp") });
+  // An invited user who is given a temporary password is sent to the password
+  // screen at sign-in, so the reset works for them too.
+  if (!self) actions.push({ label: "Reset password", kind: "primary", onClick: () => setModal("temp") });
   if (!self) actions.push({ label: "Change template", kind: "ghost", onClick: () => setModal("template") });
   actions.push({ label: "Edit", kind: "ghost", onClick: () => setModal("edit") });
   if (user.status === "LOCKED") actions.push({ label: "Unlock", kind: "warn", busy: unlock.isPending, busyLabel: "Unlocking…", onClick: doUnlock });

@@ -1,0 +1,143 @@
+// ─── Notifications & notices (MASTER_SPEC C11) ───────────────────────────────
+
+/// A phone that can receive push: one row per FCM token. A token names one
+/// app install; registering it again under another user moves it.
+model DeviceToken {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  token      String   @unique @db.VarChar(4096)
+  app        String   @db.VarChar(20)
+  platform   String   @db.VarChar(20)
+  deviceName String?  @map("device_name") @db.VarChar(100)
+  lastSeenAt DateTime @default(now()) @map("last_seen_at") @db.Timestamptz(3)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([userId])
+  @@map("device_tokens")
+}
+
+enum NotificationCategory {
+  BILLING
+  PAYMENT
+  NOTICE
+  EMERGENCY
+  APPROVAL
+  ACCOUNT
+  REPORT
+  GENERAL
+}
+
+/// The in-app inbox. Every notification lands here whatever else happens to it.
+model Notification {
+  id        String               @id @default(uuid(7)) @db.Uuid
+  societyId String?              @map("society_id") @db.Uuid
+  userId    String               @map("user_id") @db.Uuid
+  category  NotificationCategory
+  title     String               @db.VarChar(160)
+  body      String               @db.VarChar(1000)
+  data      Json                 @default("{}")
+  readAt    DateTime?            @map("read_at") @db.Timestamptz(3)
+  createdAt DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  deliveries NotificationDelivery[]
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([userId, readAt])
+  @@map("notifications")
+}
+
+enum DeliveryChannel {
+  PUSH
+  EMAIL
+}
+
+enum DeliveryStatus {
+  QUEUED
+  SENT
+  FAILED
+  SKIPPED
+}
+
+model NotificationDelivery {
+  id             String          @id @default(uuid(7)) @db.Uuid
+  notificationId String          @map("notification_id") @db.Uuid
+  channel        DeliveryChannel
+  status         DeliveryStatus  @default(QUEUED)
+  target         String?         @db.VarChar(254)
+  providerRef    String?         @map("provider_ref") @db.VarChar(200)
+  error          String?         @db.VarChar(500)
+  attempts       Int             @default(0)
+  sentAt         DateTime?       @map("sent_at") @db.Timestamptz(3)
+  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  notification Notification @relation(fields: [notificationId], references: [id])
+
+  @@index([notificationId])
+  @@index([status, createdAt])
+  @@map("notification_deliveries")
+}
+
+model NotificationPreference {
+  id        String               @id @default(uuid(7)) @db.Uuid
+  userId    String               @map("user_id") @db.Uuid
+  category  NotificationCategory
+  push      Boolean              @default(true)
+  email     Boolean              @default(true)
+  updatedAt DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@unique([userId, category])
+  @@map("notification_preferences")
+}
+
+enum NoticeStatus {
+  DRAFT
+  PUBLISHED
+  SUPERSEDED
+}
+
+/// Published notices are immutable; a correction is a new notice that supersedes it.
+model Notice {
+  id              String       @id @default(uuid(7)) @db.Uuid
+  societyId       String       @map("society_id") @db.Uuid
+  title           String       @db.VarChar(160)
+  body            String
+  category        String       @db.VarChar(30)
+  audience        Json
+  ackRequired     Boolean      @default(false) @map("ack_required")
+  pinned          Boolean      @default(false)
+  channels        String[]
+  status          NoticeStatus @default(DRAFT)
+  emergencyReason String?      @map("emergency_reason") @db.VarChar(300)
+  expiresAt       DateTime?    @map("expires_at") @db.Timestamptz(3)
+  publishedAt     DateTime?    @map("published_at") @db.Timestamptz(3)
+  supersedesId    String?      @map("supersedes_id") @db.Uuid
+  createdById     String       @map("created_by") @db.Uuid
+  publishedById   String?      @map("published_by") @db.Uuid
+  createdAt       DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  recipients NoticeRecipient[]
+
+  @@index([societyId, status, publishedAt(sort: Desc)])
+  @@map("notices")
+}
+
+/// Who a notice was sent to, fixed at publish — the proof of service.
+model NoticeRecipient {
+  id             String    @id @default(uuid(7)) @db.Uuid
+  noticeId       String    @map("notice_id") @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  unitLabel      String?   @map("unit_label") @db.VarChar(40)
+  notificationId String?   @map("notification_id") @db.Uuid
+  readAt         DateTime? @map("read_at") @db.Timestamptz(3)
+  acknowledgedAt DateTime? @map("acknowledged_at") @db.Timestamptz(3)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  notice Notice @relation(fields: [noticeId], references: [id])
+
+  @@unique([noticeId, userId])
+  @@index([userId])
+  @@map("notice_recipients")
+}

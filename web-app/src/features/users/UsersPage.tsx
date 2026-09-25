@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { keepPreviousData } from "@tanstack/react-query";
-import { toLoadState, useApiQuery } from "@chs/api-client/react";
+import { toLoadState, useApiMutation, useApiQuery } from "@chs/api-client/react";
 import { api, type AccountStatus, type SocietyUser } from "@chs/contract";
 import { holds, useCurrentSociety } from "../../api/society";
 import { ApiTable, LiveStatGrid, PageHeader, type LiveStat } from "../../components/ApiTable";
@@ -14,6 +14,8 @@ import { ready, type LoadState } from "../../lib/loadState";
 import type { PanelSpec } from "../../lib/types";
 import { NoAccess, NoSociety } from "../../components/NoSociety";
 import { AddUserModal } from "./UserModals";
+import { ImportModal } from "../../components/ImportModal";
+import { useAdminStore } from "../../store/AdminStore";
 
 const PAGE_SIZE = 20;
 
@@ -62,6 +64,9 @@ function UsersTable({ societyId }: { societyId: string }) {
   const [sortCol, setSortCol] = useState<number | null>(null);
   const [sortDir, setSortDir] = useState<1 | -1>(1);
   const [adding, setAdding] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const importUsers = useApiMutation(api.users.import);
+  const { toast } = useAdminStore();
   const [templatesOpen, setTemplatesOpen] = useState(false);
 
   const q = useSettled(search.trim());
@@ -130,6 +135,9 @@ function UsersTable({ societyId }: { societyId: string }) {
             <button type="button" onClick={() => setTemplatesOpen(true)} disabled={!panel} className="press-scale focus-ring" style={{ ...secondaryBtnStyle, cursor: panel ? "pointer" : "default" }}>
               Permission templates
             </button>
+            <button type="button" onClick={() => setImporting(true)} className="press-scale focus-ring" style={secondaryBtnStyle}>
+              Import users
+            </button>
             <button type="button" onClick={() => setAdding(true)} className="press-scale focus-ring" style={primaryBtnStyle}>
               Add user
             </button>
@@ -183,6 +191,26 @@ function UsersTable({ societyId }: { societyId: string }) {
         pager={paging.pager(hasNext)}
       />
 
+      {importing && (
+        <ImportModal
+          title="Import users"
+          noun="user"
+          blurb="Add many residents and staff at once from a spreadsheet. Each gets the permission template for their type and sets a password on first sign-in. The file is checked first; nothing is saved until you confirm, and a file with any problem imports nobody."
+          columns={[
+            { name: "name", required: true, hint: "Full name" },
+            { name: "mobile", required: true, hint: "10-digit Indian mobile; each number once per file" },
+            { name: "user_type", required: true, hint: "Owner, co-owner, family, tenant, guard, staff…" },
+            { name: "unit", hint: "Building-Number, for example A-1204" },
+            { name: "email", hint: "Optional" },
+          ]}
+          run={async (body) => {
+            const r = await importUsers.mutateAsync({ params: { societyId }, body });
+            if (!r.dryRun && r.created) toast(`${r.created} user${r.created === 1 ? "" : "s"} imported. Each sets a password on first sign-in.`, "ok");
+            return r;
+          }}
+          onClose={() => setImporting(false)}
+        />
+      )}
       {adding && <AddUserModal societyId={societyId} onClose={() => setAdding(false)} onCreated={(u) => navigate(`/users/record/${u.id}`)} />}
       {templatesOpen && panel && <PanelModal panel={panel} onClose={() => setTemplatesOpen(false)} />}
     </div>

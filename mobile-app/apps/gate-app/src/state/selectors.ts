@@ -1,4 +1,4 @@
-import { visitorPasses, type VisitorPass } from "@sahaj/shared";
+import { guards, visitorPasses, type VisitorPass } from "@sahaj/shared";
 import type { AppGateState } from "./types";
 
 /** Passes still worth showing on Entry's "expected" list — not ones already spent (expired/cancelled). */
@@ -34,4 +34,13 @@ export function filteredStaff(state: AppGateState) {
   if (state.staffFilter === "inside") return state.staff.filter((s) => state.staffInside[s.passNo]);
   if (state.staffFilter === "out") return state.staff.filter((s) => !state.staffInside[s.passNo]);
   return state.staff;
+}
+
+/**
+ * Who this shift is handed to. There is no roster in the API yet (MASTER_SPEC C9),
+ * so it is the first guard in the prototype's fixture who isn't the one on duty.
+ * The handover screen and the handover action both read it from here.
+ */
+export function receivingGuard(state: AppGateState): string {
+  return guards.find((g) => g.name !== state.guardName)?.name ?? guards[0].name;
 }

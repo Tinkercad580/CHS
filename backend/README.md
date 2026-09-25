@@ -22,10 +22,10 @@ src/
     realtime.ts          Socket.io gateway, server-assigned rooms
     queue.ts             BullMQ with an in-process fallback; messaging.ts (outbox)
     money.ts dates.ts numbering.ts statutory.ts tabular.ts crypto.ts
-  modules/               auth · users · society · structure · members · platform
-  jobs/                  tenancy expiry, housekeeping
+  modules/               auth · users · society · structure · members · notifications (inbox, push, email, notices) · billing · payments · reports · platform
+  jobs/                  tenancy expiry, checkout expiry, daily/weekly report emails, housekeeping
 prisma/
-  schema.prisma          Phases 1–3 data model
+  schema/                data model, one file per area (identity, society, members, notifications, billing)
   migrations/            forward-only; *_integrity_constraints holds what Prisma can't express
   seed/                  platform defaults (statutory config) + the demo society
 test/

@@ -1,7 +1,4 @@
 import {
-  bills as billsSeed,
-  notices as noticesSeed,
-  notifications as notifsSeed,
   visitorPasses,
   tickets as ticketsSeed,
   amenities as amenitiesSeed,
@@ -10,8 +7,6 @@ import {
   attendanceSheets as attendanceSheetsSeed,
   utilities as utilitiesSeed,
   polls as pollsSeed,
-  notificationPreferences,
-  personalInfo,
 } from "@sahaj/shared";
 import type { AppResidentState } from "./types";
 
@@ -31,14 +26,10 @@ export function createInitialState(): AppResidentState {
     language: "en",
     dark: false,
 
-    bills: clone(billsSeed),
-    activeBillId: "b1",
+    // Bills, notices and notifications are read from the API; these only say which one is open.
+    activeBillId: null,
     dueFilter: "all",
-    lastPaidBillId: null,
-
-    notices: clone(noticesSeed),
-    activeNoticeId: "n1",
-    notifs: clone(notifsSeed),
+    activeNoticeId: null,
 
     passes: clone(visitorPasses),
     newPassCode: null,
@@ -53,17 +44,16 @@ export function createInitialState(): AppResidentState {
     creatingPass: false,
 
     sheet: null,
+    payTarget: null,
     qrLeftSeconds: 600,
     qrState: "live",
 
-    // Household, vehicles and tenancies are the society's records now — read from
-    // the API's myHome (api/identity.ts), never seeded here.
-    household: [],
-    vehicles: [],
     deliveryPref: "Hand to security",
     editingPersonalDetails: false,
-    me: clone(personalInfo),
-    prefs: clone(notificationPreferences),
+    // Alternate phone and emergency contact have no API field; they start empty
+    // rather than as the fixture's (another resident's) numbers. Email is /me's.
+    me: { email: "", alt: "", emergency: "" },
+    emailPromptDismissed: false,
 
     amenities: clone(amenitiesSeed),
     bookDay: "Sat 20",
@@ -73,8 +63,6 @@ export function createInitialState(): AppResidentState {
 
     votes: {},
     activePollId: "pl1",
-    tenantAgreement: null,
-    tenantAgreements: [],
     renewed: false,
 
     dailyHelp: clone(dailyHelpSeed),
@@ -92,12 +80,6 @@ export function createInitialState(): AppResidentState {
     plateInput: "",
     vehicleTypeInput: "Car",
 
-    sosKind: "Medical",
-    holdingSos: false,
-    sosPct: 0,
-    sosSent: false,
-
     toasts: [],
-    log: [],
   };
 }

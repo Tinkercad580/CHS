@@ -1,6 +1,5 @@
 import React from "react";
 import { View, ScrollView } from "react-native";
-import { guards } from "@sahaj/shared";
 import { GateText } from "../../components/GateText";
 import { GateCard } from "../../components/GateCard";
 import { GateInput } from "../../components/GateInput";
@@ -11,12 +10,20 @@ import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
 import { colors } from "../../theme";
 import { useGate } from "../../state/GateProvider";
-import { insideCount, heldParcelsCount, staffInsideCount } from "../../state/selectors";
-import { SHIFT_LINE } from "../signin/SignInScreen";
+import { insideCount, heldParcelsCount, staffInsideCount, receivingGuard as receivingGuardOf } from "../../state/selectors";
+import { stamp } from "../../utils/time";
 
-export function HandoverScreen() {
+/**
+ * The counts, the note and the receiving guard are still local (no gate module
+ * in the API yet — the name comes from the prototype's roster, via
+ * `receivingGuard`). Nothing is sent anywhere, and the note is cleared when this
+ * guard signs out, so the screen tells them to pass it on in person. Handing
+ * over is where this guard's shift ends, so once it is done the handset offers
+ * the one real step: signing out, so the next guard signs in as themselves.
+ */
+export function HandoverScreen({ onSignOut, signingOut }: { onSignOut: () => void; signingOut: boolean }) {
   const { state, actions } = useGate();
-  const receivingGuard = guards.find((g) => g.name !== state.guardName)?.name ?? guards[0].name;
+  const receivingGuard = receivingGuardOf(state);
 
   const stats = [
     { value: String(state.entries.length), label: "Movements logged", fg: colors.ink },
@@ -30,12 +37,12 @@ export function HandoverScreen() {
       <RevealItem tier="screenBlock">
         <ScreenHeader title="Shift handover" onBack={() => actions.goBack()} />
         <GateText variant="bodySmall" color={colors.soft} style={{ marginBottom: 18 }}>
-          {SHIFT_LINE} · closing at 10:00pm
+          {state.shiftStartedAt ? `On duty since ${stamp(new Date(state.shiftStartedAt))}` : "On duty"} · a summary to pass on to the next guard
         </GateText>
       </RevealItem>
 
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 18 }}>
-        {stats.map((s, i) => (
+        {stats.map((s) => (
           <RevealItem key={s.label} tier="listRow" style={{ flexBasis: "47%", flexGrow: 1 }}>
             <GateCard padding={15}>
               <GateText variant="gateCodeDisplay" color={s.fg} style={{ fontSize: 26, lineHeight: 26, marginBottom: 6, letterSpacing: 0 }}>
@@ -65,32 +72,35 @@ export function HandoverScreen() {
 
       <RevealItem tier="screenBlock">
         {state.handoverDone ? (
-          <View
-            style={{
-              borderWidth: 1,
-              borderColor: "rgba(25,184,136,0.35)",
-              borderRadius: 15,
-              backgroundColor: "rgba(25,184,136,0.1)",
-              padding: 18,
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 13,
-            }}
-          >
-            <View style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: "rgba(25,184,136,0.2)", alignItems: "center", justifyContent: "center" }}>
-              <Icon d={iconPaths.check} color={colors.go} size={19} strokeWidth={2.8} />
+          <View style={{ gap: 12 }}>
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: "rgba(25,184,136,0.35)",
+                borderRadius: 15,
+                backgroundColor: "rgba(25,184,136,0.1)",
+                padding: 18,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 13,
+              }}
+            >
+              <View style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: "rgba(25,184,136,0.2)", alignItems: "center", justifyContent: "center" }}>
+                <Icon d={iconPaths.check} color={colors.go} size={19} strokeWidth={2.8} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <GateText variant="cardTitle" color={colors.go} style={{ fontSize: 14, marginBottom: 2 }}>
+                  Handed to {receivingGuard}
+                </GateText>
+                <GateText variant="meta" color={colors.soft}>
+                  Recorded on this handset only. Nothing was sent, and your note is cleared when you sign out, so tell {receivingGuard} in person.
+                </GateText>
+              </View>
             </View>
-            <View style={{ flex: 1 }}>
-              <GateText variant="cardTitle" color={colors.go} style={{ fontSize: 14, marginBottom: 2 }}>
-                Handed to {receivingGuard}
-              </GateText>
-              <GateText variant="meta" color={colors.soft}>
-                Summary and your note were sent to the security desk.
-              </GateText>
-            </View>
+            <GateButton label={signingOut ? "Signing out…" : "Sign out of the handset"} variant="secondary" loading={signingOut} onPress={onSignOut} />
           </View>
         ) : (
-          <GateButton label="Hand over the shift" onPress={actions.completeHandover} />
+          <GateButton label="Hand over the shift" onPress={() => actions.completeHandover(state)} />
         )}
       </RevealItem>
     </ScrollView>

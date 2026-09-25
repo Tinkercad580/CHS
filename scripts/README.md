@@ -59,11 +59,14 @@ CHS_RESIDENT_PORT=9001 ./scripts/bundle-grep.sh resident 'Pay now'
 ## What is real and what is a fixture
 
 Real, from the API: sign-in (every path in MASTER_SPEC A2), users & access,
-society setup, buildings and units, members, occupancy, tenancies, household,
-approvals. Fixtures: billing, payments, accounting, recovery, helpdesk, gate
-and visitors, notices, meetings, documents, requests, amenities, vendors,
-compliance, reports — their backend modules arrive in later phases. A number
-on one of those screens came from `web-app/src/mock/*.ts` or an app fixture.
+buildings and units, members, occupancy, tenancies, household, approvals,
+billing (charge heads, runs, bills, ledger, credit notes), payments (dummy
+gateway, desk receipts, cheques), notices, notifications and push, dashboard
+and reports. Fixtures: accounting, recovery, helpdesk, gate visitors and
+parcels, staff, meetings, documents, requests, amenities, vendors, compliance
+calendar, and the admin console's society-setup screen. A number on one of
+those came from `web-app/src/mock/*.ts` or an app fixture. Per-app detail:
+[docs/apps/](../docs/apps/).
 
 ## The one failure mode worth knowing
 

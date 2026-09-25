@@ -1,0 +1,230 @@
+// ─── Members & occupancy ────────────────────────────────────────────────────
+
+/// Someone the society records — owner, tenant, nominee — whether or not
+/// they have an app login. `userId` links them when they do.
+model Person {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  societyId String    @map("society_id") @db.Uuid
+  name      String    @db.VarChar(100)
+  mobile    String?   @db.VarChar(10)
+  email     String?   @db.VarChar(254)
+  userId    String?   @map("user_id") @db.Uuid
+  directoryListed    Boolean @default(true) @map("directory_listed")
+  directoryShowMobile Boolean @default(false) @map("directory_show_mobile")
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(3)
+
+  society     Society      @relation(fields: [societyId], references: [id])
+  user        User?        @relation(fields: [userId], references: [id])
+  memberships Membership[]
+  tenancies   Tenancy[]
+
+  @@index([societyId, mobile])
+  @@index([societyId, userId])
+  @@map("persons")
+}
+
+enum MembershipKind {
+  PRIMARY
+  CO_OWNER
+  ASSOCIATE
+}
+
+model Membership {
+  id                 String         @id @default(uuid(7)) @db.Uuid
+  societyId          String         @map("society_id") @db.Uuid
+  unitId             String         @map("unit_id") @db.Uuid
+  personId           String         @map("person_id") @db.Uuid
+  kind               MembershipKind
+  shareCertificateNo String?        @map("share_certificate_no") @db.VarChar(40)
+  sharesHeld         Int?           @map("shares_held")
+  admissionDate      DateTime       @map("admission_date") @db.Date
+  cessationDate      DateTime?      @map("cessation_date") @db.Date
+  cessationReason    String?        @map("cessation_reason") @db.VarChar(300)
+  createdAt          DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  unit     Unit      @relation(fields: [unitId], references: [id])
+  person   Person    @relation(fields: [personId], references: [id])
+  nominees Nominee[]
+
+  @@index([societyId, unitId, cessationDate])
+  @@map("memberships")
+}
+
+enum OccupancyStatus {
+  SELF_OCCUPIED
+  FAMILY_OCCUPIED
+  TENANTED
+  VACANT
+  LOCKED
+  UNDER_RENOVATION
+}
+
+/// Effective-dated. The row with effective_to null is current. Non-occupancy
+/// charges apply only while status = TENANTED (MASTER_SPEC B3.2).
+model Occupancy {
+  id            String          @id @default(uuid(7)) @db.Uuid
+  societyId     String          @map("society_id") @db.Uuid
+  unitId        String          @map("unit_id") @db.Uuid
+  status        OccupancyStatus
+  effectiveFrom DateTime        @map("effective_from") @db.Date
+  effectiveTo   DateTime?       @map("effective_to") @db.Date
+  note          String?         @db.VarChar(300)
+  createdById   String?         @map("created_by") @db.Uuid
+  createdAt     DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  unit Unit @relation(fields: [unitId], references: [id])
+
+  @@index([societyId, unitId, effectiveFrom])
+  @@map("occupancies")
+}
+
+enum BillPayer {
+  OWNER
+  TENANT
+}
+
+model Tenancy {
+  id                  String    @id @default(uuid(7)) @db.Uuid
+  societyId           String    @map("society_id") @db.Uuid
+  unitId              String    @map("unit_id") @db.Uuid
+  tenantPersonId      String    @map("tenant_person_id") @db.Uuid
+  startDate           DateTime  @map("start_date") @db.Date
+  endDate             DateTime  @map("end_date") @db.Date
+  endedOn             DateTime? @map("ended_on") @db.Date
+  monthlyRentPaise    BigInt?   @map("monthly_rent_paise")
+  depositPaise        BigInt?   @map("deposit_paise")
+  policeIntimationRef String?   @map("police_intimation_ref") @db.VarChar(60)
+  allowedOccupants    Int?      @map("allowed_occupants")
+  billPayer           BillPayer @default(OWNER) @map("bill_payer")
+  expiryReminderSent  Boolean   @default(false) @map("expiry_reminder_sent")
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  unit   Unit   @relation(fields: [unitId], references: [id])
+  tenant Person @relation(fields: [tenantPersonId], references: [id])
+
+  @@index([societyId, unitId, endedOn])
+  @@index([endDate, endedOn])
+  @@map("tenancies")
+}
+
+model FamilyMember {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  societyId   String    @map("society_id") @db.Uuid
+  unitId      String    @map("unit_id") @db.Uuid
+  name        String    @db.VarChar(100)
+  relation    String    @db.VarChar(40)
+  mobile      String?   @db.VarChar(10)
+  dateOfBirth DateTime? @map("date_of_birth") @db.Date
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(3)
+
+  unit Unit @relation(fields: [unitId], references: [id])
+
+  @@index([societyId, unitId])
+  @@map("family_members")
+}
+
+enum VehicleType {
+  CAR
+  TWO_WHEELER
+  OTHER
+}
+
+model Vehicle {
+  id            String      @id @default(uuid(7)) @db.Uuid
+  societyId     String      @map("society_id") @db.Uuid
+  unitId        String      @map("unit_id") @db.Uuid
+  plate         String      @db.VarChar(15)
+  type          VehicleType
+  make          String?     @db.VarChar(60)
+  colour        String?     @db.VarChar(30)
+  ownerName     String?     @map("owner_name") @db.VarChar(100)
+  parkingSlotId String?     @map("parking_slot_id") @db.Uuid
+  stickerNo     String?     @map("sticker_no") @db.VarChar(30)
+  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt     DateTime?   @map("deleted_at") @db.Timestamptz(3)
+
+  unit        Unit         @relation(fields: [unitId], references: [id])
+  parkingSlot ParkingSlot? @relation(fields: [parkingSlotId], references: [id])
+
+  @@index([societyId, plate])
+  @@index([societyId, unitId])
+  @@map("vehicles")
+}
+
+model Pet {
+  id              String    @id @default(uuid(7)) @db.Uuid
+  societyId       String    @map("society_id") @db.Uuid
+  unitId          String    @map("unit_id") @db.Uuid
+  name            String    @db.VarChar(60)
+  species         String    @db.VarChar(30)
+  breed           String?   @db.VarChar(60)
+  vaccinatedUntil DateTime? @map("vaccinated_until") @db.Date
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(3)
+
+  unit Unit @relation(fields: [unitId], references: [id])
+
+  @@index([societyId, unitId])
+  @@map("pets")
+}
+
+model Nominee {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  societyId    String   @map("society_id") @db.Uuid
+  membershipId String   @map("membership_id") @db.Uuid
+  name         String   @db.VarChar(100)
+  relation     String   @db.VarChar(40)
+  shareBps     Int      @map("share_bps")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  membership Membership @relation(fields: [membershipId], references: [id])
+
+  @@index([societyId, membershipId])
+  @@map("nominees")
+}
+
+enum ApprovalKind {
+  FAMILY_ADD
+  VEHICLE_ADD
+  PET_ADD
+  TENANT_ADD
+  PROFILE_CHANGE
+  DATA_CORRECTION
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model MemberApproval {
+  id            String         @id @default(uuid(7)) @db.Uuid
+  societyId     String         @map("society_id") @db.Uuid
+  unitId        String?        @map("unit_id") @db.Uuid
+  kind          ApprovalKind
+  status        ApprovalStatus @default(PENDING)
+  payload       Json
+  summary       String         @db.VarChar(200)
+  requestedById String         @map("requested_by") @db.Uuid
+  decidedById   String?        @map("decided_by") @db.Uuid
+  decisionNote  String?        @map("decision_note") @db.VarChar(300)
+  decidedAt     DateTime?      @map("decided_at") @db.Timestamptz(3)
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  unit Unit? @relation(fields: [unitId], references: [id])
+
+  @@index([societyId, status, createdAt])
+  @@map("member_approvals")
+}

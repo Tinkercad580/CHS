@@ -5,18 +5,21 @@ import { useSessionController } from "@chs/api-client/react";
 import { useResident } from "../../state/ResidentProvider";
 import { useTheme } from "../../hooks/useTheme";
 import { useT } from "../../hooks/useT";
-import { currentUnit } from "../../state/selectors";
-import { MEMBERSHIP_LABEL, OCCUPANCY_LABEL, householdRows, initialsOf, landlordUnits, shortDate, unitByLabel, useResidentAccount, type MyHome } from "../../api/identity";
+import { currentUnit, openTicketCount, unitDailyHelp } from "../../state/selectors";
+import { HOLDING_LABEL, MEMBERSHIP_LABEL, OCCUPANCY_LABEL, householdRows, initialsOf, landlordUnits, shortDate, unitByLabel, useResidentAccount, type MyHome } from "../../api/identity";
 import { ScreenScroll } from "../../components/ScreenScroll";
 import { AppText } from "../../components/AppText";
 import { Button } from "../../components/Button";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
+import { Toggle } from "../../components/Toggle";
 import { RevealItem } from "../../components/RevealItem";
 import { Skeleton } from "../../components/Skeleton";
 import { LoadError } from "../../components/LoadError";
 import { fontFamilyFor } from "../../theme/fonts";
+import { signOut } from "../../push/bridge";
+import { PREFERENCE_ROWS, useNotificationPreferences } from "../../api/notifications";
 
 /**
  * The signed-in resident, their flat as the society records it, and settings.
@@ -24,6 +27,9 @@ import { fontFamilyFor } from "../../theme/fonts";
  * The prototype's "View the app as" switcher is gone: the role now comes from
  * the account itself. In its place is the design's "My unit" card (Resident
  * App.dc.html, screen 21) — carpet area, occupancy, share certificate, parking.
+ * Settings also reach the helpdesk (the design gives it a tab of its own; this
+ * app's tab bar follows the prototype, where the helpdesk sits under Profile)
+ * and the dark theme, which this phone remembers.
  */
 export function ProfileScreen() {
   const { state, actions } = useResident();
@@ -36,24 +42,30 @@ export function ProfileScreen() {
   const homeUnit = state.identity?.homeUnit ?? unit.code;
   const data = home.status === "ready" ? home.data : null;
 
-  const notifOnCount = state.prefs.filter((p) => p.on).length;
+  // "3 of 5 on" over the rows a resident can switch; the locked ones aren't a choice.
+  const prefs = useNotificationPreferences().data?.preferences;
+  const switchable = prefs ? PREFERENCE_ROWS.filter((r) => prefs.some((p) => r.categories.includes(p.category) && !p.mandatory)) : [];
+  const notifOnCount = prefs ? switchable.filter((r) => prefs.some((p) => r.categories.includes(p.category) && p.push)).length : 0;
   const homeOverview = data ? unitByLabel(data, homeUnit) : undefined;
   const viewed = data ? unitByLabel(data, unit.code) : undefined;
-  const heldAs =
-    state.role === "tenant"
-      ? t("tenant")
-      : (homeOverview && MEMBERSHIP_LABEL[homeOverview.currentMembers.find((m) => m.person.userId === me.id)?.kind ?? ""]) || t("owner");
+  // How the home flat is held: the membership kind the society records for an
+  // owner-member (Primary owner, Co-owner, Associate member), else the account's user type.
+  const holding = state.identity?.homeHolding ?? "owner";
+  const memberKind = homeOverview ? MEMBERSHIP_LABEL[homeOverview.currentMembers.find((m) => m.person.userId === me.id)?.kind ?? ""] : undefined;
+  const heldAs = holding === "tenant" ? t("tenant") : holding === "family" ? HOLDING_LABEL.family : memberKind || (holding === "coOwner" ? HOLDING_LABEL.coOwner : t("owner"));
+  const unitTickets = state.tickets.filter((tk) => tk.unit === unit.code).length;
   const liveTenancies = data ? landlordUnits(me, data).filter((u) => u.activeTenancy).length : 0;
 
   // Counts wait for myHome rather than show a number that is about to change.
   const settings: { label: string; value: string; go: () => void }[] = [
     { label: t("personal"), value: "Name, phone, email", go: () => actions.go("personal", true) },
     { label: t("myTenants"), value: !data ? "" : liveTenancies === 0 ? t("none") : liveTenancies === 1 ? t("oneActive") : `${liveTenancies} active`, go: () => actions.go("tenants", true) },
-    { label: t("dailyHelpRow"), value: t("nPeople", { n: num(state.dailyHelp.length, lang) }), go: () => actions.go("dailyHelp", true) },
+    { label: t("dailyHelpRow"), value: t("nPeople", { n: unitDailyHelp(state).length }), go: () => actions.go("dailyHelp", true) },
     { label: t("deliveries"), value: state.deliveryPref, go: () => actions.go("deliveries", true) },
+    { label: t("helpdeskTitle"), value: t("openOfTotal", { open: num(openTicketCount(state), lang), total: num(unitTickets, lang) }), go: () => actions.go("helpdesk", true) },
     { label: t("householdRow"), value: homeOverview ? num(householdRows(me, homeOverview, state.role === "tenant").length, lang) : "", go: () => actions.go("household", true) },
     { label: t("vehiclesRow"), value: viewed ? num(viewed.vehicles.length, lang) : "", go: () => actions.go("vehicles", true) },
-    { label: t("notifRow"), value: t("nOf4On", { n: num(notifOnCount, lang) }), go: () => actions.go("notifPrefs", true) },
+    { label: t("notifRow"), value: prefs ? `${num(notifOnCount, lang)} of ${num(switchable.length, lang)} on` : "", go: () => actions.go("notifPrefs", true) },
     { label: t("languageRow"), value: lang === "mr" ? "मराठी" : lang === "hi" ? "हिंदी" : "English", go: () => actions.go("language", true) },
   ];
 
@@ -91,11 +103,11 @@ export function ProfileScreen() {
         {t("settings")}
       </AppText>
       <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.surface, overflow: "hidden" }}>
-        {settings.map((row, i) => (
+        {settings.map((row) => (
           <RevealItem key={row.label} tier="prefRow">
             <AnimatedPressable
               onPress={row.go}
-              style={{ padding: 15, paddingHorizontal: 16, borderBottomWidth: i === settings.length - 1 ? 0 : 1, borderBottomColor: colors.borderSoft, flexDirection: "row", alignItems: "center", gap: 12 }}
+              style={{ padding: 15, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: colors.borderSoft, flexDirection: "row", alignItems: "center", gap: 12 }}
             >
               <AppText variant="body" style={{ flex: 1, fontWeight: "500" as const }}>
                 {row.label}
@@ -107,6 +119,15 @@ export function ProfileScreen() {
             </AnimatedPressable>
           </RevealItem>
         ))}
+        {/* The design has both themes but no in-app switch (its prototype toggles from the frame); it sits last in settings. */}
+        <RevealItem tier="prefRow">
+          <View style={{ padding: 15, paddingHorizontal: 16, paddingVertical: 12, flexDirection: "row", alignItems: "center", gap: 12 }}>
+            <AppText variant="body" style={{ flex: 1, fontWeight: "500" as const }}>
+              Dark mode
+            </AppText>
+            <Toggle on={state.dark} onPress={actions.toggleTheme} accessibilityLabel="Dark mode" />
+          </View>
+        </RevealItem>
       </View>
 
       {/* The design has no sign-out control; it sits at the foot of settings in the app's existing danger treatment. */}
@@ -116,7 +137,7 @@ export function ProfileScreen() {
         loading={signingOut}
         onPress={() => {
           setSigningOut(true);
-          void session.logout();
+          void signOut(session);
         }}
         height={46}
         fontSize={14.5}

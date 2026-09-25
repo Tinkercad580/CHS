@@ -10,6 +10,7 @@ import { AppText } from "../../components/AppText";
 import { Button } from "../../components/Button";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
 import { RevealItem } from "../../components/RevealItem";
+import { LocalOnlyNote } from "../../components/LocalOnlyNote";
 
 const STATE_LABEL: Record<string, string> = { open: "Open", in_progress: "In progress", resolved: "Resolved" };
 
@@ -23,11 +24,13 @@ export function HelpdeskScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.canvas }}>
       <TitleHeader
+        onBack={state.stack.length > 0 ? actions.back : undefined}
         title={t("helpdeskTitle")}
         subtitle={t("openOfTotal", { open: openTicketCount(state), total: tickets.length })}
         right={<Button label={t("raise")} onPress={actions.goNewTicket} height={40} fontSize={13.5} weight={600} style={{ paddingHorizontal: 15 }} />}
       />
       <ScreenScroll>
+        <LocalOnlyNote>Not connected to the office yet. These tickets are samples or ones kept on this phone, so call the office for anything urgent.</LocalOnlyNote>
         <View style={{ gap: 11 }}>
           {tickets.map((tk, i) => {
             const label = c(tk.id, "state", STATE_LABEL[tk.status]);

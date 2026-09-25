@@ -12,6 +12,7 @@ import { OptionButton, DayToggle } from "../../components/FilterPill";
 import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
 import { RevealItem } from "../../components/RevealItem";
+import { LocalOnlyNote } from "../../components/LocalOnlyNote";
 
 const PURPOSES: { key: "Guest" | "Delivery" | "Cab" | "Service"; labelKey: "guest" | "delivery" | "cab" | "service" }[] = [
   { key: "Guest", labelKey: "guest" },
@@ -91,9 +92,9 @@ export function InviteScreen() {
               onPress={actions.createGuestPass}
               style={{ marginTop: 22 }}
             />
-            <AppText variant="meta" color={colors.inkMuted} style={{ textAlign: "center", marginTop: 11 }}>
-              {t("codeReachesBoth")}
-            </AppText>
+            <View style={{ marginTop: 14 }}>
+              <LocalOnlyNote marginBottom={0}>The pass is saved on this phone only. The gate isn't connected yet, so share the code with your guest and let the guard know they're coming.</LocalOnlyNote>
+            </View>
           </View>
         ) : (
           <View>
@@ -138,9 +139,9 @@ export function InviteScreen() {
             </AppText>
 
             <Button label={t("registerAndIssue")} onPress={actions.createHelpPass} style={{ marginTop: 22 }} />
-            <AppText variant="meta" color={colors.inkMuted} style={{ textAlign: "center", marginTop: 11 }}>
-              {t("officeVerifies")}
-            </AppText>
+            <View style={{ marginTop: 14 }}>
+              <LocalOnlyNote marginBottom={0}>Saved on this phone only. The society office and the gate don't see daily-help passes yet.</LocalOnlyNote>
+            </View>
           </View>
         )}
       </ScreenScroll>

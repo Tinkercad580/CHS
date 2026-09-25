@@ -15,8 +15,8 @@ export function GateProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(gateReducer, undefined, createInitialState);
   const actions = useGateActions(dispatch);
 
-  // Every timer this screen owns (toast dismissals, the verify delay, the walk-in
-  // ping, the alert hold interval) must die with the provider — the same
+  // Every timer this screen owns (toast dismissals, the verify tick, the alert
+  // hold interval) must die with the provider — the same
   // `componentWillUnmount` clearAll the prototype's class component does.
   useEffect(() => () => actions.clearAllTimers(), [actions]);
 

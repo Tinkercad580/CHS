@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useLayoutEffect, useState, type ReactNode } from "react";
 
 type Theme = "light" | "dark";
 
@@ -9,15 +9,33 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
+const THEME_KEY = "chs.admin.theme";
+
+/**
+ * The admin's last choice on this browser; with none, the system's
+ * preference. Storage can be blocked (a private window, a locked-down
+ * browser), and then the choice lasts for the tab.
+ */
+function initialTheme(): Theme {
+  try {
+    const stored = globalThis.localStorage?.getItem(THEME_KEY);
+    if (stored === "light" || stored === "dark") return stored;
+  } catch {
+    // Unreadable storage: fall through to the system preference.
+  }
+  return globalThis.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
 /**
  * Theme is one attribute on the document element (data-theme="dark"), which
  * re-points the CSS custom properties in styles/tokens.css. See README.md,
- * "Colour — dark".
+ * "Colour — dark". It is applied before paint, so a reload in dark mode does
+ * not flash light first.
  */
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<Theme>(initialTheme);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (theme === "dark") {
       document.documentElement.setAttribute("data-theme", "dark");
     } else {
@@ -25,7 +43,16 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
   }, [theme]);
 
-  const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
+  // Only an explicit toggle is stored; until then the system preference keeps deciding.
+  const toggleTheme = () => {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    try {
+      globalThis.localStorage?.setItem(THEME_KEY, next);
+    } catch {
+      // See initialTheme: in-memory only.
+    }
+  };
 
   return <ThemeContext.Provider value={{ theme, toggleTheme }}>{children}</ThemeContext.Provider>;
 }

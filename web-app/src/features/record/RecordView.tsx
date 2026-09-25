@@ -155,12 +155,38 @@ export function RecordColumns({ grid, left, right }: { grid: string; left: React
   );
 }
 
+/** A small button on a section row or in a section's header — "Remove", "Edit", "Open". */
+export interface SectionAction {
+  label: string;
+  onClick: () => void;
+  tone?: "bad";
+}
+
 /**
  * `load` covers a section whose rows come from their own request: while it
  * is in flight the card shows its heading and a few bars; if it fails the
  * card says so and offers the retry, and the rest of the record is unaffected.
+ *
+ * `actions` puts more buttons beside the section's own one (a tenancy's Edit
+ * and End); `rowAction` gives a row its own button (remove this vehicle), or
+ * none when it returns null — the household mixes members, who are ceased
+ * rather than removed, with family, who can be.
  */
-export function SectionCard({ s, onAdd, busy, load }: { s: DerivedSection; onAdd?: () => void; busy?: boolean; load?: LoadState<unknown> }) {
+export function SectionCard({
+  s,
+  onAdd,
+  busy,
+  load,
+  actions,
+  rowAction,
+}: {
+  s: DerivedSection;
+  onAdd?: () => void;
+  busy?: boolean;
+  load?: LoadState<unknown>;
+  actions?: SectionAction[];
+  rowAction?: (i: number) => SectionAction | null;
+}) {
   const emptyText = s.empty ?? "Nothing here yet.";
   if (load && load.status !== "ready") {
     return (
@@ -188,6 +214,9 @@ export function SectionCard({ s, onAdd, busy, load }: { s: DerivedSection; onAdd
           <div style={{ font: "700 15.5px/1.25 Figtree, sans-serif", letterSpacing: "-.012em" }}>{s.h}</div>
           <div style={{ marginTop: 3, font: "400 12px/1.35 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>{s.sub}</div>
         </div>
+        {actions?.map((a) => (
+          <SmallButton key={a.label} action={a} />
+        ))}
         {s.hasAction && onAdd && (
           <button type="button" onClick={onAdd} disabled={busy} className="press-scale" style={{ height: 34, padding: "0 13px", border: "1px solid var(--border,#E3E9E6)", borderRadius: 9, background: "var(--surface,#fff)", font: "600 12.5px/1 Figtree, sans-serif", color: "var(--ink,#0F1A17)", cursor: busy ? "default" : "pointer", flex: "none", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 7 }}>
             {busy && <Spinner size={12} />}
@@ -238,6 +267,7 @@ export function SectionCard({ s, onAdd, busy, load }: { s: DerivedSection; onAdd
                 <div style={{ font: "400 12px/1.4 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>{x.b}</div>
               </div>
               <span style={{ flex: "none", font: "400 12px/1.4 Figtree, sans-serif", color: "var(--ink-muted,#8A9995)", whiteSpace: "nowrap" }}>{x.d}</span>
+              <RowButton action={rowAction?.(i) ?? null} />
             </div>
           ))}
         </div>
@@ -264,6 +294,7 @@ export function SectionCard({ s, onAdd, busy, load }: { s: DerivedSection; onAdd
                 <div style={{ font: "400 12px/1.4 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)", overflowWrap: "anywhere" }}>{x.b}</div>
               </div>
               <span style={{ flex: "none", padding: "3px 9px", borderRadius: 7, background: "var(--subtle,#EDF1EF)", font: "600 11.5px/1.5 Figtree, sans-serif", color: "var(--ink-soft,#4A5B56)", whiteSpace: "nowrap" }}>{x.d}</span>
+              <RowButton action={rowAction?.(i) ?? null} />
             </div>
           ))}
         </div>
@@ -286,6 +317,35 @@ export function SectionCard({ s, onAdd, busy, load }: { s: DerivedSection; onAdd
         </div>
       )}
     </div>
+  );
+}
+
+function SmallButton({ action }: { action: SectionAction }) {
+  const bad = action.tone === "bad";
+  return (
+    <button
+      type="button"
+      onClick={action.onClick}
+      className="press-scale focus-ring"
+      style={{ height: 34, padding: "0 13px", border: `1px solid ${bad ? "var(--bad-border,#F6D9D6)" : "var(--border,#E3E9E6)"}`, borderRadius: 9, background: "var(--surface,#fff)", font: "600 12.5px/1 Figtree, sans-serif", color: bad ? "var(--bad-ink,#9B2B22)" : "var(--ink,#0F1A17)", cursor: "pointer", flex: "none", whiteSpace: "nowrap" }}
+    >
+      {action.label}
+    </button>
+  );
+}
+
+function RowButton({ action }: { action: SectionAction | null }) {
+  if (!action) return null;
+  const bad = action.tone === "bad";
+  return (
+    <button
+      type="button"
+      onClick={action.onClick}
+      className="press-scale focus-ring"
+      style={{ flex: "none", height: 28, padding: "0 10px", border: "1px solid var(--border,#E3E9E6)", borderRadius: 8, background: "var(--surface,#fff)", font: "600 11.5px/1 Figtree, sans-serif", color: bad ? "var(--bad-ink,#9B2B22)" : "var(--ink-soft,#4A5B56)", cursor: "pointer", whiteSpace: "nowrap" }}
+    >
+      {action.label}
+    </button>
   );
 }
 

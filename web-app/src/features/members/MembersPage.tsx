@@ -5,8 +5,9 @@ import { toLoadState, useApiQuery } from "@chs/api-client/react";
 import { api, type Unit } from "@chs/contract";
 import { holds, useCurrentSociety } from "../../api/society";
 import { ApiTable, LiveStatGrid, PageHeader } from "../../components/ApiTable";
-import { primaryBtnStyle, rowProps, useCursorPager, useSettled } from "../../lib/tableKit";
+import { primaryBtnStyle, rowProps, secondaryBtnStyle, useCursorPager, useSettled } from "../../lib/tableKit";
 import { NoAccess, NoSociety } from "../../components/NoSociety";
+import { SubNav } from "../../components/Kit";
 import { Pill } from "../../components/Pill";
 import { enumLabel } from "../../lib/apiFormat";
 import { ready, type LoadState } from "../../lib/loadState";
@@ -40,13 +41,26 @@ const SORT_KEYS: ((u: Unit) => string | number)[] = [
 
 /**
  * A unit's pill. The design's pills are about dues (Clear, Due, Legal stage);
- * billing has no API yet, so this reports what the register itself knows:
+ * the unit list carries no dues, so this reports what the register itself knows:
  * whether the facts billing will need are on file.
  */
 function unitStatus(u: Unit): { label: string; kind: PillKind } {
   if (u.status === "INACTIVE") return { label: "Inactive", kind: "mute" };
   if (!u.primaryOwnerName || u.carpetAreaSqft === null) return { label: "Data missing", kind: "info" };
   return { label: "Active", kind: "ok" };
+}
+
+/** Units and the approvals queue, as tabs under one heading. The queue needs members.manage. */
+export function MembersTabs({ canApprove }: { canApprove: boolean }) {
+  if (!canApprove) return null;
+  return (
+    <SubNav
+      items={[
+        { to: "/members", label: "Units", end: true },
+        { to: "/members/approvals", label: "Approvals" },
+      ]}
+    />
+  );
 }
 
 export function MembersPage() {
@@ -68,7 +82,7 @@ function MembersTable({ societyId, unitCount, canApprove }: { societyId: string;
 
   const buildings = useApiQuery(api.structure.buildings, { params: { societyId } });
   // The approvals queue needs members.manage; without it the card says so rather than asking and being refused.
-  const approvals = useApiQuery(api.members.approvals, { params: { societyId }, query: { status: "PENDING", limit: 200 } }, { enabled: canApprove });
+  const approvals = useApiQuery(api.members.approvals, { params: { societyId }, query: { status: "PENDING", limit: 1 } }, { enabled: canApprove });
 
   const q = useSettled(search.trim());
   const paging = useCursorPager(`${q}|${building}`);
@@ -98,8 +112,8 @@ function MembersTable({ societyId, unitCount, canApprove }: { societyId: string;
   }, [list, sortCol, sortDir]);
 
   const bList = buildings.data ?? [];
-  const pending = !canApprove ? "—" : approvals.data ? `${approvals.data.items.length}${approvals.data.nextCursor ? "+" : ""}` : approvals.isError ? "—" : null;
-  const pendingN = approvals.data?.items.length ?? 0;
+  const pendingN = approvals.data?.total ?? approvals.data?.items.length ?? 0;
+  const pending = !canApprove ? "—" : approvals.data ? String(pendingN) : approvals.isError ? "—" : null;
   const stats = [
     {
       label: "Units",
@@ -135,11 +149,22 @@ function MembersTable({ societyId, unitCount, canApprove }: { societyId: string;
         title="Members & units"
         sub={`${unitCount} units${bList.length ? ` across ${bList.length} buildings` : ""}. Occupancy drives non-occupancy charges, so it is edited with effective dates and never overwritten.`}
         actions={
-          <button type="button" onClick={() => setAdding(true)} className="press-scale focus-ring" style={primaryBtnStyle}>
-            Add member
-          </button>
+          <>
+            {canApprove && pendingN > 0 && (
+              <button type="button" onClick={() => navigate("/members/approvals")} className="press-scale focus-ring" style={secondaryBtnStyle}>
+                Review {pendingN} request{pendingN === 1 ? "" : "s"}
+              </button>
+            )}
+            {/* members.addMembership needs members.manage; a billing-only admin reads the register but cannot add to it. */}
+            {canApprove && (
+              <button type="button" onClick={() => setAdding(true)} className="press-scale focus-ring" style={primaryBtnStyle}>
+                Add member
+              </button>
+            )}
+          </>
         }
       />
+      <MembersTabs canApprove={canApprove} />
 
       <LiveStatGrid stats={stats} />
 
@@ -174,7 +199,7 @@ function MembersTable({ societyId, unitCount, canApprove }: { societyId: string;
               <td style={{ padding: "13px 16px", font: "400 13.5px/1.4 Figtree, sans-serif", color: u.carpetAreaSqft === null ? dim : "var(--ink-soft,#5A6B66)", whiteSpace: "nowrap" }}>
                 {u.carpetAreaSqft === null ? "Not on file" : `${u.carpetAreaSqft.toLocaleString("en-IN")} sq ft`}
               </td>
-              {/* Billing has no API yet: no amount is shown rather than an invented one. */}
+              {/* The unit list carries no dues (each unit record shows them from its ledger); a dash rather than an invented amount. */}
               <td style={{ padding: "13px 16px", textAlign: "right", font: "600 14px/1.4 Figtree, sans-serif", color: dim }}>—</td>
               <td style={{ padding: "13px 20px 13px 16px", textAlign: "right" }}>
                 <Pill label={pill.label} kind={pill.kind} />

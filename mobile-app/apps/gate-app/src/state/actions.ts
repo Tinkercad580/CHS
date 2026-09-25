@@ -1,17 +1,16 @@
 import { useRef, useCallback, useMemo } from "react";
 import {
-  guards,
   motionDurationsMs,
   MAX_TOASTS,
-  type GateScreen,
   type EntryLogRow,
   type Parcel,
   type StaffMember,
   type AlertKind,
   type GateAlert,
 } from "@sahaj/shared";
-import type { AppGateState, GateAction } from "./types";
+import type { AppGateState, AppScreen, GateAction } from "./types";
 import { verifyCode } from "./verify";
+import { receivingGuard } from "./selectors";
 import { UNIT_DELIVERY_PREFS } from "../mock/gateSeed";
 import { stamp } from "../utils/time";
 
@@ -28,17 +27,16 @@ function uid(prefix: string): string {
  * near-simultaneous timers (a toast expiring while a verify resolves) can never
  * clobber each other with a stale snapshot.
  */
-const DRILL_DOWNS: GateScreen[] = ["walkin", "alert", "plate", "handover"];
-const isDrillDownScreen = (s: GateScreen) => DRILL_DOWNS.includes(s);
+const DRILL_DOWNS: AppScreen[] = ["walkin", "alert", "plate", "handover", "notices", "notice"];
+export const isDrillDownScreen = (s: AppScreen) => DRILL_DOWNS.includes(s);
 
 /**
  * Stands in for the API round-trip a request will make once there is a backend.
  *
  * Resolves on the next tick, so nothing invents a wait: verifying a code against
- * the handset's own cache completes immediately, and the button's "Checking…"
- * state passes through too fast to see. That is correct for a lookup that never
- * leaves the device — and on this handset most lookups never will, since it
- * caches passes for 24h of offline autonomy.
+ * the fixture passes bundled with the app completes immediately, and the button's
+ * "Checking…" state passes through too fast to see. (There is no pass cache on
+ * the handset yet; C9's offline store is what will make most lookups local.)
  *
  * The seam is kept so the wiring already exists: when a lookup does reach the
  * network, this is the one place it is awaited and the button shows the time it
@@ -49,10 +47,31 @@ function whenRequestSettles(run: () => void): ReturnType<typeof setTimeout> {
   return setTimeout(run, 0);
 }
 
+/** How long an urgent toast (an emergency) stays up unless the guard taps it away — long enough to be read from across the cabin. */
+const URGENT_TOAST_MS = 8000;
+
+/**
+ * Everything in flight on the handset — a typed code, an open verdict, a pending walk-in — which locking must not leave behind.
+ * Toasts go too: locking cancels their dismiss timers, so any left in state would come back after unlock and never leave.
+ */
+const IN_FLIGHT: Partial<AppGateState> = {
+  onDuty: false,
+  toasts: [],
+  screen: "entry",
+  noticeId: null,
+  code: "",
+  checking: false,
+  result: null,
+  parcelOpen: false,
+  parcelError: false,
+  walkinStage: "form",
+  holding: false,
+  holdPct: 0,
+};
+
 export function useGateActions(dispatch: Dispatch) {
   const toastTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const verifyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const walkinTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const holdTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const holdStartedAt = useRef<number>(0);
 
@@ -66,96 +85,83 @@ export function useGateActions(dispatch: Dispatch) {
     [dispatch]
   );
 
-  const toast = useCallback(
-    (message: string, kind: "ok" | "warn" | "bad" = "ok") => {
-      const id = uid("t");
-      dispatch({
-        type: "UPDATE",
-        updater: (s) => ({ toasts: s.toasts.concat([{ id, message, kind }]).slice(-MAX_TOASTS) }),
-      });
-      toastTimers.current[id] = setTimeout(() => {
-        delete toastTimers.current[id];
-        dispatch({ type: "UPDATE", updater: (s) => ({ toasts: s.toasts.filter((t) => t.id !== id) }) });
-      }, motionDurationsMs.toastDismiss);
+  const dismissToast = useCallback(
+    (id: string) => {
+      const timer = toastTimers.current[id];
+      if (timer) clearTimeout(timer);
+      delete toastTimers.current[id];
+      dispatch({ type: "UPDATE", updater: (s) => ({ toasts: s.toasts.filter((t) => t.id !== id) }) });
     },
     [dispatch]
+  );
+
+  /** `urgent` is for emergencies: it stays up for URGENT_TOAST_MS rather than the standard 2.8s, and a tap dismisses it. */
+  const toast = useCallback(
+    (message: string, kind: "ok" | "warn" | "bad" = "ok", options?: { urgent?: boolean }) => {
+      const id = uid("t");
+      const urgent = options?.urgent === true;
+      dispatch({
+        type: "UPDATE",
+        updater: (s) => ({ toasts: s.toasts.concat([{ id, message, kind, urgent }]).slice(-MAX_TOASTS) }),
+      });
+      toastTimers.current[id] = setTimeout(() => dismissToast(id), urgent ? URGENT_TOAST_MS : motionDurationsMs.toastDismiss);
+    },
+    [dispatch, dismissToast]
   );
 
   const clearAllTimers = useCallback(() => {
     Object.values(toastTimers.current).forEach(clearTimeout);
     toastTimers.current = {};
     if (verifyTimer.current) clearTimeout(verifyTimer.current);
-    if (walkinTimer.current) clearTimeout(walkinTimer.current);
     if (holdTimer.current) clearInterval(holdTimer.current);
   }, []);
 
-  // ---- Sign-in ----------------------------------------------------------
-  const pinKey = useCallback(
-    (key: string) => {
-      if (key === "clear") {
-        dispatch({ type: "SET", patch: { pin: "", pinError: null } });
-        return;
-      }
-      if (key === "del") {
-        dispatch({ type: "UPDATE", updater: (s) => ({ pin: s.pin.slice(0, -1), pinError: null }) });
-        return;
-      }
-      dispatch({ type: "UPDATE", updater: (s) => (s.pin.length >= 4 ? {} : { pin: s.pin + key, pinError: null }) });
-    },
-    [dispatch]
-  );
+  // ---- Shift ------------------------------------------------------------
+  //
+  // Who the guard is comes from the API session (SessionGate); these only move
+  // the handset between locked and on duty. See features/signin/ShiftScreen.tsx
+  // for what the duty PIN does and does not check.
 
   const startShift = useCallback(
-    (currentPin: string) => {
-      if (currentPin.length < 4) {
-        toast("Four digits are needed.", "warn");
-        return;
-      }
-      const guard = guards.find((g) => g.dutyPin === currentPin);
-      if (!guard) {
-        dispatch({ type: "SET", patch: { pinError: "That PIN is not on today's roster.", pin: "" } });
-        note("Rejected a wrong duty PIN");
-        return;
-      }
-      dispatch({ type: "SET", patch: { onDuty: true, guardName: guard.name, pinError: null, screen: "entry" } });
-      toast(`Signed in. Shift started at ${stamp()}.`, "ok");
-      note(`${guard.name} signed in for shift`);
+    (guardName: string, startedAt: string) => {
+      dispatch({ type: "SET", patch: { onDuty: true, guardName, shiftStartedAt: startedAt, screen: "entry", cameFrom: "entry" } });
+      toast(`Signed in. Shift started at ${stamp(new Date(startedAt))}.`, "ok");
+      note(`${guardName} signed in for shift`);
     },
     [dispatch, note, toast]
   );
 
-  const signOut = useCallback(() => {
+  const resumeShift = useCallback(
+    (guardName: string, startedAt: string) => {
+      dispatch({ type: "SET", patch: { onDuty: true, guardName, shiftStartedAt: startedAt, screen: "entry", cameFrom: "entry" } });
+      toast("Handset unlocked.", "ok");
+      note(`${guardName} unlocked the handset`);
+    },
+    [dispatch, note, toast]
+  );
+
+  /** The door icon: back to the duty PIN. The API session stays; only the handset locks. */
+  const lock = useCallback(() => {
     clearAllTimers();
-    dispatch({
-      type: "SET",
-      patch: {
-        onDuty: false,
-        guardName: null,
-        pin: "",
-        pinError: null,
-        screen: "entry",
-        code: "",
-        checking: false,
-        result: null,
-        parcelOpen: false,
-        parcelError: false,
-        walkinStage: "form",
-        holding: false,
-        holdPct: 0,
-      },
-    });
-    toast("Signed out. Handset locked.", "warn");
+    dispatch({ type: "SET", patch: IN_FLIGHT });
+    note("Locked the handset");
+  }, [clearAllTimers, dispatch, note]);
+
+  /** The session ended (sign-out, expiry, revocation): the shift ends with it. The gate's own log and parcels stay on the handset. */
+  const endShift = useCallback(() => {
+    clearAllTimers();
+    dispatch({ type: "SET", patch: { ...IN_FLIGHT, guardName: null, shiftStartedAt: null, cameFrom: "entry", handoverDone: false, handoverNote: "" } });
     note("Ended the shift");
-  }, [clearAllTimers, dispatch, note, toast]);
+  }, [clearAllTimers, dispatch, note]);
 
   // ---- Navigation ---------------------------------------------------------
 
   const go = useCallback(
-    (screen: GateScreen, noteText?: string) => {
+    (screen: AppScreen, noteText?: string) => {
       // Record the screen being left, but only when moving INTO a drill-down.
       // Otherwise tabbing around would overwrite the origin and back would return
       // to whichever tab was touched last rather than the one that opened it.
-      const isDrillDown = screen === "walkin" || screen === "alert" || screen === "plate" || screen === "handover";
+      const isDrillDown = isDrillDownScreen(screen);
       dispatch({
         type: "UPDATE",
         updater: (prev) => (isDrillDown && !isDrillDownScreen(prev.screen) ? { screen, cameFrom: prev.screen } : { screen }),
@@ -178,6 +184,28 @@ export function useGateActions(dispatch: Dispatch) {
       if (noteText) note(noteText);
     },
     [dispatch, note]
+  );
+
+  const openNotice = useCallback(
+    (noticeId: string) => {
+      dispatch({ type: "SET", patch: { noticeId } });
+      go("notice", "Opened a notice from the office");
+    },
+    [dispatch, go]
+  );
+
+  /**
+   * A tapped push notification. The server puts the screen in `data.route`;
+   * the gate has one route, so the path is mapped onto a screen here. Anything
+   * else the office might send (an account notice) lands on the notices list.
+   */
+  const openRoute = useCallback(
+    (route: string) => {
+      const notice = /^\/notices\/([^/?#]+)/.exec(route);
+      if (notice) openNotice(notice[1]);
+      else go("notices", "Opened the office notices from a notification");
+    },
+    [go, openNotice]
   );
 
   // ---- Verify a code -------------------------------------------------------
@@ -237,7 +265,8 @@ export function useGateActions(dispatch: Dispatch) {
 
   const callResident = useCallback(() => {
     dispatch({ type: "SET", patch: { result: null, code: "" } });
-    toast("Calling the flat over intercom.", "ok");
+    // The handset can't place the call (masked calling is C9); this says what to do, not what happened.
+    toast("Ring the flat on the intercom before letting anyone in.", "warn");
     note("Called the flat instead of allowing entry");
   }, [dispatch, note, toast]);
 
@@ -256,7 +285,7 @@ export function useGateActions(dispatch: Dispatch) {
         note: `code ${pass.code}`,
       };
       dispatch({ type: "UPDATE", updater: (s) => ({ entries: [entry].concat(s.entries), result: null, code: "" }) });
-      toast(`${pass.name} allowed in. ${pass.unit} was told.`, "ok");
+      toast(`${pass.name} allowed in and logged. ${pass.unit} isn't notified from the gate yet.`, "ok");
       note(`Allowed ${pass.name} in to ${pass.unit}`);
       go("log");
     },
@@ -352,6 +381,11 @@ export function useGateActions(dispatch: Dispatch) {
     [dispatch]
   );
 
+  /**
+   * Moves the walk-in to "waiting for the flat's answer". Nothing is sent: the
+   * gate can't reach a resident yet (C9's push with Allow / Deny), so the guard
+   * rings the flat and records the answer — no timer ever admits anyone.
+   */
   const askResident = useCallback(
     (name: string, unit: string) => {
       if (!name.trim() || !unit.trim()) {
@@ -360,41 +394,40 @@ export function useGateActions(dispatch: Dispatch) {
       }
       dispatch({ type: "SET", patch: { walkinStage: "waiting" } });
       note(`Asked ${unit} about ${name.trim()}`);
-      if (walkinTimer.current) clearTimeout(walkinTimer.current);
-      walkinTimer.current = setTimeout(() => {
-        dispatch({ type: "SET", patch: { walkinStage: "approved" } });
-        toast(`${unit} approved the walk-in.`, "ok");
-        note(`${unit} approved ${name.trim()}`);
-      }, motionDurationsMs.walkinPing);
     },
     [dispatch, note, toast]
   );
 
   const cancelWalkin = useCallback(() => {
-    if (walkinTimer.current) clearTimeout(walkinTimer.current);
     dispatch({ type: "SET", patch: { walkinStage: "form" } });
     toast("Request cancelled.", "warn");
     note("Cancelled the walk-in request");
   }, [dispatch, note, toast]);
 
-  const allowWalkin = useCallback(
-    (walkin: AppGateState["walkin"]) => {
+  /** The guard's record of what the flat said on the phone or intercom: allowed in, or turned away. */
+  const answerWalkin = useCallback(
+    (walkin: AppGateState["walkin"], approved: boolean) => {
       const entry: EntryLogRow = {
         id: uid("e"),
         method: "walk_in",
         visitorName: walkin.name.trim(),
         unit: walkin.unit,
         purpose: walkin.purpose,
-        status: "inside",
+        status: approved ? "inside" : "turned_away",
         enteredAt: new Date().toISOString(),
-        note: "walk-in, resident approved",
+        note: approved ? "walk-in, flat approved by phone" : "walk-in, flat refused by phone",
       };
       dispatch({
         type: "UPDATE",
         updater: (s) => ({ entries: [entry].concat(s.entries), walkin: { name: "", unit: "", purpose: "Guest" }, walkinStage: "form" }),
       });
-      toast(`${entry.visitorName} allowed in.`, "ok");
-      note(`Allowed walk-in ${entry.visitorName} in to ${walkin.unit}`);
+      if (approved) {
+        toast(`${entry.visitorName} allowed in.`, "ok");
+        note(`${walkin.unit} approved walk-in ${entry.visitorName} by phone`);
+      } else {
+        toast(`${entry.visitorName} turned away. ${walkin.unit} said no.`, "warn");
+        note(`${walkin.unit} refused walk-in ${entry.visitorName} by phone`);
+      }
       go("log");
     },
     [dispatch, go, note, toast]
@@ -425,7 +458,7 @@ export function useGateActions(dispatch: Dispatch) {
       }
       const p: Parcel = { id: uid("q"), unit: unit.trim().toUpperCase(), courier, status: "held", loggedAt: new Date().toISOString() };
       dispatch({ type: "UPDATE", updater: (s) => ({ parcels: [p].concat(s.parcels), parcelOpen: false, parcelUnit: "" }) });
-      toast(`Resident of ${p.unit} was notified.`, "ok");
+      toast(`Parcel for ${p.unit} logged. The resident isn't notified from the gate yet.`, "ok");
       note(`Logged a ${courier} parcel for ${p.unit}`);
     },
     [dispatch, note, toast]
@@ -462,11 +495,12 @@ export function useGateActions(dispatch: Dispatch) {
           dispatch({
             type: "UPDATE",
             updater: (s) => {
-              const raised: GateAlert = { id: uid("a"), kind, raisedAt: new Date().toISOString(), note: "Sent to the committee and the security desk." };
+              // Nothing leaves the handset (SOS is C9), so the record says so rather than implying help is coming.
+              const raised: GateAlert = { id: uid("a"), kind, raisedAt: new Date().toISOString(), note: "Recorded on this handset only. Nobody was notified." };
               return { holding: false, holdPct: 0, alerts: [raised].concat(s.alerts) };
             },
           });
-          toast(`${kind} alert raised.`, "bad");
+          toast(`${kind} alert recorded on this handset only. Phone the society office now.`, "bad", { urgent: true });
           note(`Raised a ${kind.toLowerCase()} alert`);
           return;
         }
@@ -486,20 +520,25 @@ export function useGateActions(dispatch: Dispatch) {
 
   // ---- Handover ------------------------------------------------------------
   const setHandoverNote = useCallback((value: string) => dispatch({ type: "SET", patch: { handoverNote: value } }), [dispatch]);
-  const completeHandover = useCallback(() => {
-    const receivingGuard = guards.find((g) => g.name !== guards[0].name)?.name ?? guards[0].name;
-    dispatch({ type: "SET", patch: { handoverDone: true } });
-    toast("Shift handed over.", "ok");
-    note(`Completed the shift handover to ${receivingGuard}`);
-  }, [dispatch, note, toast]);
+  const completeHandover = useCallback(
+    (state: AppGateState) => {
+      dispatch({ type: "SET", patch: { handoverDone: true } });
+      toast("Shift handed over on this handset.", "ok");
+      note(`Completed the shift handover to ${receivingGuard(state)}`);
+    },
+    [dispatch, note, toast]
+  );
 
   return useMemo(
     () => ({
-      pinKey,
       startShift,
-      signOut,
+      resumeShift,
+      lock,
+      endShift,
       go,
       goBack,
+      openNotice,
+      openRoute,
       codeKey,
       submitCode,
       tapExpectedPass,
@@ -517,7 +556,7 @@ export function useGateActions(dispatch: Dispatch) {
       setWalkinPurpose,
       askResident,
       cancelWalkin,
-      allowWalkin,
+      answerWalkin,
       openLogParcel,
       closeParcel,
       setParcelUnit,
@@ -531,16 +570,20 @@ export function useGateActions(dispatch: Dispatch) {
       setHandoverNote,
       completeHandover,
       toast,
+      dismissToast,
       note,
       clearAllTimers,
       unitDeliveryPref: (unit: string) => UNIT_DELIVERY_PREFS[unit.trim().toUpperCase()],
     }),
     [
-      pinKey,
       startShift,
-      signOut,
+      resumeShift,
+      lock,
+      endShift,
       go,
       goBack,
+      openNotice,
+      openRoute,
       codeKey,
       submitCode,
       tapExpectedPass,
@@ -558,7 +601,7 @@ export function useGateActions(dispatch: Dispatch) {
       setWalkinPurpose,
       askResident,
       cancelWalkin,
-      allowWalkin,
+      answerWalkin,
       openLogParcel,
       closeParcel,
       setParcelUnit,
@@ -572,6 +615,7 @@ export function useGateActions(dispatch: Dispatch) {
       setHandoverNote,
       completeHandover,
       toast,
+      dismissToast,
       note,
       clearAllTimers,
     ]

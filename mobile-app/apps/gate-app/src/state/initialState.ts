@@ -7,11 +7,11 @@ export function createInitialState(): AppGateState {
   return {
     onDuty: false,
     guardName: null,
-    pin: "",
-    pinError: null,
 
     screen: "entry",
     cameFrom: "entry",
+    noticeId: null,
+    shiftStartedAt: null,
     code: "",
     checking: false,
     result: null,
@@ -42,7 +42,6 @@ export function createInitialState(): AppGateState {
     holdPct: 0,
     alerts: START_ALERTS.map((a) => ({ ...a })),
 
-    offline: false,
     toasts: [],
     log: [],
   };

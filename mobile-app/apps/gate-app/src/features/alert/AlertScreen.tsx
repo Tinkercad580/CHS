@@ -1,12 +1,16 @@
 import React, { useEffect } from "react";
-import { View, ScrollView, Pressable } from "react-native";
+import { View, ScrollView, Pressable, Linking } from "react-native";
+import { motionDurationsMs } from "@sahaj/shared";
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, useReducedMotion } from "react-native-reanimated";
 import { GateText } from "../../components/GateText";
 import { GateCard } from "../../components/GateCard";
 import { ScreenHeader } from "../../components/ScreenHeader";
 import { RevealItem } from "../../components/RevealItem";
-import { Dot } from "../../components/Icon";
-import { colors } from "../../theme";
+import { Dot, Icon } from "../../components/Icon";
+import { iconPaths } from "../../components/iconPaths";
+import { GateButton } from "../../components/GateButton";
+import { colors, withAlpha } from "../../theme";
+import { useSocietyPhone } from "../../api/society";
 import { useGate } from "../../state/GateProvider";
 import { ALERT_KINDS } from "../../mock/gateSeed";
 import { relativeLabel } from "../../utils/time";
@@ -31,18 +35,53 @@ function HoldFillBar({ pct }: { pct: number }) {
   return <Animated.View style={[{ position: "absolute", left: 0, top: 0, bottom: 0, backgroundColor: "rgba(255,255,255,0.2)" }, style]} />;
 }
 
-/** Two seconds, computed from elapsed wall-clock time (see useGateActions.holdStart) — a slip of the thumb should not wake the whole society. */
+/** Whole seconds left on the hold, never shown as 0 while the thumb is still down. */
+function secondsToGo(pct: number): string {
+  const n = Math.max(1, Math.ceil(((100 - pct) / 100) * (motionDurationsMs.holdToConfirm / 1000)));
+  return `${n} ${n === 1 ? "second" : "seconds"} to go`;
+}
+
+/**
+ * Raising an alert is recorded on this handset only: there is no SOS in the API
+ * yet (MASTER_SPEC C9), so nobody is told. The screen says so before the guard
+ * holds the button, and puts the society office's number (society.get) one tap
+ * away — or, when the office has none on file, says who to phone instead.
+ *
+ * The hold is two seconds, computed from elapsed wall-clock time (see
+ * useGateActions.holdStart), so a slip of the thumb doesn't record a false alert.
+ */
 export function AlertScreen() {
   const { state, actions } = useGate();
   const currentKind = state.alertKind ?? ALERT_KINDS[0];
+  const officePhone = useSocietyPhone();
+
+  const callOffice = (phone: string) => {
+    Linking.openURL(`tel:${phone.replace(/[^\d+]/g, "")}`).catch(() => actions.toast(`This handset can't place the call. Dial ${phone}.`, "warn"));
+  };
 
   return (
     <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 0, paddingBottom: 24 }}>
       <RevealItem tier="screenBlock">
         <ScreenHeader title="Raise an alert" onBack={() => actions.goBack()} />
-        <GateText variant="bodySmall" color={colors.soft} style={{ marginBottom: 20 }}>
-          Hold the button for two seconds. A slip of the thumb should not wake the whole society.
-        </GateText>
+        <View
+          accessibilityRole="alert"
+          style={{ borderWidth: 1, borderColor: withAlpha(colors.stop, 0.45), borderRadius: 16, backgroundColor: withAlpha(colors.stop, 0.12), padding: 15, marginBottom: 20 }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 9, marginBottom: 6 }}>
+            <Icon d={iconPaths.alertTriangle} color="#F7B5AE" size={17} strokeWidth={2.2} />
+            <GateText variant="cardTitle" color="#F7B5AE" style={{ fontSize: 14, flex: 1 }}>
+              This does not call anyone yet
+            </GateText>
+          </View>
+          <GateText variant="body" color={colors.ink} style={{ fontSize: 12.5, lineHeight: 18, marginBottom: officePhone ? 12 : 0 }}>
+            {officePhone
+              ? "An alert raised here is recorded on this handset only. Nobody is notified. Phone the society office yourself, then raise it so the shift has a record."
+              : "An alert raised here is recorded on this handset only. Nobody is notified. Phone the committee secretary or your security supervisor yourself, then raise it so the shift has a record."}
+          </GateText>
+          {officePhone ? (
+            <GateButton label={`Call the society office · ${officePhone}`} variant="dangerOutline" height={48} radius={13} fontSize={14.5} weight={700} onPress={() => callOffice(officePhone)} />
+          ) : null}
+        </View>
       </RevealItem>
 
       <RevealItem tier="screenBlock">
@@ -98,7 +137,7 @@ export function AlertScreen() {
           {state.holding ? "Keep holding…" : `Hold to raise ${currentKind.toLowerCase()}`}
         </GateText>
         <GateText variant="body" color="#fff" style={{ fontSize: 12.5, opacity: 0.85 }}>
-          {state.holding ? `${Math.max(0, Math.ceil((100 - state.holdPct) / 50))} second to go` : "Two seconds. Reaches the committee and the security desk."}
+          {state.holding ? secondsToGo(state.holdPct) : "Two seconds. Recorded on this handset only."}
         </GateText>
       </Pressable>
       </RevealItem>

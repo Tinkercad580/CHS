@@ -3,12 +3,17 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useTheme } from "../app/ThemeProvider";
 import { useAdminStore } from "../store/AdminStore";
 import { NAV } from "../mock/nav";
-import { useSessionController } from "@chs/api-client/react";
-import { accessSummary, initials, societyMark, useConsoleMe, useCurrentSociety } from "../api/society";
+import { useApiQuery, useSessionController } from "@chs/api-client/react";
+import { api } from "@chs/contract";
+import { accessSummary, holds, initials, societyMark, useConsoleMe, useCurrentSociety } from "../api/society";
 import { Spinner } from "../components/Spinner";
-import { NOTIFS } from "../mock/dashboard";
 import { Toaster } from "../components/Toaster";
 import { ModalShell } from "../components/ModalShell";
+import { AccountModal, EmailBanner } from "../features/account/AccountPanels";
+import { NotificationsDrawer } from "../features/account/NotificationsDrawer";
+import { useUnreadCount } from "../features/account/notifications";
+import { fyLabel } from "../lib/money";
+import { GlobalSearch } from "./GlobalSearch";
 
 const BREAKPOINT = 1100;
 
@@ -23,6 +28,7 @@ export function AdminLayout() {
   const [railOpen, setRailOpen] = useState(false);
   const [societyOpen, setSocietyOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     const onResize = () => {
@@ -63,18 +69,20 @@ export function AdminLayout() {
       )}
 
       {railVisible && (
-        <Sidebar narrow={narrow} onNavigate={() => narrow && setRailOpen(false)} onOpenSocieties={() => setSocietyOpen(true)} />
+        <Sidebar narrow={narrow} onNavigate={() => narrow && setRailOpen(false)} onOpenSocieties={() => setSocietyOpen(true)} onOpenSettings={() => setSettingsOpen(true)} />
       )}
 
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
         <TopBar narrow={narrow} onOpenRail={() => setRailOpen(true)} onOpenNotifs={() => setNotifOpen(true)} />
         <main style={{ flex: 1, padding: "26px 28px 72px", minWidth: 0 }}>
+          <EmailBanner />
           <Outlet />
         </main>
       </div>
 
       {societyOpen && <SocietyModal onClose={() => setSocietyOpen(false)} />}
-      {notifOpen && <NotifDrawer onClose={() => setNotifOpen(false)} />}
+      {notifOpen && <NotificationsDrawer onClose={() => setNotifOpen(false)} />}
+      {settingsOpen && <AccountModal onClose={() => setSettingsOpen(false)} />}
       <Toaster />
     </div>
   );
@@ -84,13 +92,16 @@ function Sidebar({
   narrow,
   onNavigate,
   onOpenSocieties,
+  onOpenSettings,
 }: {
   narrow: boolean;
   onNavigate: () => void;
   onOpenSocieties: () => void;
+  onOpenSettings: () => void;
 }) {
   const me = useConsoleMe();
   const { society, societies } = useCurrentSociety();
+  const badges = useNavBadges();
 
   const railStyle = narrow
     ? {
@@ -179,9 +190,9 @@ function Sidebar({
                 <>
                   <span style={{ width: 3, height: 16, borderRadius: 2, flex: "none", background: isActive ? "var(--accent,#0E6B5C)" : "transparent" }} />
                   <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{n.label}</span>
-                  {n.badge && (
+                  {badges[n.key] && (
                     <span style={{ flex: "none", padding: "1px 7px", borderRadius: 999, background: isActive ? "var(--accent,#0E6B5C)" : "var(--subtle,#EDF1EF)", color: isActive ? "#ffffff" : "var(--ink-soft,#4A5B56)", font: "700 10.5px/1.6 Figtree, sans-serif" }}>
-                      {n.badge}
+                      {badges[n.key]}
                     </span>
                   )}
                 </>
@@ -199,6 +210,19 @@ function Sidebar({
             {society ? accessSummary(society) : "Platform administrator"}
           </span>
         </span>
+        <button
+          type="button"
+          onClick={onOpenSettings}
+          title="Your account: notifications, password, devices, two-factor"
+          aria-label="Your account"
+          className="press-scale focus-ring"
+          style={{ width: 32, height: 32, flex: "none", border: "1px solid var(--rail-line,#E3E9E6)", borderRadius: 9, background: "var(--rail,#fff)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--rail-soft,#5A6B66)" }}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" />
+          </svg>
+        </button>
         <SignOutButton />
       </div>
     </aside>
@@ -208,30 +232,21 @@ function Sidebar({
 function TopBar({ narrow, onOpenRail, onOpenNotifs }: { narrow: boolean; onOpenRail: () => void; onOpenNotifs: () => void }) {
   const { theme, toggleTheme } = useTheme();
   const dark = theme === "dark";
+  const unread = useUnreadCount();
 
   return (
     <header className="theme-transition" style={{ position: "sticky", top: 0, zIndex: 30, background: "var(--canvas,#F7F9F8)", borderBottom: "1px solid var(--border,#E3E9E6)", padding: "12px 28px", display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
       {narrow && (
-        <button type="button" onClick={onOpenRail} title="Menu" className="press-scale" style={{ width: 38, height: 38, flex: "none", border: "1px solid var(--border-strong,#CCD6D2)", borderRadius: 10, background: "var(--surface,#fff)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <button type="button" onClick={onOpenRail} title="Menu" aria-label="Menu" className="press-scale" style={{ width: 38, height: 38, flex: "none", border: "1px solid var(--border-strong,#CCD6D2)", borderRadius: 10, background: "var(--surface,#fff)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink,#0F1A17)" strokeWidth="2.1" strokeLinecap="round">
             <path d="M4 7h16M4 12h16M4 17h16" />
           </svg>
         </button>
       )}
-      <div style={{ display: "flex", alignItems: "center", gap: 9, height: 38, padding: "0 13px", border: "1px solid var(--border-strong,#CCD6D2)", borderRadius: 10, background: "var(--surface,#fff)", flex: 1, minWidth: 180, maxWidth: 420 }}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink-muted,#8A9995)" strokeWidth="2" strokeLinecap="round">
-          <circle cx="11" cy="11" r="6.5" />
-          <path d="m20 20-4.4-4.4" />
-        </svg>
-        <input type="text" placeholder="Search unit, member, bill or ticket" style={{ flex: 1, minWidth: 0, border: 0, background: "transparent", font: "400 14px/1 Figtree, sans-serif", color: "var(--ink,#0F1A17)", outline: "none" }} />
-        <span style={{ font: "500 11px/1 'IBM Plex Mono',monospace", color: "var(--ink-soft,#5A6B66)", background: "var(--subtle,#F1F4F3)", padding: "3px 6px", borderRadius: 5 }}>⌘K</span>
-      </div>
+      <GlobalSearch />
       <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 9 }}>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 6, height: 32, padding: "0 11px", borderRadius: 999, background: "var(--ok-wash,#E8F5EC)", font: "600 12px/1 Figtree, sans-serif", color: "var(--ok-ink,#14663A)" }}>
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#167A3C" }} />
-          FY 2026-27 open
-        </span>
-        <button type="button" onClick={toggleTheme} title={dark ? "Switch to light" : "Switch to dark"} className="press-scale" style={{ width: 38, height: 38, border: "1px solid var(--border-strong,#CCD6D2)", borderRadius: 10, background: "var(--surface,#fff)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <FyChip />
+        <button type="button" onClick={toggleTheme} title={dark ? "Switch to light" : "Switch to dark"} aria-label={dark ? "Switch to light theme" : "Switch to dark theme"} className="press-scale" style={{ width: 38, height: 38, border: "1px solid var(--border-strong,#CCD6D2)", borderRadius: 10, background: "var(--surface,#fff)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
           {dark ? (
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink,#0F1A17)" strokeWidth="1.8" strokeLinecap="round">
               <circle cx="12" cy="12" r="4.2" />
@@ -243,16 +258,54 @@ function TopBar({ narrow, onOpenRail, onOpenNotifs }: { narrow: boolean; onOpenR
             </svg>
           )}
         </button>
-        <button type="button" onClick={onOpenNotifs} className="press-scale" style={{ position: "relative", width: 38, height: 38, border: "1px solid var(--border-strong,#CCD6D2)", borderRadius: 10, background: "var(--surface,#fff)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <button
+          type="button"
+          onClick={onOpenNotifs}
+          title="Notifications"
+          aria-label={unread ? `Notifications, ${unread} unread` : "Notifications"}
+          className="press-scale"
+          style={{ position: "relative", width: 38, height: 38, border: "1px solid var(--border-strong,#CCD6D2)", borderRadius: 10, background: "var(--surface,#fff)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+        >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink,#0F1A17)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
             <path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z" />
             <path d="M10 19a2 2 0 0 0 4 0" />
           </svg>
-          <span style={{ position: "absolute", top: 7, right: 8, width: 7, height: 7, borderRadius: "50%", background: "var(--bad,#C0342B)", border: "1.5px solid var(--surface,#fff)" }} />
+          {unread > 0 && <span style={{ position: "absolute", top: 7, right: 8, width: 7, height: 7, borderRadius: "50%", background: "var(--bad,#C0342B)", border: "1.5px solid var(--surface,#fff)" }} />}
         </button>
       </div>
     </header>
   );
+}
+
+/**
+ * The society's current financial year, from its profile's start month
+ * (`society.get`) and today's date in India. The design's chip also said
+ * "open"; nothing in the API closes a year yet, so it says only which year.
+ */
+function FyChip() {
+  const { society } = useCurrentSociety();
+  const profile = useApiQuery(api.society.get, { params: { societyId: society?.societyId ?? "" } }, { enabled: Boolean(society) });
+  if (!profile.data) return null;
+  return (
+    <span title="Current financial year" style={{ display: "inline-flex", alignItems: "center", gap: 6, height: 32, padding: "0 11px", borderRadius: 999, background: "var(--ok-wash,#E8F5EC)", font: "600 12px/1 Figtree, sans-serif", color: "var(--ok-ink,#14663A)", whiteSpace: "nowrap" }}>
+      <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--ok,#167A3C)" }} />
+      {fyLabel(profile.data.fyStartMonth)}
+    </span>
+  );
+}
+
+/**
+ * Counts beside nav items, from the API. Only Members & units has one today:
+ * approvals waiting on the office (`members.approvals` total), for admins
+ * who can decide them. The design's other badges belong to modules with no
+ * API yet, so they are not shown rather than invented.
+ */
+function useNavBadges(): Record<string, string> {
+  const { society } = useCurrentSociety();
+  const canApprove = society ? holds(society, "members.manage") : false;
+  const pending = useApiQuery(api.members.approvals, { params: { societyId: society?.societyId ?? "" }, query: { status: "PENDING", limit: 1 } }, { enabled: canApprove });
+  const n = pending.data?.total ?? pending.data?.items.length ?? 0;
+  return n > 0 ? { members: String(n) } : {};
 }
 
 /**
@@ -356,34 +409,5 @@ function SocietyModal({ onClose }: { onClose: () => void }) {
         Cancel
       </button>
     </ModalShell>
-  );
-}
-
-function NotifDrawer({ onClose }: { onClose: () => void }) {
-  return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 90, background: "rgba(15,26,23,.4)", display: "flex", justifyContent: "flex-end", animation: "veilIn .2s ease" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: "min(400px,92vw)", height: "100%", background: "var(--surface,#fff)", boxShadow: "-16px 0 50px -20px rgba(15,26,23,.36)", display: "flex", flexDirection: "column", animation: "drawerIn .28s cubic-bezier(.2,.7,.3,1)" }}>
-        <div style={{ padding: "20px 22px", borderBottom: "1px solid var(--border-soft,#EDF1EF)", display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ flex: 1, font: "700 17px/1.3 Figtree, sans-serif", letterSpacing: "-.015em" }}>Notifications</span>
-          <button type="button" onClick={onClose} style={{ width: 32, height: 32, border: 0, borderRadius: 9, background: "var(--canvas,#F7F9F8)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink-soft,#5A6B66)" strokeWidth="2" strokeLinecap="round">
-              <path d="M6 6l12 12M18 6 6 18" />
-            </svg>
-          </button>
-        </div>
-        <div style={{ flex: 1, overflowY: "auto", padding: "8px 0" }}>
-          {NOTIFS.map((n, i) => (
-            <div key={i} className="row-hover" style={{ padding: "14px 22px", borderBottom: "1px solid var(--border-soft,#F5F7F6)", display: "flex", gap: 12, cursor: "pointer" }}>
-              <span style={{ width: 8, height: 8, borderRadius: "50%", flex: "none", marginTop: 6, background: n.dot }} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ font: "600 13.5px/1.4 Figtree, sans-serif" }}>{n.t}</div>
-                <div style={{ marginTop: 3, font: "400 12.5px/1.5 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>{n.b}</div>
-                <div style={{ marginTop: 5, font: "500 11px/1.3 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>{n.time}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
   );
 }

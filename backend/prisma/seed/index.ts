@@ -13,6 +13,11 @@ import { DEFAULT_PERMISSION_TEMPLATES } from "@chs/contract";
 import { hashPassword } from "../../src/core/auth/password";
 import { fromIsoDate } from "../../src/core/dates";
 import { prisma } from "../../src/core/db";
+import { runWithContext, systemContext } from "../../src/core/context";
+import * as bills from "../../src/modules/billing/bills.service";
+import * as heads from "../../src/modules/billing/heads.service";
+import * as notices from "../../src/modules/notifications/notices.service";
+import * as payments from "../../src/modules/payments/payments.service";
 import { seedSocietyDefaults } from "../../src/modules/platform/platform.service";
 import { DEFAULT_SETTINGS } from "../../src/modules/society/society.service";
 import { STATUTORY_SEED } from "./statutory";
@@ -105,7 +110,7 @@ async function seedDemo() {
             floorCount: 13,
             liftPresent: true,
             constructionYear: 2004 + Math.floor(i / 2),
-            constructionCostPaise: 42_00_00_000_00n,
+            constructionCostPaise: 6_00_00_000_00n,
           },
         });
         const rows = [];
@@ -229,9 +234,78 @@ async function seedDemo() {
     { timeout: 120_000 },
   );
 
-  console.log("demo society: Shanti Vihar CHS (SVCHS) — 4 buildings, 248 units");
+  await seedMoney();
+  console.log("demo society: Shanti Vihar CHS (SVCHS) — 4 buildings, 248 units, bills for Aug and Sep 2026");
   console.log(`  demo password for every account marked * : ${DEMO_PASSWORD}`);
   for (const d of DEMO_USERS) console.log(`  ${d.withPassword ? "*" : " "} ${d.mobile}  ${d.name.padEnd(18)} ${d.template}${d.unit ? ` · ${d.unit}` : ""}${d.withPassword ? "" : "  (first sign-in creates the password)"}`);
+}
+
+/**
+ * Charge heads that follow Rule 106C-12 (service charges equal per flat, water
+ * by inlet, lift by building, funds as a share of construction cost), two
+ * published months, most of August paid, and three notices. Runs through the
+ * real services, so the demo data is exactly what the product would produce —
+ * with notifications dropped, since nobody should be told about history.
+ */
+async function seedMoney() {
+  const society = await prisma.society.findUniqueOrThrow({ where: { code: "SVCHS" } });
+  const secretary = await prisma.societyUser.findFirstOrThrow({ where: { societyId: society.id, user: { mobile: "9820011001" } } });
+  const scope = {
+    societyId: society.id,
+    societyUserId: secretary.id,
+    role: "ADMIN" as const,
+    userType: "COMMITTEE" as const,
+    permissions: new Set(secretary.permissions as never[]),
+    unitId: null,
+  };
+  const resolution = { meetingRef: "AGM 2025, resolution 4", resolvedOn: "2025-09-21" };
+  const quiet = async <T>(fn: () => Promise<T>): Promise<T> => {
+    const ctx = systemContext("seed");
+    const out = await runWithContext(ctx, fn);
+    ctx.afterCommit.length = 0;
+    ctx.pendingEvents.length = 0;
+    return out;
+  };
+
+  const head = async (code: string, name: string, category: string, method: string, rate: string, extra: Record<string, unknown> = {}) => {
+    const h = await quiet(() => heads.createHead(scope, { code, name, category: category as never, method: method as never, gstApplicable: false, filters: {}, sortOrder: extra.sortOrder as number ?? 100, baseHeadId: (extra.baseHeadId as string) ?? null, resolution: null }));
+    await quiet(() => heads.setRate(scope, secretary.userId, h.id, { rate, effectiveFrom: "2026-07-01", resolution: extra.resolution ? resolution : null, rateByType: null, note: null }));
+    return h;
+  };
+  const svc = await head("SVC", "Service charges", "SERVICE", "EQUAL_PER_UNIT", "180000", { sortOrder: 10 });
+  await head("WATER", "Water charges", "WATER", "PER_WATER_INLET", "14000", { sortOrder: 20 });
+  await head("LIFT", "Lift maintenance", "LIFT", "BUILDING_SCOPED_EQUAL", "35000", { sortOrder: 30 });
+  await head("PARK", "Parking", "PARKING", "PER_PARKING_SLOT", "30000", { sortOrder: 40 });
+  await head("SINK", "Sinking fund", "SINKING_FUND", "PERCENT_OF_CONSTRUCTION_COST", "25", { sortOrder: 50, resolution: true });
+  await head("REPAIR", "Repair & maintenance fund", "REPAIR_FUND", "PERCENT_OF_CONSTRUCTION_COST", "75", { sortOrder: 60, resolution: true });
+  await head("EDU", "Education & training fund", "EDUCATION_FUND", "PER_MEMBER_FIXED_OR_MIN", "1200", { sortOrder: 70 });
+  await head("NOC", "Non-occupancy charges", "NON_OCCUPANCY", "PERCENT_OF_HEAD", "1000", { sortOrder: 80, baseHeadId: svc.id });
+
+  const aug = await quiet(() => bills.createRun(scope, secretary.userId, { period: "2026-08" }));
+  await quiet(() => bills.publishRun(scope, secretary.userId, aug.id));
+
+  // Most flats paid August; a few didn't (B-0702 among them), so September carries interest and the defaulters list has names.
+  const augBills = await prisma.bill.findMany({ where: { billRunId: aug.id }, include: { billRun: false } });
+  const units = await prisma.unit.findMany({ where: { id: { in: augBills.map((b) => b.unitId) } }, select: { id: true, number: true, building: { select: { name: true } } } });
+  const labelOf = new Map(units.map((u) => [u.id, `${u.building.name}-${u.number}`]));
+  const unpaid = new Set(["B-0702", "C-0405", "A-0301", "D-0904", "B-1102", "C-1201", "D-0102", "A-0805"]);
+  let i = 0;
+  for (const b of augBills.sort((x, y) => labelOf.get(x.unitId)!.localeCompare(labelOf.get(y.unitId)!))) {
+    if (unpaid.has(labelOf.get(b.unitId)!)) continue;
+    const mode = (["UPI", "NEFT", "CASH", "UPI", "IMPS"] as const)[i++ % 5]!;
+    await quiet(() => payments.record(scope, secretary.userId, { unitId: b.unitId, amountPaise: Number(b.totalPaise), mode, date: `2026-08-${String(3 + (i % 12)).padStart(2, "0")}`, instrumentNo: mode === "CASH" ? null : `TXN${100000 + i}`, instrumentDate: null, bankName: null, remarks: null }));
+  }
+
+  const sep = await quiet(() => bills.createRun(scope, secretary.userId, { period: "2026-09" }));
+  await quiet(() => bills.publishRun(scope, secretary.userId, sep.id));
+
+  const notice = async (input: Parameters<typeof notices.create>[2]) => {
+    const n = await quiet(() => notices.create(scope, secretary.userId, input));
+    await quiet(() => notices.publish(scope, secretary.userId, n.id));
+  };
+  await notice({ title: "Annual general meeting on 28 September", body: "The AGM will be held in the clubhouse at 10am on Sunday, 28 September. Audited accounts for 2025-26 and the proposed budget are attached to this notice.\n\nTwo items need a vote: the lift modernisation contract and the revised parking allotment rules. Owners unable to attend may file a proxy up to 24 hours before.\n\nTenants are welcome to attend and speak, though the vote rests with owners.", category: "MEETING", audience: { kind: "ALL" }, ackRequired: true, pinned: true, channels: [], expiresAt: null, emergencyReason: null, supersedesId: null });
+  await notice({ title: "Clubhouse closed for flooring work", body: "The clubhouse is closed until 20 September while the floor is relaid. Existing bookings have been refunded.", category: "FACILITY", audience: { kind: "RESIDENTS" }, ackRequired: false, pinned: false, channels: [], expiresAt: null, emergencyReason: null, supersedesId: null });
+  await notice({ title: "Water supply off Thursday, 10am to 4pm", body: "The main pump feeding B and C wings is being replaced on Thursday. Supply will be off from 10am and should return by 4pm.\n\nStore what you need on Wednesday night. Tankers will stand by at the podium.", category: "WATER", audience: { kind: "ALL" }, ackRequired: true, pinned: false, channels: [], expiresAt: null, emergencyReason: null, supersedesId: null });
 }
 
 async function main() {

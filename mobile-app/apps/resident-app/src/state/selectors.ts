@@ -1,76 +1,53 @@
-import { formatInr, type Bill } from "@sahaj/shared";
 import type { AppResidentState } from "./types";
+import { HOLDING_LABEL } from "../api/identity";
 
 /**
  * Derived values are computed here, never stored (README's "Derived values are
- * computed, never stored" under State management) — total due, unread counts,
- * attendance totals, salary payable, vote tallies all live in this file, not in
- * `AppResidentState` fields that could drift from the rows they summarise.
+ * computed, never stored" under State management) — attendance totals, salary
+ * payable, vote tallies all live in this file, not in `AppResidentState` fields
+ * that could drift from the rows they summarise. Dues, bills and unread counts
+ * are the API's and are read through api/billing.ts and friends instead.
  */
 
 export interface UnitInfo {
   code: string;
   line: string;
-  tag: "Owner" | "Tenant" | "Landlord";
+  /** How the viewed flat is held: the home flat's holding, "Landlord" for a let-out flat, "Owner" for any other. */
+  tag: string;
 }
 
 /**
- * The active unit and how its ledger reads, mirroring the prototype's `curUnit()`.
- * The flats and the society name are the signed-in account's (`state.identity`),
- * so the same three shapes now describe whoever is actually signed in.
+ * The active unit and how its ledger reads, after the prototype's `curUnit()`.
+ * The flats and the society name are the signed-in account's (`state.identity`).
+ * The home flat reads as it is held (owner, co-owner, family member, tenant);
+ * another flat of theirs as let out or simply owned.
  */
 export function currentUnit(state: AppResidentState): UnitInfo {
-  const society = state.identity?.societyName ?? "";
-  const letOut = state.identity?.letOutUnit ?? null;
-  if (state.role === "tenant") return { code: state.unit, line: `${state.unit} · ${society} · rented`, tag: "Tenant" };
-  if (state.role === "owner") return { code: state.unit, line: `${state.unit} · ${society}`, tag: "Owner" };
-  // owner_tenant: `unit` toggles between the occupied flat and the let-out flat.
-  if (letOut && state.unit === letOut) return { code: letOut, line: `${letOut} · owned, rented out`, tag: "Landlord" };
-  return { code: state.unit, line: `${state.unit} · owned, you live here`, tag: "Owner" };
+  const identity = state.identity;
+  const society = identity?.societyName ?? "";
+  const other = identity?.otherUnits.find((u) => u.label === state.unit);
+  if (other) return other.letOut ? { code: other.label, line: `${other.label} · owned, rented out`, tag: "Landlord" } : { code: other.label, line: `${other.label} · owned`, tag: "Owner" };
+  const holding = identity?.homeHolding ?? "owner";
+  const tag = HOLDING_LABEL[holding];
+  if (holding === "tenant") return { code: state.unit, line: `${state.unit} · ${society} · rented`, tag };
+  // With other flats to switch between, the home line says which one this is.
+  if (identity && identity.otherUnits.length > 0) return { code: state.unit, line: `${state.unit} · ${holding === "family" ? "family home" : "owned"}, you live here`, tag };
+  return { code: state.unit, line: `${state.unit} · ${society}`, tag };
 }
 
-/**
- * Bills scoped to the active unit and role (README's "Roles and data scoping" —
- * scope on role/unit, not just a summary line). Facility charges never show for a
- * tenant or on a let-out ledger, since those bills simply don't belong to that unit.
- */
-export function visibleBills(state: AppResidentState): Bill[] {
-  const unit = currentUnit(state).code;
-  let list = state.bills.filter((b) => b.unit === unit);
-  if (state.role === "tenant") list = list.filter((b) => b.category !== "facility");
-  if (state.dueFilter === "unpaid") list = list.filter((b) => b.status === "unpaid");
-  if (state.dueFilter === "paid") list = list.filter((b) => b.status === "paid");
-  return list;
-}
-
-export function totalDue(state: AppResidentState): number {
-  const unit = currentUnit(state).code;
-  return state.bills.filter((b) => b.unit === unit && b.status === "unpaid").reduce((sum, b) => sum + b.amount, 0);
-}
-
-export function unpaidBillCount(state: AppResidentState): number {
-  const unit = currentUnit(state).code;
-  return state.bills.filter((b) => b.unit === unit && b.status === "unpaid").length;
-}
-
-export function unreadNoticeCount(state: AppResidentState): number {
-  return state.notices.filter((n) => n.unread).length;
-}
-
-export function unreadNotifCount(state: AppResidentState): number {
-  return state.notifs.filter((n) => n.unread).length;
-}
-
+/** Passes still expected at the gate for the flat being viewed — the list Visitors shows. */
 export function expectedPasses(state: AppResidentState) {
-  return state.passes.filter((p) => p.state === "expected");
+  return state.passes.filter((p) => p.state === "expected" && p.unit === state.unit);
 }
 
+/** Open tickets of the flat being viewed, the same scope as the Helpdesk list. */
 export function openTicketCount(state: AppResidentState): number {
-  return state.tickets.filter((t) => t.status !== "resolved").length;
+  return state.tickets.filter((t) => t.unit === state.unit && t.status !== "resolved").length;
 }
 
-export function activeBill(state: AppResidentState): Bill {
-  return state.bills.find((b) => b.id === state.activeBillId) ?? state.bills[0];
+/** Daily help registered against the flat being viewed — the Daily help screen's list. */
+export function unitDailyHelp(state: AppResidentState) {
+  return state.dailyHelp.filter((h) => h.unit === state.unit);
 }
 
 export interface HelpSummary {
@@ -117,9 +94,6 @@ export function pollTally(state: AppResidentState, pollId: string): PollTallyOpt
   });
 }
 
-export function ledgerBalanceLabel(amount: number): string {
-  return formatInr(amount);
-}
 
 export const helpRoleWords: Record<string, { mr: string; hi: string }> = {
   Housekeeping: { mr: "साफसफाई", hi: "साफ़-सफ़ाई" },

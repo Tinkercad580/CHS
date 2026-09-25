@@ -1,0 +1,110 @@
+import { z } from "zod";
+import { endpoint } from "../define";
+import { Page } from "../schemas/common";
+import * as P from "../schemas/platform";
+import * as S from "../schemas/society";
+import { inSociety, sp } from "./_shared";
+
+export const society = {
+  get: endpoint({ method: "GET", path: sp(""), summary: "Society profile", access: inSociety(), response: S.Society }),
+  update: endpoint({
+    method: "PATCH",
+    path: sp(""),
+    summary: "Edit the society profile",
+    access: inSociety("society.configure"),
+    body: S.UpdateSocietyBody,
+    response: S.Society,
+    invalidates: ["society.get", "society.onboarding", "me.get"],
+  }),
+  settings: endpoint({ method: "GET", path: sp("/settings"), summary: "Society settings", access: inSociety(), response: S.SocietySettings }),
+  updateSettings: endpoint({
+    method: "PATCH",
+    path: sp("/settings"),
+    summary: "Change society settings",
+    access: inSociety("society.configure"),
+    body: S.UpdateSocietySettingsBody,
+    response: S.SocietySettings,
+    invalidates: ["society.settings"],
+  }),
+  onboarding: endpoint({
+    method: "GET",
+    path: sp("/onboarding"),
+    summary: "Setup checklist and go-live readiness",
+    access: inSociety("society.configure"),
+    response: S.Onboarding,
+  }),
+  goLive: endpoint({
+    method: "POST",
+    path: sp("/go-live"),
+    summary: "Move the society from draft to live",
+    access: inSociety("society.configure"),
+    response: S.Society,
+    invalidates: ["society.get", "society.onboarding"],
+  }),
+  billingConfig: endpoint({
+    method: "GET",
+    path: sp("/billing-config"),
+    summary: "Billing configuration",
+    access: inSociety(["society.configure", "billing.generate"]),
+    response: S.BillingConfig,
+  }),
+  updateBillingConfig: endpoint({
+    method: "PUT",
+    path: sp("/billing-config"),
+    summary: "Change billing configuration (applies from the next unbilled period)",
+    access: inSociety("society.configure"),
+    body: S.UpdateBillingConfigBody,
+    response: S.BillingConfig,
+    invalidates: ["society.billingConfig", "society.onboarding"],
+  }),
+  bankAccounts: endpoint({
+    method: "GET",
+    path: sp("/bank-accounts"),
+    summary: "Bank accounts",
+    access: inSociety(["society.configure", "accounts.manage", "payments.record"]),
+    response: z.array(S.BankAccount),
+  }),
+  createBankAccount: endpoint({
+    method: "POST",
+    path: sp("/bank-accounts"),
+    summary: "Add a bank account",
+    access: inSociety("society.configure"),
+    body: S.CreateBankAccountBody,
+    response: S.BankAccount,
+    invalidates: ["society.bankAccounts", "society.onboarding"],
+  }),
+  updateBankAccount: endpoint({
+    method: "PATCH",
+    path: sp("/bank-accounts/:accountId"),
+    summary: "Edit a bank account",
+    access: inSociety("society.configure"),
+    body: S.UpdateBankAccountBody,
+    response: S.BankAccount,
+    invalidates: ["society.bankAccounts"],
+  }),
+  statutoryConfig: endpoint({
+    method: "GET",
+    path: sp("/statutory-config"),
+    summary: "Statutory parameters in force, with history",
+    access: inSociety(["compliance.manage", "society.configure", "billing.generate"]),
+    query: z.object({ asOf: z.iso.date().optional() }),
+    response: z.array(S.StatutoryConfigEntry),
+  }),
+  setStatutoryConfig: endpoint({
+    method: "POST",
+    path: sp("/statutory-config"),
+    summary: "Add an effective-dated society override",
+    access: inSociety("compliance.manage"),
+    body: S.SetStatutoryConfigBody,
+    response: S.StatutoryConfigEntry,
+    invalidates: ["society.statutoryConfig"],
+  }),
+  auditLogs: endpoint({
+    method: "GET",
+    path: sp("/audit-logs"),
+    summary: "Audit log",
+    access: inSociety("audit.view"),
+    query: P.AuditListQuery,
+    response: Page(P.AuditLog),
+  }),
+};

@@ -1,8 +1,10 @@
 # The API
 
-Base path `/api/v1`. Live reference: `http://localhost:4100/api/docs`
-(OpenAPI: `/api/v1/openapi.json`). The source of truth is
-`packages/contract/src/endpoints.ts` — this page is how to use and extend it.
+Base path `/api/v1`. **Every endpoint with its access rule and inputs:
+[api/ENDPOINTS.md](api/ENDPOINTS.md)** (generated from the contract). Live
+reference: `http://localhost:4100/api/docs` (OpenAPI: `/api/v1/openapi.json`).
+The source of truth is `packages/contract/src/endpoints/` — this page is how to
+use and extend it.
 
 ## Wire conventions (MASTER_SPEC E3)
 
@@ -55,7 +57,7 @@ none of them touch tokens.
 ## Adding an endpoint
 
 1. **Contract** — add the schemas to `packages/contract/src/schemas/<area>.ts`
-   and the entry to `endpoints.ts`: method, path, summary, access (with the
+   and the entry to `endpoints/<area>.ts` (a new area is also registered in `endpoints.ts`): method, path, summary, access (with the
    permission), `surface` if it isn't obvious, `invalidates` for writes,
    `idempotent` if it moves money. If it changes data other screens show, add
    or extend a realtime event in `events.ts`.
@@ -67,6 +69,8 @@ none of them touch tokens.
 4. **Tests** — integration test in `backend/test/integration`; if it's a
    legal rule, a compliance test in `backend/test/compliance`. The
    cross-tenant test picks the new endpoint up by itself.
+5. **Docs** — `npm run docs -w backend` regenerates [api/ENDPOINTS.md](api/ENDPOINTS.md);
+   update the module doc in [modules/](modules/).
 
 ## Endpoint map (v1)
 
@@ -78,10 +82,15 @@ none of them touch tokens.
 | `society` | profile · settings · onboarding · go-live · billing config · bank accounts · statutory config · audit log |
 | `structure` | buildings · units (list, create, bulk layout, update, import) · parking slots (list, create, allot) |
 | `members` | register · unit overview (360) · memberships (admit, cease, nominees) · occupancy · tenancies (create, update, end) · family · vehicles (incl. gate plate lookup) · pets · approvals (queue, decide) · my home · corrections · directory |
+| `notifications` | register/unregister phone · inbox · unread count · mark read · preferences · test send |
+| `notices` | list · my feed · get · draft · edit draft · publish · delete draft · read · acknowledge · proof-of-service report |
+| `billing` | charge heads · rates (effective-dated) · simulate · unit charges · bill runs (generate, preview, recompute, publish, discard) · bills · cancel · supplementary bills · ledger · credit notes · my dues · my bills |
+| `payments` | start online payment · dummy checkout · my payments · get · collections · record cash/cheque/transfer · cheque clear/bounce · cancel receipt · gateway webhook |
+| `reports` | dashboard · run a report · email a report (Excel/CSV) |
 | `platform` | societies (list, onboard with first admin) |
-| `health` | liveness + dependency checks |
+| `health` | liveness + dependency checks (database, queue, push, email) |
 
-Modules from MASTER_SPEC Phase 4 onwards (billing, payments, accounting,
-recovery, helpdesk, gate, notices, meetings, documents, requests, amenities,
-vendors, compliance, reports) are not built yet. Billing is gated on the
-compliance research pass (B1, `docs/compliance/`).
+Not built yet: accounting, recovery, helpdesk, gate & visitors, meetings,
+documents, requests, amenities, vendors, compliance calendar. Billing runs on
+statutory values that are still marked unverified — see
+`docs/compliance/RULES_REGISTER.md` before billing a real society.

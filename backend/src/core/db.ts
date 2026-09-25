@@ -16,11 +16,11 @@ export const prisma = new PrismaClient({ adapter });
  * than opening a second one, so a service can be called on its own or from
  * inside another service's transaction.
  */
-export async function transaction<T>(db: Tx, fn: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T> {
+export async function transaction<T>(db: Tx, fn: (tx: Prisma.TransactionClient) => Promise<T>, timeoutMs = 15_000): Promise<T> {
   // Only the root client opens a transaction. A transaction client also exposes
   // `$transaction`, so presence of the method can't tell the two apart.
   if (db !== prisma) return fn(db as Prisma.TransactionClient);
-  return prisma.$transaction(fn, { maxWait: 5_000, timeout: 15_000 });
+  return prisma.$transaction(fn, { maxWait: 5_000, timeout: timeoutMs });
 }
 
 export function isUniqueViolation(err: unknown, field?: string): boolean {

@@ -9,6 +9,7 @@ import { Icon } from "../../components/Icon";
 import { iconPaths } from "../../components/iconPaths";
 import { Button } from "../../components/Button";
 import { EASE_OUT } from "../../components/motion";
+import { LocalOnlyNote } from "../../components/LocalOnlyNote";
 
 export function PassDoneScreen() {
   const { state, actions } = useResident();
@@ -38,6 +39,9 @@ export function PassDoneScreen() {
         <AppText variant="moneyHero" style={{ fontSize: 40, letterSpacing: 6 }} forceLatin>
           {code}
         </AppText>
+      </View>
+      <View style={{ alignSelf: "stretch" }}>
+        <LocalOnlyNote>Saved on this phone only. The gate can't check this code yet.</LocalOnlyNote>
       </View>
       <Button label={standing ? t("sendPassToThem") : t("shareWithGuest")} onPress={actions.sharePass} height={50} fontSize={15} weight={700} style={{ alignSelf: "stretch", marginBottom: 11 }} />
       <Button label={standing ? t("seeAttendance") : t("backToVisitors")} kind="secondary" height={50} fontSize={15} weight={600} onPress={actions.goAfterPassDone} style={{ alignSelf: "stretch" }} />

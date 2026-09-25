@@ -44,12 +44,8 @@ button {
 @keyframes riseBar { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 @keyframes pulseRing { 0% { box-shadow: 0 0 0 0 rgba(192,52,43,.4); } 70% { box-shadow: 0 0 0 9px rgba(192,52,43,0); } 100% { box-shadow: 0 0 0 0 rgba(192,52,43,0); } }
 @keyframes spin { to { transform: rotate(360deg); } }
-/* Repeating list cards — table rows, kanban cards, calendar cells, stat
-   tiles. Distinct from fadeUp (screen content blocks): a bigger rise and a
-   slight scale, per README "Motion" table. Stagger delay is computed in JS
-   per item (see lib/motion.ts) and passed as animationDelay — never
-   selected on inline style strings. */
-@keyframes cardIn { from { opacity: 0; transform: translate3d(0,18px,0) scale(.965); } to { opacity: 1; transform: none; } }
+/* There is no per-row entrance: screens fade in once as a block (fadeUp),
+   and lists render their rows as they arrive. See docs/LOADING_AND_MOTION.md. */
 
 .row-hover { transition: background-color 200ms var(--ease, cubic-bezier(.2,.7,.3,1)); }
 .row-hover:hover { background: var(--surface-hover, #FAFCFB); }

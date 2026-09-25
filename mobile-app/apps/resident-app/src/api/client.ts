@@ -1,13 +1,16 @@
 import { asyncTokenStore, createApiClient, createRealtime, localStorageTokenStore, SessionController } from "@chs/api-client";
+import { focusManager, onlineManager } from "@tanstack/react-query";
 import Constants from "expo-constants";
+import * as Network from "expo-network";
 import * as SecureStore from "expo-secure-store";
-import { Platform } from "react-native";
+import { AppState, Platform } from "react-native";
 
 /**
  * The resident app's API client, realtime socket and session.
  *
- * The API origin comes from `expo.extra.apiOrigin` (app.json) or
- * EXPO_PUBLIC_API_ORIGIN. On a phone the session lives in the OS keychain
+ * The API origin is EXPO_PUBLIC_API_ORIGIN, inlined at bundle time, or failing
+ * that `expo.extra.apiOrigin`, which app.config.ts sets from the same variable
+ * at config time. On a phone the session lives in the OS keychain
  * (expo-secure-store); the web preview has no keychain and uses localStorage.
  */
 const origin =
@@ -34,3 +37,19 @@ export const apiClient = createApiClient({
 export const realtime = createRealtime({ origin, getAccessToken: () => apiClient.tokens.get()?.accessToken });
 
 export const session = new SessionController(apiClient, { client: "resident", deviceName: `${Platform.OS} resident app` });
+
+// React Query learns about focus and connectivity from the browser's window
+// events, which a phone doesn't have. Coming back to the app counts as focus,
+// so stale screens refetch the way they do on a browser tab; losing the network
+// pauses queries and regaining it resumes them. A state that doesn't say
+// (isConnected undefined) is treated as online, so nothing waits on a guess.
+if (Platform.OS !== "web") {
+  focusManager.setEventListener((setFocused) => {
+    const sub = AppState.addEventListener("change", (status) => setFocused(status === "active"));
+    return () => sub.remove();
+  });
+  onlineManager.setEventListener((setOnline) => {
+    const sub = Network.addNetworkStateListener((state) => setOnline(state.isConnected !== false));
+    return () => sub.remove();
+  });
+}

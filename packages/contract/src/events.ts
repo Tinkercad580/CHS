@@ -39,6 +39,16 @@ export const REALTIME_EVENTS = {
     invalidates: ["members.approvals", "members.myHome"],
   },
   "banks.changed": { payload: z.object({}), invalidates: ["society.bankAccounts", "society.onboarding"] },
+  "notifications.changed": { payload: z.object({ unread: z.number().int().nullable() }), invalidates: ["notifications.list", "notifications.unreadCount"] },
+  "notices.changed": { payload: z.object({ noticeId: z.string() }), invalidates: ["notices.list", "notices.feed", "notices.get", "notices.report"] },
+  "billing.changed": {
+    payload: z.object({ unitId: z.string().nullable() }),
+    invalidates: ["billing.runs", "billing.run", "billing.bills", "billing.bill", "billing.ledger", "billing.myDues", "billing.myBills", "reports.dashboard"],
+  },
+  "payments.changed": {
+    payload: z.object({ paymentId: z.string(), status: z.string() }),
+    invalidates: ["payments.mine", "payments.get", "payments.list", "billing.myDues", "billing.myBills", "billing.bills", "billing.ledger", "reports.dashboard"],
+  },
 } as const;
 
 export type RealtimeEventName = keyof typeof REALTIME_EVENTS;

@@ -1,0 +1,260 @@
+// ─── Identity & access ──────────────────────────────────────────────────────
+
+/// A person who can sign in. One mobile = one account, across societies.
+model User {
+  id                 String    @id @default(uuid(7)) @db.Uuid
+  mobile             String    @unique @db.VarChar(10)
+  name               String    @db.VarChar(100)
+  email              String?   @db.VarChar(254)
+  language           String    @default("en") @db.VarChar(5)
+  passwordHash       String?   @map("password_hash")
+  passwordChangedAt  DateTime? @map("password_changed_at") @db.Timestamptz(3)
+  mustChangePassword Boolean   @default(false) @map("must_change_password")
+  activatedAt        DateTime? @map("activated_at") @db.Timestamptz(3)
+  termsAcceptedAt    DateTime? @map("terms_accepted_at") @db.Timestamptz(3)
+  failedAttempts     Int       @default(0) @map("failed_attempts")
+  lockedUntil        DateTime? @map("locked_until") @db.Timestamptz(3)
+  lastLoginAt        DateTime? @map("last_login_at") @db.Timestamptz(3)
+  totpSecret         String?   @map("totp_secret")
+  totpPendingSecret  String?   @map("totp_pending_secret")
+  totpEnabledAt      DateTime? @map("totp_enabled_at") @db.Timestamptz(3)
+  isPlatformAdmin    Boolean   @default(false) @map("is_platform_admin")
+  /// Bumped to invalidate every outstanding access token at once.
+  tokenVersion       Int       @default(0) @map("token_version")
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  societyUsers    SocietyUser[]
+  sessions        Session[]
+  passwordHistory PasswordHistory[]
+  tempPasswords   TempPassword[]
+  authEvents      AuthEvent[]      @relation("AuthEventUser")
+  persons         Person[]
+
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum UserType {
+  OWNER
+  CO_OWNER
+  FAMILY
+  TENANT
+  GUARD
+  STAFF
+  ACCOUNTANT
+  AUDITOR
+  COMMITTEE
+  MANAGER
+}
+
+/// A user's access to one society: role, label and granted permissions.
+model SocietyUser {
+  id              String    @id @default(uuid(7)) @db.Uuid
+  societyId       String    @map("society_id") @db.Uuid
+  userId          String    @map("user_id") @db.Uuid
+  role            Role      @default(USER)
+  userType        UserType  @map("user_type")
+  permissions     String[]
+  unitId          String?   @map("unit_id") @db.Uuid
+  notes           String?   @db.VarChar(500)
+  suspendedAt     DateTime? @map("suspended_at") @db.Timestamptz(3)
+  suspendedReason String?   @map("suspended_reason") @db.VarChar(300)
+  createdById     String?   @map("created_by") @db.Uuid
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(3)
+
+  society Society @relation(fields: [societyId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+  unit    Unit?   @relation(fields: [unitId], references: [id])
+
+  @@unique([societyId, userId])
+  @@index([societyId, role])
+  @@index([societyId, unitId])
+  @@map("society_users")
+}
+
+model PermissionTemplate {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  societyId   String   @map("society_id") @db.Uuid
+  code        String   @db.VarChar(40)
+  name        String   @db.VarChar(60)
+  role        Role
+  userType    UserType @map("user_type")
+  permissions String[]
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  society Society @relation(fields: [societyId], references: [id])
+
+  @@unique([societyId, code])
+  @@map("permission_templates")
+}
+
+/// A signed-in device. The refresh token is stored only as a hash and
+/// rotates on every use; presenting a rotated-out token revokes the family.
+model Session {
+  id               String    @id @default(uuid(7)) @db.Uuid
+  userId           String    @map("user_id") @db.Uuid
+  familyId         String    @map("family_id") @db.Uuid
+  refreshTokenHash String    @unique @map("refresh_token_hash")
+  previousHash     String?   @map("previous_hash")
+  client           String    @db.VarChar(20)
+  deviceId         String?   @map("device_id") @db.VarChar(100)
+  deviceName       String?   @map("device_name") @db.VarChar(100)
+  ip               String?   @db.VarChar(64)
+  userAgent        String?   @map("user_agent") @db.VarChar(300)
+  expiresAt        DateTime  @map("expires_at") @db.Timestamptz(3)
+  lastUsedAt       DateTime  @default(now()) @map("last_used_at") @db.Timestamptz(3)
+  revokedAt        DateTime? @map("revoked_at") @db.Timestamptz(3)
+  revokedReason    String?   @map("revoked_reason") @db.VarChar(60)
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, revokedAt])
+  @@index([previousHash])
+  @@map("sessions")
+}
+
+model PasswordHistory {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("password_history")
+}
+
+/// Single use, 24 h. Stored hashed; the plain value is shown to the issuing
+/// admin once and sent to the user once.
+model TempPassword {
+  id           String    @id @default(uuid(7)) @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  passwordHash String    @map("password_hash")
+  issuedById   String    @map("issued_by") @db.Uuid
+  societyId    String    @map("society_id") @db.Uuid
+  expiresAt    DateTime  @map("expires_at") @db.Timestamptz(3)
+  usedAt       DateTime? @map("used_at") @db.Timestamptz(3)
+  supersededAt DateTime? @map("superseded_at") @db.Timestamptz(3)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, usedAt])
+  @@map("temp_passwords")
+}
+
+model LoginAttempt {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  mobile    String   @db.VarChar(10)
+  ip        String?  @db.VarChar(64)
+  success   Boolean
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([ip, createdAt])
+  @@index([mobile, createdAt])
+  @@map("login_attempts")
+}
+
+enum AuthEventType {
+  ACTIVATED
+  LOGIN_SUCCESS
+  LOGIN_FAILED
+  LOCKED
+  UNLOCKED
+  PASSWORD_CHANGED
+  TEMP_PASSWORD_ISSUED
+  SESSION_REVOKED
+  ALL_SESSIONS_REVOKED
+  REFRESH_REUSE_DETECTED
+  TWO_FACTOR_ENABLED
+  TWO_FACTOR_DISABLED
+  SUSPENDED
+  REACTIVATED
+}
+
+model AuthEvent {
+  id        String        @id @default(uuid(7)) @db.Uuid
+  userId    String        @map("user_id") @db.Uuid
+  societyId String?       @map("society_id") @db.Uuid
+  actorId   String?       @map("actor_id") @db.Uuid
+  type      AuthEventType
+  ip        String?       @db.VarChar(64)
+  userAgent String?       @map("user_agent") @db.VarChar(300)
+  detail    String?       @db.VarChar(300)
+  createdAt DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user  User  @relation("AuthEventUser", fields: [userId], references: [id])
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("auth_events")
+}
+
+/// Every create, update, delete and approval — before/after JSON, 8-year retention.
+model AuditLog {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  societyId  String?  @map("society_id") @db.Uuid
+  actorId    String?  @map("actor_id") @db.Uuid
+  actorName  String?  @map("actor_name") @db.VarChar(100)
+  action     String   @db.VarChar(60)
+  entity     String   @db.VarChar(60)
+  entityId   String?  @map("entity_id") @db.VarChar(60)
+  permission String?  @db.VarChar(40)
+  ip         String?  @db.VarChar(64)
+  userAgent  String?  @map("user_agent") @db.VarChar(300)
+  requestId  String?  @map("request_id") @db.VarChar(64)
+  before     Json?
+  after      Json?
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([societyId, createdAt(sort: Desc)])
+  @@index([societyId, entity, entityId])
+  @@map("audit_logs")
+}
+
+model IdempotencyKey {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  key         String   @db.VarChar(100)
+  userId      String   @map("user_id") @db.Uuid
+  endpointId  String   @map("endpoint_id") @db.VarChar(80)
+  requestHash String   @map("request_hash") @db.VarChar(64)
+  statusCode  Int      @map("status_code")
+  response    Json
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@unique([userId, key])
+  @@index([createdAt])
+  @@map("idempotency_keys")
+}
+
+/// Messages handed to SMS / WhatsApp / email providers. In development the
+/// provider is a log adapter and this table is the inbox.
+model OutboundMessage {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  societyId   String?   @map("society_id") @db.Uuid
+  userId      String?   @map("user_id") @db.Uuid
+  channel     String    @db.VarChar(20)
+  to          String    @db.VarChar(254)
+  template    String    @db.VarChar(60)
+  body        String
+  status      String    @default("QUEUED") @db.VarChar(20)
+  providerRef String?   @map("provider_ref") @db.VarChar(100)
+  error       String?   @db.VarChar(500)
+  attempts    Int       @default(0)
+  sentAt      DateTime? @map("sent_at") @db.Timestamptz(3)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([status, createdAt])
+  @@map("outbound_messages")
+}

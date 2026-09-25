@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, TextInput, type KeyboardTypeOptions } from "react-native";
 import { api } from "@chs/contract";
-import { useApiMutation, useSessionController } from "@chs/api-client/react";
+import { useApiMutation } from "@chs/api-client/react";
 import { useResident } from "../../state/ResidentProvider";
 import { useTheme } from "../../hooks/useTheme";
 import { useT } from "../../hooks/useT";
@@ -25,7 +25,6 @@ export function PersonalDetailsScreen() {
   const { colors, type } = useTheme();
   const { t, num } = useT();
   const { me, home } = useResidentAccount();
-  const session = useSessionController();
   const updateMe = useApiMutation(api.me.update);
   const unit = currentUnit(state);
   const editing = state.editingPersonalDetails;
@@ -49,22 +48,27 @@ export function PersonalDetailsScreen() {
     actions.toggleEditPersonal();
   };
 
+  // The saved email shows from the draft until the session's copy of /me catches
+  // up (useApiMutation refreshes it after me.update); any later change to the
+  // account's email, from here or elsewhere, drops the draft.
+  useEffect(() => {
+    if (!editing) setEmailDraft(null);
+  }, [me.email]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const save = () => {
     // No draft means the field was never touched (or edit mode outlived a visit to another screen).
     const email = (emailDraft ?? me.email ?? "").trim();
     if (email === (me.email ?? "")) {
       setEmailDraft(null);
-      actions.savePersonalDetails();
+      actions.savePersonalDetails(false);
       return;
     }
     updateMe.mutate(
       { body: { email: email || null } },
       {
-        onSuccess: async () => {
-          // The session holds its own copy of /me; the query cache the contract invalidates isn't what useMe() reads.
-          await session.refreshMe().catch(() => undefined);
-          setEmailDraft(null);
-          actions.savePersonalDetails();
+        onSuccess: () => {
+          setEmailDraft(email);
+          actions.savePersonalDetails(true);
         },
         onError: (err) => {
           const { fields, message } = splitError(err);
@@ -74,11 +78,11 @@ export function PersonalDetailsScreen() {
     );
   };
 
-  const contactRows: { label: string; value: string; locked?: boolean; editable?: boolean; onChange?: (v: string) => void; error?: string | null; keyboardType?: KeyboardTypeOptions }[] = [
+  const contactRows: { label: string; value: string; locked?: boolean; local?: boolean; editable?: boolean; onChange?: (v: string) => void; error?: string | null; keyboardType?: KeyboardTypeOptions }[] = [
     { label: t("mobileNumber"), value: formatMobile(me.mobile), locked: true },
     {
       label: t("email"),
-      value: editing ? (emailDraft ?? me.email ?? "") : (me.email ?? "Not added"),
+      value: editing ? (emailDraft ?? me.email ?? "") : (emailDraft ?? me.email) || "Not added",
       editable: editing,
       onChange: (v) => {
         setEmailDraft(v);
@@ -87,8 +91,8 @@ export function PersonalDetailsScreen() {
       error: emailError,
       keyboardType: "email-address",
     },
-    { label: t("alternatePhone"), value: state.me.alt, editable: editing, onChange: (v) => actions.setPersonalField("alt", v), keyboardType: "phone-pad" },
-    { label: t("emergencyContact"), value: state.me.emergency, editable: editing, onChange: (v) => actions.setPersonalField("emergency", v) },
+    { label: t("alternatePhone"), value: state.me.alt, local: true, editable: editing, onChange: (v) => actions.setPersonalField("alt", v), keyboardType: "phone-pad" },
+    { label: t("emergencyContact"), value: state.me.emergency, local: true, editable: editing, onChange: (v) => actions.setPersonalField("emergency", v) },
   ];
 
   const residenceRows: { label: string; value: string | null }[] = [
@@ -140,10 +144,11 @@ export function PersonalDetailsScreen() {
                   <AppText variant="meta" color={colors.inkMuted}>
                     {row.label}
                   </AppText>
-                  {row.locked ? (
+                  {row.locked || row.local ? (
                     <View style={{ paddingHorizontal: 7, paddingVertical: 2, borderRadius: 6, backgroundColor: colors.subtle }}>
                       <AppText variant="meta" color={colors.inkSoft} style={{ fontSize: 10 }}>
-                        {t("setByOffice")}
+                        {/* The API has no field for these two, so the society office never sees them. */}
+                        {row.locked ? t("setByOffice") : "Not shared with the office"}
                       </AppText>
                     </View>
                   ) : null}
@@ -166,8 +171,8 @@ export function PersonalDetailsScreen() {
                     ) : null}
                   </>
                 ) : (
-                  <AppText variant="body" style={{ color: colors.ink }} forceLatin>
-                    {row.value}
+                  <AppText variant="body" style={{ color: row.value ? colors.ink : colors.inkMuted }} forceLatin>
+                    {row.value || "Not added"}
                   </AppText>
                 )}
               </View>

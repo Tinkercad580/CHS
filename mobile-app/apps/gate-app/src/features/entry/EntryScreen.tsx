@@ -28,7 +28,7 @@ export function EntryScreen() {
           Verify a visitor
         </GateText>
         <GateText variant="bodySmall" color={colors.soft} style={{ marginBottom: 20 }}>
-          Type the four digits the resident shared, or search a name.
+          Type the four digits the resident shared.
         </GateText>
 
         <View style={{ borderWidth: 1, borderColor: colors.line, borderRadius: 18, backgroundColor: colors.card, padding: 20, marginBottom: 16 }}>

@@ -1,7 +1,8 @@
 import type { NavEntry } from "../lib/types";
 
-/** Sidebar nav, grouped exactly as NAV in the prototype. `key` doubles as the
- * route segment under /admin/. */
+/** Sidebar nav, grouped as NAV in the prototype, plus the audit log. `key`
+ * doubles as the route segment (`dash` is `/`). Badges are not listed here:
+ * the shell derives them from the API (see useNavBadges in AdminLayout). */
 export const NAV: NavEntry[] = [
   { group: "Overview" },
   { key: "dash", label: "Dashboard" },
@@ -12,11 +13,11 @@ export const NAV: NavEntry[] = [
   { key: "setup", label: "Society setup" },
   { group: "Money" },
   { key: "billing", label: "Billing" },
-  { key: "payments", label: "Payments", badge: "6" },
+  { key: "payments", label: "Payments" },
   { key: "accounting", label: "Accounting" },
-  { key: "recovery", label: "Recovery", badge: "31" },
+  { key: "recovery", label: "Recovery" },
   { group: "Operations" },
-  { key: "helpdesk", label: "Helpdesk", badge: "31" },
+  { key: "helpdesk", label: "Helpdesk" },
   { key: "gate", label: "Gate & visitors" },
   { key: "staff", label: "Staff & help" },
   { key: "amenities", label: "Amenities" },
@@ -25,8 +26,9 @@ export const NAV: NavEntry[] = [
   { key: "notices", label: "Notices" },
   { key: "meetings", label: "Meetings" },
   { key: "documents", label: "Documents" },
-  { key: "requests", label: "Requests", badge: "4" },
+  { key: "requests", label: "Requests" },
   { key: "compliance", label: "Compliance" },
+  { key: "audit", label: "Audit log" },
   { group: "Insight" },
   { key: "reports", label: "Reports" },
 ];

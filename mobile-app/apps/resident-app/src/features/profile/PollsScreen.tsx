@@ -9,6 +9,7 @@ import { ScreenHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
 import { RevealItem } from "../../components/RevealItem";
+import { LocalOnlyNote } from "../../components/LocalOnlyNote";
 
 export function PollsScreen() {
   const { state, actions } = useResident();
@@ -21,6 +22,7 @@ export function PollsScreen() {
     <View style={{ flex: 1, backgroundColor: colors.canvas }}>
       <ScreenHeader title={t("votesTitle")} onBack={actions.back} />
       <ScreenScroll>
+        <LocalOnlyNote>AGM voting isn't connected yet. A vote cast here is saved on this phone and isn't counted.</LocalOnlyNote>
         {canVote ? (
           <>
             <AppText variant="bodySmall" color={colors.inkSoft} style={{ marginBottom: 16 }}>

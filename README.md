@@ -1,47 +1,112 @@
-# CHS — society management platform
+# Sahaj — society management for Maharashtra housing societies
 
-A SaaS for Maharashtra co-operative housing societies: an admin console, a
-resident app and a gate app on one API.
+Sahaj is a multi-tenant SaaS for co-operative housing societies. It serves the
+committee, the residents and the guards on one platform. It runs the society's
+billing to Maharashtra's rules, collects dues, tells residents what they need
+to know, and keeps the records a society is legally required to keep.
 
-- **Product spec:** [MASTER_SPEC.md](MASTER_SPEC.md)
-- **How it's built:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · **API:** [docs/API.md](docs/API.md) · **Loading & motion:** [docs/LOADING_AND_MOTION.md](docs/LOADING_AND_MOTION.md)
-- **Run it locally:** [scripts/README.md](scripts/README.md) — `./scripts/db-setup.sh` once, then `./scripts/api.sh`, `./scripts/start.sh`, `./scripts/mobile-web.sh`
-- **Compliance status:** [docs/compliance/RULES_REGISTER.md](docs/compliance/RULES_REGISTER.md)
+| | For | Does |
+|---|---|---|
+| **Admin console** (web) | Secretary, treasurer, committee, society manager | Users & access; members, units and tenancies; charge heads and monthly bill runs; collections and receipts; notices with proof of service; dashboard and emailed reports |
+| **Resident app** (Android/iOS) | Owners, co-owners, family, tenants | Sign in; see and pay dues; bills line by line; statement and receipts; society notices; notifications; household, vehicles, tenants |
+| **Gate app** (Android/iOS) | Security guards | Handset sign-in and shift unlock; vehicle plate lookup; notices from the office; emergency alerts |
 
-| | |
+## What's live
+
+The phases are MASTER_SPEC's.
+
+| Phase | Area | Status |
+|---|---|---|
+| 0–1 | Foundation, auth & access control | **Live.** Admin-provisioned logins, no OTP, lockout, temporary passwords, admin 2FA, instant session revocation, per-society permissions, a guard hard-restriction. |
+| 2 | Society setup | **Live (API).** Profile, settings, go-live checklist, buildings, units (bulk and import), parking, bank accounts, billing config, statutory config. The admin screen for setup is still a mock. |
+| 3 | Members & occupancy | **Live.** Owners, occupancy, tenancies, household, approvals, unit 360, directory. |
+| 4 | Billing engine | **Live.** Rule 106C-12 apportionment, simple interest, GST thresholds, previewed runs, gapless numbering, immutable bills, credit notes, supplementary bills, ledger. |
+| 5 | Payments | **Live with a dummy gateway.** Online checkout (test mode), signed idempotent webhooks, cash, cheque and NEFT at the desk, allocation, advances, receipt cancellation. A real gateway (Razorpay or Cashfree) plugs into the same path. |
+| 6 | Notifications & notices | **Live.** Inbox, Firebase push to the resident and gate apps, SMTP email, per-category preferences, quiet hours, notices with audiences and acknowledgement. |
+| 7 | Dashboards & reports | **Live.** Dashboard; eight reports emailed as Excel or CSV; daily and weekly digests. |
+| 8–12 | Helpdesk, gate & visitors, accounting & recovery, compliance, documents, requests, meetings, amenities, vendors | Not built. The apps show designed screens on mock data. |
+| 13 | Production hardening | Partly done: CI, Docker, backups, security headers. Still to do: VAPT, Marathi, observability, deploy pipelines. |
+
+> **Compliance.** Billing runs on statutory values (interest cap,
+> non-occupancy percent, fund minimums, GST thresholds) that are still marked
+> **unverified** against primary sources. See
+> [docs/compliance/RULES_REGISTER.md](docs/compliance/RULES_REGISTER.md). The
+> platform assists with compliance and isn't legal advice. Societies should
+> confirm with a qualified advocate or the Registrar.
+
+## How it's built
+
+```
+web-app (React 19)  ─┐
+resident-app (Expo) ─┼─ @chs/api-client ── @chs/contract ── API server (Express 5, Node 20) ── PostgreSQL 16
+gate-app (Expo)     ─┘   typed client,        every endpoint   HTTP · Socket.io · job worker   Redis (optional)
+                         realtime, hooks      defined once                                     Firebase · SMTP · gateway
+```
+
+- **One API contract.** Every endpoint is declared once, with its schemas,
+  permission, cache invalidation and realtime events. The server binds to it,
+  and the apps' typed client and React hooks derive from it. There's no
+  hand-written client code, and the two sides can't drift.
+- **The database enforces the invariants.** One primary owner per unit;
+  published bills, the ledger and the audit log can't change; bill numbers
+  have no gaps.
+- **Realtime by default.** When something changes, the server tells the
+  screens that show it.
+
+| Layer | Technology |
 |---|---|
-| `packages/contract` | every API endpoint, defined once |
-| `packages/api-client` | typed client, realtime, React hooks — used by all three apps |
-| `backend` | the API (Express, Prisma/PostgreSQL, Socket.io, BullMQ) |
-| `web-app` | admin console |
-| `mobile-app` | resident and gate apps (Expo) |
-| `infra` | Docker, nginx, backup/restore/migrate scripts |
-| `project`, `chats` | the design handoff (below) |
+| API | Node.js 20, Express 5, TypeScript (strict), zod |
+| Data | PostgreSQL 16, Prisma 7 |
+| Jobs & scale-out | BullMQ + Redis (in-process fallback) |
+| Realtime | Socket.io (Redis adapter across instances) |
+| Push | Firebase Cloud Messaging (Admin SDK on the server, React Native Firebase in the apps) |
+| Email | nodemailer over any SMTP server |
+| Admin console | React 19, Vite, React Router 7, TanStack Query |
+| Mobile | Expo SDK 57, React Native 0.86, expo-router |
+| Auth | argon2id, JWT access and rotating refresh tokens, TOTP |
+| Tests | Vitest + supertest against real PostgreSQL (248 tests: unit, integration, compliance) |
+| Delivery | Docker, nginx, GitHub Actions |
 
----
+## Quick start
 
-# CODING AGENTS: READ THIS FIRST
+```
+./scripts/db-setup.sh          # once: local PostgreSQL role + databases, backend/.env
+./scripts/api.sh               # API on :4100 (docs at /api/docs), migrates and seeds the demo society
+./scripts/start.sh             # admin console on :5273
+./scripts/mobile-web.sh resident   # resident app preview on :8181
+./scripts/mobile-web.sh gate       # gate app preview on :8182
+```
 
-This is a **handoff bundle** from Claude Design (claude.ai/design).
+Sign in to the admin console as **9820011001 / Sahaj@2026** (the demo society
+Shanti Vihar CHS: 248 units, with bills for August and September 2026). All
+the demo accounts are listed in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
+Push and email need Firebase and SMTP credentials; see
+[docs/NOTIFICATIONS.md](docs/NOTIFICATIONS.md). Until they're set, both run in log mode.
 
-A user mocked up designs in HTML/CSS/JS using an AI design tool, then exported this bundle so a coding agent can implement the designs for real.
+## Repository
 
-## What you should do — IMPORTANT
+| Path | What |
+|---|---|
+| [backend/](backend) | The API server, database schema and migrations, jobs, tests |
+| [packages/contract/](packages/contract) | Every endpoint, schema, permission, error code and realtime event |
+| [packages/api-client/](packages/api-client) | Typed client, session state machine, realtime, React hooks |
+| [web-app/](web-app) | Admin console |
+| [mobile-app/](mobile-app) | Resident and gate apps, and their shared UI (`@sahaj/shared`) |
+| [infra/](infra) | Dockerfiles, nginx, backup, restore-drill and migrate scripts |
+| [scripts/](scripts) | The local development loop |
+| [docs/](docs) | All documentation |
+| [MASTER_SPEC.md](MASTER_SPEC.md) | The product specification |
+| [project/](project), [chats/](chats) | The original UI design handoff ([docs/design-handoff.md](docs/design-handoff.md)) |
 
-**Read the chat transcripts first.** There are 1 chat transcript(s) in `chats/`. The transcripts show the full back-and-forth between the user and the design assistant — they tell you **what the user actually wants** and **where they landed** after iterating. Don't skip them. The final HTML files are the output, but the chat is where the intent lives.
+## Documentation
 
-**Find the primary design file under `project/` and read it top to bottom.** The chat transcripts will tell you which file the user was last iterating on. Then **follow its imports**: open every file it pulls in (shared components, CSS, scripts) so you understand how the pieces fit together before you start implementing.
-
-**If anything is ambiguous, ask the user to confirm before you start implementing.** It's much cheaper to clarify scope up front than to build the wrong thing.
-
-## About the design files
-
-The design medium is **HTML/CSS/JS** — these are prototypes, not production code. Your job is to **recreate them pixel-perfectly** in whatever technology makes sense for the target codebase (React, Vue, native, whatever fits). Match the visual output; don't copy the prototype's internal structure unless it happens to fit.
-
-**Don't render these files in a browser or take screenshots unless the user asks you to.** Everything you need — dimensions, colors, layout rules — is spelled out in the source. Read the HTML and CSS directly; a screenshot won't tell you anything they don't.
-
-## Bundle contents
-
-- `README.md` — this file
-- `chats/` — conversation transcripts (read these!)
-- `project/` — the `Web and mobile design project` project files (HTML prototypes, assets, components)
+**[docs/README.md](docs/README.md)** is the index. The key documents:
+- [Architecture](docs/ARCHITECTURE.md)
+- [Local development](docs/DEVELOPMENT.md)
+- [API conventions](docs/API.md) and [every endpoint](docs/api/ENDPOINTS.md)
+- [Database](docs/DATABASE.md) and [every table](docs/database/TABLES.md)
+- [Server](docs/server/SERVER.md), [jobs](docs/server/WORKERS_AND_JOBS.md) and [realtime](docs/server/REALTIME.md)
+- [Security](docs/SECURITY.md) and [infrastructure](docs/INFRASTRUCTURE.md)
+- Modules: [auth](docs/modules/auth.md), [users & access](docs/modules/users-and-access.md), [society & structure](docs/modules/society-and-structure.md), [members](docs/modules/members.md), [notices & notifications](docs/modules/notices-and-notifications.md), [billing](docs/modules/billing.md), [payments](docs/modules/payments.md), [reports & platform](docs/modules/reports-and-platform.md)
+- [End-to-end flows](docs/flows/)
+- Apps: [admin](docs/apps/admin-web.md), [resident](docs/apps/resident-app.md), [gate](docs/apps/gate-app.md)

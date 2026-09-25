@@ -2,7 +2,34 @@
 
 How the CHS platform is put together, and why. Read this before changing the
 backend or how the apps talk to it. `MASTER_SPEC.md` is the product; this is
-the machine.
+the machine. Each topic here has a deeper doc — see the [docs index](README.md).
+
+```mermaid
+flowchart LR
+  subgraph Clients
+    A[Admin console<br/>web-app]
+    R[Resident app<br/>Expo]
+    G[Gate app<br/>Expo]
+  end
+  subgraph Shared
+    C["@chs/contract<br/>endpoints · schemas · events"]
+    K["@chs/api-client<br/>client · session · realtime · hooks"]
+  end
+  subgraph Server[API server ×N]
+    H[HTTP /api/v1<br/>contract bindings]
+    W[Socket.io /realtime]
+    J[Job worker]
+  end
+  A & R & G --> K --> C
+  K -->|HTTPS| H
+  K -->|WSS| W
+  H --> DB[(PostgreSQL 16)]
+  J --> DB
+  H & J & W <--> RD[(Redis<br/>optional)]
+  J --> FCM[Firebase<br/>push]
+  J --> SMTP[SMTP<br/>email]
+  H --> PG[Payment gateway<br/>dummy]
+```
 
 ## The shape of the repo
 
@@ -136,11 +163,13 @@ every society endpoint in the contract with another society's admin token.
 
 ## Data rules the database enforces itself
 
-`prisma/migrations/*_integrity_constraints`: one current primary owner per
-unit, one open occupancy and one open tenancy per unit, unique live plate per
-society, date-order CHECKs, nominee share bounds, mobile format, and an
-append-only trigger on `audit_logs` (UPDATE/DELETE raise). These hold even
-for a script or a console session that bypasses the API.
+Two hand-written migrations (`*_integrity_constraints`, `*_billing_integrity`)
+hold the rules no code path may break: one current primary owner per unit;
+one open occupancy and tenancy per unit; unique plates; date-order and amount
+CHECKs; one live bill run per period; unique bill numbers; published bills
+and their lines immutable; the audit log and the ledger append-only. They
+hold even for a script or a console session that bypasses the API. Full list:
+[DATABASE.md](DATABASE.md#rules-the-database-enforces-itself).
 
 ## Realtime
 
@@ -158,9 +187,41 @@ across instances.
 `core/queue.ts`: BullMQ when `REDIS_URL` is set (durable, retried with
 exponential backoff, repeatable jobs scheduled once cluster-wide), otherwise
 the same handlers in-process with the same retry policy. Jobs are idempotent.
-Today: outbound message delivery, tenancy expiry reminders and auto-suspend
-(C3), housekeeping. Outbound SMS/WhatsApp/email go through
-`outbound_messages` first; providers are ports (`log` adapter in development).
+Jobs deliver push and email, send scheduled reports, remind and end expiring
+tenancies, expire abandoned checkouts and clean up. Every job and schedule:
+[server/WORKERS_AND_JOBS.md](server/WORKERS_AND_JOBS.md).
+
+## Notifications
+
+One service, three channels: inbox (always), push to the resident and gate
+apps (Firebase Cloud Messaging via the Admin SDK — multicast, per-device
+results, dead tokens pruned, transient failures retried), and email (SMTP via
+nodemailer). Per-category preferences; emergency and account notices are
+mandatory; quiet hours hold non-urgent push. Notifications are created after
+the transaction that caused them commits (`afterCommit`). Setup:
+`docs/NOTIFICATIONS.md`.
+
+## Billing and payments
+
+- **Charge heads** carry a Rule 106C-12 category, and the category fixes
+  which apportionment method is allowed (`schemas.billing.ALLOWED_METHODS`).
+  Rates are effective-dated and can't reach back into a published period.
+- **The engine** (`modules/billing/engine.ts`, pure rules in `domain/`)
+  computes each unit's lines from facts, rates and statutory values resolved
+  as of the period start. Each line records its method, rate, rate id, input
+  and basis text ("2 inlets × ₹140"). Interest is simple, on principal only,
+  integrated over what was actually outstanding each day, capped by statute.
+  GST applies only when both thresholds are crossed. Rounding goes on its own line.
+- **Runs**: draft → preview (by head, by building, >10% variances,
+  exceptions) → publish, which issues gapless numbers, posts ledger debits,
+  applies advances and notifies residents. Published bills and their lines are
+  immutable in the database, and the ledger is append-only.
+- **Payments** all end in one confirmation path: receipt (gapless), ledger
+  credit, and allocation (interest → arrears → current by default; any surplus
+  becomes an advance). Online payments go through a gateway port; the `dummy`
+  gateway simulates checkout, and webhooks are HMAC-signed and idempotent by
+  event id. Cheques stay pending until cleared. A cancelled receipt reverses
+  its allocations and posts a ledger reversal, and nothing is ever deleted.
 
 ## Money, dates, numbering, statutory values
 
@@ -173,16 +234,18 @@ Today: outbound message delivery, tenancy expiry reminders and auto-suspend
 - Statutory numbers come from `statutory_config`, effective-dated, platform
   default with society overrides bounded by rule (a cap can't be raised, a
   minimum can't be lowered, some need a general body resolution). Resolved
-  as of a date — billing will ask as of the billing period. Every seeded
+  as of a date — billing asks as of the billing period. Every seeded
   value is marked unverified until the compliance research pass (B1).
 
 ## Testing
 
 `backend/test`: `unit/`, `integration/`, `compliance/` (the release gate from
 MASTER_SPEC E4). Tests run against a real PostgreSQL database (never mocks),
-the `…_test` database, wiped per file. Compliance coverage today: auth (items
-8), interest cap (4), cross-tenant isolation (5), immutability of the audit
-log (6, partially — bills and receipts arrive with billing).
+the `…_test` database, wiped per file. The compliance suite covers MASTER_SPEC
+E4 items 2 (every apportionment method, family-occupied and lift-less cases),
+3 (historical reproducibility), 4 (interest cap), 5 (cross-tenant isolation on
+every endpoint), 6 (immutability of bills, ledger and audit log) and 8 (auth).
+See [TESTING.md](TESTING.md).
 
 ## Deployment
 
@@ -198,4 +261,5 @@ log (6, partially — bills and receipts arrive with billing).
   retention, verified restores into a scratch database.
 
 The process shuts down gracefully on SIGTERM (drains HTTP, closes sockets,
-queue and pool) and validates its whole environment at start.
+queue and pool) and validates its whole environment at start. Details:
+[INFRASTRUCTURE.md](INFRASTRUCTURE.md), [server/SERVER.md](server/SERVER.md).

@@ -32,6 +32,8 @@ export interface RequestContext {
   permissionUsed: Permission | null;
   /** Events raised during the request, published only once it succeeds (after commit). */
   pendingEvents: import("./events").DomainEvent[];
+  /** Work to start only once the request has succeeded (notifications, emails). */
+  afterCommit: (() => Promise<void>)[];
 }
 
 const storage = new AsyncLocalStorage<RequestContext>();
@@ -44,7 +46,23 @@ export function currentContext(): RequestContext | undefined {
   return storage.getStore();
 }
 
+/**
+ * Run `fn` after the current request or job succeeds — never for one that
+ * fails, and never before its transaction has committed. Outside a request it
+ * runs straight away.
+ */
+export function afterCommit(fn: () => Promise<void>): void {
+  const ctx = storage.getStore();
+  if (ctx) ctx.afterCommit.push(fn);
+  else void fn().catch(() => undefined);
+}
+
+/** Start queued after-commit work; failures are logged, never thrown at the caller. */
+export function runAfterCommit(ctx: RequestContext, onError: (err: unknown) => void): void {
+  for (const fn of ctx.afterCommit.splice(0)) void fn().catch(onError);
+}
+
 /** A context for work that runs outside a request — jobs, seeds, tests. */
 export function systemContext(requestId = "system"): RequestContext {
-  return { requestId, ip: null, userAgent: null, actor: null, society: null, permissionUsed: null, pendingEvents: [] };
+  return { requestId, ip: null, userAgent: null, actor: null, society: null, permissionUsed: null, pendingEvents: [], afterCommit: [] };
 }

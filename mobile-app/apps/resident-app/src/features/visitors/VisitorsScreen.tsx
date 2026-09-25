@@ -13,6 +13,7 @@ import { EmptyState } from "../../components/EmptyState";
 import { iconPaths } from "../../components/iconPaths";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
 import { RevealItem } from "../../components/RevealItem";
+import { LocalOnlyNote } from "../../components/LocalOnlyNote";
 
 function initialsOf(name: string): string {
   return name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
@@ -31,7 +32,7 @@ export function VisitorsScreen() {
   const { t } = useT();
   const unit = currentUnit(state);
   const passesForUnit = state.passes.filter((p) => p.unit === unit.code);
-  const expected = expectedPasses(state).filter((p) => p.unit === unit.code).length;
+  const expected = expectedPasses(state).length;
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.canvas }}>
@@ -41,6 +42,7 @@ export function VisitorsScreen() {
         right={<Button label={t("invite")} onPress={actions.goInvite} height={40} fontSize={13.5} weight={600} style={{ paddingHorizontal: 15 }} />}
       />
       <ScreenScroll>
+        <LocalOnlyNote>Not connected to the gate yet. These passes are samples or ones kept on this phone, so the guard won't find your guest's code.</LocalOnlyNote>
         {passesForUnit.length === 0 ? (
           <EmptyState iconPath={iconPaths.people} title={t("noPassesYet")} body={t("noPassesSub")} actionLabel={t("inviteAGuest")} onAction={actions.goInvite} />
         ) : (

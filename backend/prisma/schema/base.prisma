@@ -1,0 +1,17 @@
+// CHS platform — Phases 1–3 (auth & access, society setup, members & occupancy).
+//
+// Conventions (MASTER_SPEC E2): UUID v7 keys; society_id on every business
+// table with composite indexes; money as BIGINT paise; timestamptz in UTC;
+// created_at / updated_at on every table; soft delete (deleted_at) where
+// history must survive; effective dating on occupancies, memberships,
+// tenancies and statutory_config.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}

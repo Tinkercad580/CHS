@@ -1,6 +1,8 @@
 import { env } from "../config/env";
 import { prisma } from "./db";
 import { logger } from "./logger";
+import { sendMail } from "./mail";
+
 import { defineJob } from "./queue";
 
 /**
@@ -15,10 +17,18 @@ import { defineJob } from "./queue";
 
 export type Channel = "sms" | "whatsapp" | "email";
 
+const SUBJECTS: Record<string, string> = {
+  temp_password: "Your temporary password",
+  tenancy_expiry: "Tenancy ending soon",
+};
+const subjectFor = (template: string) => SUBJECTS[template] ?? "Update from your society";
+
+
 interface Provider {
   send(msg: { channel: Channel; to: string; body: string; template: string }): Promise<{ providerRef: string }>;
 }
 
+/** SMS and WhatsApp have no live provider yet; email goes out through nodemailer. */
 const providers: Record<typeof env.MESSAGING_PROVIDER, Provider> = {
   log: {
     async send(msg) {
@@ -39,12 +49,10 @@ const deliver = defineJob<{ messageId: string }>(
     const msg = await prisma.outboundMessage.findUnique({ where: { id: messageId } });
     if (!msg || msg.status === "SENT") return;
     try {
-      const { providerRef } = await providers[env.MESSAGING_PROVIDER].send({
-        channel: msg.channel as Channel,
-        to: msg.to,
-        body: msg.body,
-        template: msg.template,
-      });
+      const { providerRef } =
+        msg.channel === "email"
+          ? { providerRef: (await sendMail({ to: msg.to, subject: subjectFor(msg.template), text: msg.body })).messageId }
+          : await providers[env.MESSAGING_PROVIDER].send({ channel: msg.channel as Channel, to: msg.to, body: msg.body, template: msg.template });
       await prisma.outboundMessage.update({
         where: { id: msg.id },
         data: { status: "SENT", providerRef, sentAt: new Date(), attempts: { increment: 1 }, error: null },

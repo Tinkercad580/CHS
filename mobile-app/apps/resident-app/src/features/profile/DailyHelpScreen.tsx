@@ -4,7 +4,7 @@ import { formatInr } from "@sahaj/shared";
 import { useResident } from "../../state/ResidentProvider";
 import { useTheme } from "../../hooks/useTheme";
 import { useT } from "../../hooks/useT";
-import { currentUnit, helpSummary, helpRoleWords } from "../../state/selectors";
+import { currentUnit, helpSummary, helpRoleWords, unitDailyHelp } from "../../state/selectors";
 import { ScreenScroll } from "../../components/ScreenScroll";
 import { ScreenHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
@@ -12,22 +12,21 @@ import { Button } from "../../components/Button";
 import { EmptyState } from "../../components/EmptyState";
 import { iconPaths } from "../../components/iconPaths";
 import { RevealItem } from "../../components/RevealItem";
+import { LocalOnlyNote } from "../../components/LocalOnlyNote";
 
 export function DailyHelpScreen() {
   const { state, actions } = useResident();
   const { colors } = useTheme();
   const { t, lang } = useT();
   const unit = currentUnit(state);
-  const people = state.dailyHelp.filter((h) => h.unit === unit.code);
+  const people = unitDailyHelp(state);
   const active = people.find((h) => h.passNo === state.activeHelpPassNo) ?? people[0];
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.canvas }}>
       <ScreenHeader title={t("dailyHelpTitle")} onBack={actions.back} />
       <ScreenScroll>
-        <AppText variant="bodySmall" color={colors.inkSoft} style={{ marginBottom: 16 }}>
-          {t("dailyHelpIntro")}
-        </AppText>
+        <LocalOnlyNote>Attendance here is sample data kept on this phone. The gate doesn't record it yet.</LocalOnlyNote>
 
         {people.length === 0 ? (
           <EmptyState iconPath={iconPaths.household} title={t("nobodyRegistered")} body={t("nobodyRegisteredSub")} actionLabel={t("registerDailyHelp")} onAction={actions.goInvite} />

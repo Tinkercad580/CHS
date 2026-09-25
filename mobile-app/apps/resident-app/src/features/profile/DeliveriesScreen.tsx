@@ -10,6 +10,7 @@ import { ScreenHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
 import { RadioRow } from "../../components/FilterPill";
 import { RevealItem } from "../../components/RevealItem";
+import { LocalOnlyNote } from "../../components/LocalOnlyNote";
 
 const OPTIONS: { key: DeliveryPreference; label: string; detail: string }[] = [
   { key: "Leave at door", label: "Leave at the gate", detail: "The guard holds it. No call, no doorbell." },
@@ -28,9 +29,7 @@ export function DeliveriesScreen() {
     <View style={{ flex: 1, backgroundColor: colors.canvas }}>
       <ScreenHeader title={t("deliveriesTitle")} onBack={actions.back} />
       <ScreenScroll>
-        <AppText variant="bodySmall" color={colors.inkSoft} style={{ marginBottom: 16 }}>
-          {t("deliveriesIntro")}
-        </AppText>
+        <LocalOnlyNote>Saved on this phone only. The gate can't see this preference yet, so tell the guard if it matters.</LocalOnlyNote>
         <View style={{ gap: 9, marginBottom: 18 }}>
           {OPTIONS.map((o, i) => (
             <RevealItem key={o.key} tier="prefRow">

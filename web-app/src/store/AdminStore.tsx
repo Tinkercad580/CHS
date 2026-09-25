@@ -36,7 +36,6 @@ type Action =
   | { type: "patchActive"; page: string; row: Row; upd: Partial<Row> }
   | { type: "pushRecAdd"; key: string; heading: string; row: string[] }
   | { type: "setRecAddSection"; key: string; heading: string; rows: string[][] }
-  | { type: "resetRowsFor"; page: string }
   | { type: "toggleStaffDay"; id: string; dayIdx: number }
   | { type: "addStaff"; person: StaffPerson }
   | { type: "revokeStaff"; id: string }
@@ -94,8 +93,6 @@ function reducer(state: AdminState, action: Action): AdminState {
       per[action.heading] = action.rows;
       return { ...state, recAdd: { ...state.recAdd, [action.key]: per } };
     }
-    case "resetRowsFor":
-      return state;
     case "toggleStaffDay":
       return {
         ...state,

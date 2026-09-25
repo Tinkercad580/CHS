@@ -62,6 +62,15 @@ function toQueryString(query: Record<string, unknown> | undefined): string {
   return s ? `?${s}` : "";
 }
 
+async function isTokenError(res: Response): Promise<boolean> {
+  try {
+    const body = (await res.clone().json()) as ApiErrorBody;
+    return body?.error?.code === "TOKEN_EXPIRED" || body?.error?.code === "UNAUTHENTICATED";
+  } catch {
+    return true;
+  }
+}
+
 function randomKey(): string {
   const c = globalThis.crypto;
   if (c?.randomUUID) return c.randomUUID();
@@ -166,7 +175,10 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
       bearer = tokens?.accessToken;
     }
     let res = await send(endpoint, anyInput, opts, bearer);
-    if (res.status === 401 && needsAuth && !opts.token && options.tokens.get()) {
+    // Only an expired or unrecognised token is worth a refresh. A wrong current
+    // password or 2FA code is also a 401, and retrying it would count twice
+    // against the lockout.
+    if (res.status === 401 && needsAuth && !opts.token && options.tokens.get() && (await isTokenError(res))) {
       const tokens = await refresh();
       if (tokens) res = await send(endpoint, anyInput, opts, tokens.accessToken);
     }

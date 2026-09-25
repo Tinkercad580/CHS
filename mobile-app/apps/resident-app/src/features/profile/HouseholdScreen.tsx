@@ -135,7 +135,8 @@ export function HouseholdScreen() {
                       {t("youChip")}
                     </AppText>
                   </View>
-                ) : m.familyId ? (
+                ) : m.familyId && livesHere ? (
+                  // A let-out flat's family records are the tenant's side to change, as on Vehicles.
                   <Pressable
                     onPress={() => remove(m.familyId as string, m.name)}
                     disabled={removeFamily.isPending}

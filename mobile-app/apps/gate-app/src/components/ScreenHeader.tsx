@@ -19,6 +19,8 @@ export function ScreenHeader({ title, subtitle, onBack }: Props) {
       <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 18 }}>
         <AnimatedPressable
           onPress={onBack}
+          accessibilityRole="button"
+          accessibilityLabel="Back"
           style={{
             width: 40,
             height: 40,

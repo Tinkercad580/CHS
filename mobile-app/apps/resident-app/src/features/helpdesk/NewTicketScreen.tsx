@@ -1,6 +1,5 @@
 import React from "react";
 import { View, TextInput } from "react-native";
-import { ticketDuplicateCounts } from "@sahaj/shared";
 import { useResident } from "../../state/ResidentProvider";
 import { useTheme } from "../../hooks/useTheme";
 import { useT } from "../../hooks/useT";
@@ -10,9 +9,8 @@ import { AppText } from "../../components/AppText";
 import { Button } from "../../components/Button";
 import { OptionButton } from "../../components/FilterPill";
 import { Toggle } from "../../components/Toggle";
-import { Icon } from "../../components/Icon";
-import { iconPaths } from "../../components/iconPaths";
 import { RevealItem } from "../../components/RevealItem";
+import { LocalOnlyNote } from "../../components/LocalOnlyNote";
 
 const CATEGORIES: { key: "Plumbing" | "Electrical" | "Lift" | "Housekeeping" | "Security" | "Other"; labelKey: "plumbing" | "electrical" | "lift" | "security" | "housekeeping" | "other" }[] = [
   { key: "Plumbing", labelKey: "plumbing" },
@@ -26,9 +24,7 @@ const CATEGORIES: { key: "Plumbing" | "Electrical" | "Lift" | "Housekeeping" | "
 export function NewTicketScreen() {
   const { state, actions } = useResident();
   const { colors } = useTheme();
-  const { t, num } = useT();
-  const category = state.ticketForm.category === "Lift" ? "Lift" : state.ticketForm.category;
-  const duplicates = ticketDuplicateCounts[category] ?? 0;
+  const { t } = useT();
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.canvas }}>
@@ -45,20 +41,7 @@ export function NewTicketScreen() {
           ))}
         </View>
 
-        {duplicates > 0 ? (
-          <View style={{ borderWidth: 1, borderColor: colors.infoBorder, borderRadius: 12, backgroundColor: colors.infoWash, padding: 13, flexDirection: "row", gap: 11, marginBottom: 16 }}>
-            <Icon d={iconPaths.bell} size={17} color={colors.infoInk} strokeWidth={2} />
-            <View style={{ flex: 1, minWidth: 0 }}>
-              <AppText variant="cardTitle" color={colors.infoInk} style={{ fontSize: 12.5, marginBottom: 3 }}>
-                {duplicates === 1 ? t("duplicateLine", { n: num(duplicates), category: t(CATEGORIES.find((c) => c.key === category)?.labelKey ?? "other") }) : t("duplicateLineN", { n: num(duplicates), category: t(CATEGORIES.find((c) => c.key === category)?.labelKey ?? "other") })}
-              </AppText>
-              <AppText variant="bodySmall" color={colors.inkSoft}>
-                {t("duplicateDetail")}
-              </AppText>
-            </View>
-          </View>
-        ) : null}
-
+        {/* The design shows how many neighbours reported the same thing today; that count was fixture data with no helpdesk behind it, so it is left out until there is one. */}
         <AppText variant="label" style={{ marginBottom: 8 }}>
           {t("whatIsWrong")}
         </AppText>
@@ -78,7 +61,7 @@ export function NewTicketScreen() {
               {t("urgent")}
             </AppText>
             <AppText variant="meta" color={colors.inkSoft}>
-              {t("urgentSub")}
+              Flags it on this phone. No one is paged yet.
             </AppText>
           </View>
           <Toggle on={state.ticketForm.urgent} onPress={actions.toggleTicketUrgent} />
@@ -92,6 +75,9 @@ export function NewTicketScreen() {
           </View>
         ) : null}
 
+        <View style={{ marginTop: 16 }}>
+          <LocalOnlyNote marginBottom={0}>The helpdesk isn't connected yet. This ticket is saved on this phone and the office won't see it, so call them if it's urgent.</LocalOnlyNote>
+        </View>
         <Button label={state.submittingTicket ? t("sending") : t("submitTicket")} loading={state.submittingTicket} onPress={actions.submitTicket} style={{ marginTop: 22 }} />
       </ScreenScroll>
     </View>

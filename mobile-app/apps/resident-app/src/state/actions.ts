@@ -1,9 +1,11 @@
 import { useRef, useCallback, useMemo } from "react";
+import { Share } from "react-native";
 import { motionDurationsMs, MAX_TOASTS, t, type Role, type Language, type VisitorPass, type DailyHelp, type AttendanceSheet, type Ticket, type Booking, type PersonalInfo } from "@sahaj/shared";
-import type { ResidentIdentity } from "../api/identity";
-import type { AppResidentState, ResidentAction } from "./types";
+import { heldUnits, type ResidentIdentity } from "../api/identity";
+import type { AppResidentState, PayTarget, ResidentAction } from "./types";
 import { currentUnit } from "./selectors";
 import { createInitialState } from "./initialState";
+import { saveLanguage, saveTheme, type DevicePrefs } from "./devicePrefs";
 
 type Dispatch = (action: ResidentAction) => void;
 type GetState = () => AppResidentState;
@@ -21,8 +23,8 @@ function fourDigitCode(): string {
  * equivalent of the prototype's `renderVals()` bag of closures (README.md
  * "State management"). Mirrors the gate app's `state/actions.ts` conventions:
  * read/modify/write transitions go through the reducer's functional "UPDATE"
- * form, and every timer this hook starts (toasts, the QR countdown, the SOS
- * hold) is torn down by `clearAllTimers`.
+ * form, and every timer this hook starts (toasts, the QR countdown) is torn
+ * down by `clearAllTimers`.
  */
 /**
  * Stands in for the API round-trip an action will make once there is a backend.
@@ -44,15 +46,9 @@ function whenRequestSettles(run: () => void): void {
 export function useResidentActions(dispatch: Dispatch, getState: GetState) {
   const toastTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const qrTick = useRef<ReturnType<typeof setInterval> | null>(null);
-  const sosTick = useRef<ReturnType<typeof setInterval> | null>(null);
-  const sosStartedAt = useRef<number>(0);
-
-  const note = useCallback(
-    (text: string) => {
-      dispatch({ type: "UPDATE", updater: (s) => ({ log: [{ id: uid("l"), at: new Date().toISOString(), message: text }].concat(s.log).slice(0, 14) }) });
-    },
-    [dispatch]
-  );
+  // Set once the resident (or this phone's saved setting) has picked a language,
+  // after which the account's `me.language` no longer overrides it.
+  const languageChosen = useRef(false);
 
   const toast = useCallback(
     (message: string, kind: "ok" | "warn" = "ok") => {
@@ -72,8 +68,13 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
     Object.values(toastTimers.current).forEach(clearTimeout);
     toastTimers.current = {};
     if (qrTick.current) clearInterval(qrTick.current);
-    if (sosTick.current) clearInterval(sosTick.current);
   }, []);
+
+  /** A fresh store for a new account or a sign-out; the phone's theme and language carry over. */
+  const freshState = useCallback((): AppResidentState => {
+    const { dark, language } = getState();
+    return { ...createInitialState(), dark, language };
+  }, [getState]);
 
   // ---- Navigation ---------------------------------------------------------
   const go = useCallback(
@@ -101,40 +102,61 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
       // locally (a draft pass, a vote) is visible to the next.
       if (getState().identity?.userId !== identity.userId) {
         clearAllTimers();
-        dispatch({ type: "SET", patch: { ...createInitialState(), identity, role, unit: identity.homeUnit } });
+        dispatch({ type: "SET", patch: { ...freshState(), identity, role, unit: identity.homeUnit } });
         return;
       }
       // Same account, fresher data (e.g. a let-out flat just arrived): keep the
       // flat being viewed if it is still one of theirs.
       dispatch({
         type: "UPDATE",
-        updater: (s) => {
-          const stillTheirs = s.unit === identity.homeUnit || (role === "owner_tenant" && s.unit === identity.letOutUnit);
-          return { identity, role, unit: stillTheirs ? s.unit : identity.homeUnit };
-        },
+        updater: (s) => ({ identity, role, unit: heldUnits(identity).includes(s.unit) ? s.unit : identity.homeUnit }),
       });
     },
-    [clearAllTimers, dispatch, getState]
+    [clearAllTimers, dispatch, freshState, getState]
   );
 
   const setUnit = useCallback(
     (unit: string) => {
       dispatch({ type: "SET", patch: { unit } });
-      note(`Switched ledger to ${unit}`);
     },
-    [dispatch, note]
+    [dispatch]
   );
 
   const setLanguage = useCallback(
     (language: Language) => {
+      languageChosen.current = true;
+      saveLanguage(language);
       dispatch({ type: "SET", patch: { language } });
       toast(t(language, "languageSet", { name: language === "mr" ? "मराठी" : language === "hi" ? "हिंदी" : "English" }));
-      note(`Set language to ${language}`);
     },
-    [dispatch, note, toast]
+    [dispatch, toast]
   );
 
-  const toggleTheme = useCallback(() => dispatch({ type: "UPDATE", updater: (s) => ({ dark: !s.dark }) }), [dispatch]);
+  /** The account's own language, used only until one is chosen on this phone. */
+  const defaultLanguage = useCallback(
+    (language: Language) => {
+      if (!languageChosen.current) dispatch({ type: "SET", patch: { language } });
+    },
+    [dispatch]
+  );
+
+  const toggleTheme = useCallback(() => {
+    const dark = !getState().dark;
+    saveTheme(dark);
+    dispatch({ type: "SET", patch: { dark } });
+  }, [dispatch, getState]);
+
+  /** What the phone remembered from last time, read once at start-up. A saved choice wins over anything set meanwhile. */
+  const hydratePrefs = useCallback(
+    (prefs: DevicePrefs) => {
+      if (prefs.language) languageChosen.current = true;
+      const patch: Partial<AppResidentState> = {};
+      if (prefs.dark !== undefined) patch.dark = prefs.dark;
+      if (prefs.language) patch.language = prefs.language;
+      dispatch({ type: "SET", patch });
+    },
+    [dispatch]
+  );
 
   // ---- Dues / bills ---------------------------------------------------------
   const setDueFilter = useCallback(
@@ -144,25 +166,28 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
       // set duesLoading and clear it on a 520ms timer, which put a skeleton in
       // front of data the app already had. See docs/LOADING_AND_MOTION.md.
       dispatch({ type: "SET", patch: { dueFilter: filter } });
-      note(`Filtered dues by ${filter}`);
     },
-    [dispatch, note]
+    [dispatch]
   );
 
   const openBill = useCallback(
     (id: string) => {
       dispatch({ type: "SET", patch: { activeBillId: id } });
       go("bill", true);
-      note(`Opened bill ${id}`);
     },
-    [dispatch, go, note]
+    [dispatch, go]
   );
 
   // ---- Payment sheet ---------------------------------------------------------
-  const openPay = useCallback(() => {
-    dispatch({ type: "SET", patch: { sheet: "pay" } });
-    note("Opened payment options");
-  }, [dispatch, note]);
+  // The sheets are the dummy gateway's checkout. What they pay is set here; the
+  // API calls (payments.start, then completeDummyCheckout) are made by
+  // PaymentSheets, which owns the order and the outcome while it is open.
+  const openPay = useCallback(
+    (target: PayTarget) => {
+      dispatch({ type: "SET", patch: { sheet: "pay", payTarget: target } });
+    },
+    [dispatch]
+  );
 
   const closeSheet = useCallback(() => {
     if (qrTick.current) clearInterval(qrTick.current);
@@ -190,80 +215,59 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
   const startQr = useCallback(() => {
     dispatch({ type: "SET", patch: { sheet: "qr", qrLeftSeconds: 600, qrState: "live" } });
     startQrTimer();
-    note("Generated a QR code, 10:00 on the clock");
-  }, [dispatch, note, startQrTimer]);
+  }, [dispatch, startQrTimer]);
 
   const restartQr = useCallback(() => {
     dispatch({ type: "SET", patch: { qrLeftSeconds: 600, qrState: "live" } });
     startQrTimer();
-    note("Generated a fresh QR code");
-  }, [dispatch, note, startQrTimer]);
+  }, [dispatch, startQrTimer]);
 
   const cancelQr = useCallback(() => {
     if (qrTick.current) clearInterval(qrTick.current);
     dispatch({ type: "SET", patch: { sheet: null } });
     toast("Payment cancelled. Nothing was charged.", "warn");
-    note("Cancelled the QR payment");
-  }, [dispatch, note, toast]);
+  }, [dispatch, toast]);
 
   const payApp = useCallback(() => {
     dispatch({ type: "SET", patch: { sheet: "app" } });
-    note("Chose to pay with an installed app");
-  }, [dispatch, note]);
+  }, [dispatch]);
 
-  const markPaid = useCallback(
-    (via: string) => {
+  /** The gateway answered: the receipt takeover, or the declined sheet. */
+  const showPayOutcome = useCallback(
+    (outcome: "success" | "failed") => {
       if (qrTick.current) clearInterval(qrTick.current);
-      const s = getState();
-      const bill = s.bills.find((b) => b.id === s.activeBillId);
-      if (!bill) return;
-      const receipt = "RCP-2026-09-" + String(1000 + Math.floor(Math.random() * 8999));
-      dispatch({
-        type: "UPDATE",
-        updater: (st) => ({
-          bills: st.bills.map((b) => (b.id === st.activeBillId ? { ...b, status: "paid", paidOn: new Date().toISOString(), receiptNo: receipt, paymentMethod: via } : b)),
-          lastPaidBillId: st.activeBillId,
-          sheet: "success",
-        }),
-      });
-      note(`Paid bill ${bill.id} via ${via}`);
+      dispatch({ type: "SET", patch: { sheet: outcome } });
     },
-    [dispatch, getState, note]
+    [dispatch]
   );
 
-  const simulatePaid = useCallback(() => markPaid("UPI QR"), [markPaid]);
-  const choosePaymentApp = useCallback((name: string) => markPaid(name), [markPaid]);
+  /** From the declined sheet: back to the method picker for a fresh attempt (a failed order can't be retried). */
+  const retryPay = useCallback(() => {
+    dispatch({ type: "SET", patch: { sheet: "pay" } });
+  }, [dispatch]);
 
-  const downloadReceipt = useCallback(() => toast("Receipt saved to your phone."), [toast]);
+  // There is no receipt or statement PDF to download yet; say so rather than claim a file was saved.
+  const downloadReceipt = useCallback(() => toast("Receipt downloads aren't available yet. The receipt number above is your proof of payment."), [toast]);
 
   const finishPay = useCallback(() => {
-    dispatch({ type: "SET", patch: { sheet: null } });
+    dispatch({ type: "SET", patch: { sheet: null, payTarget: null } });
     go("dues");
-    note("Closed the receipt");
-  }, [dispatch, go, note]);
+  }, [dispatch, go]);
 
   // ---- Notices ---------------------------------------------------------
+  // Read and acknowledged are recorded by the API (NoticeDetailScreen); only which notice is open lives here.
   const openNotice = useCallback(
     (id: string) => {
-      dispatch({ type: "UPDATE", updater: (s) => ({ activeNoticeId: id, notices: s.notices.map((n) => (n.id === id ? { ...n, unread: false } : n)) }) });
+      dispatch({ type: "SET", patch: { activeNoticeId: id } });
       go("notice", true);
-      note(`Read notice ${id}`);
     },
-    [dispatch, go, note]
+    [dispatch, go]
   );
-
-  const ackNotice = useCallback(() => {
-    const id = getState().activeNoticeId;
-    dispatch({ type: "UPDATE", updater: (s) => ({ notices: s.notices.map((n) => (n.id === id ? { ...n, acked: true } : n)) }) });
-    toast("Acknowledgement sent to the office.");
-    note("Acknowledged a notice");
-  }, [getState, note, toast, dispatch]);
 
   // ---- Visitors / invite ---------------------------------------------------------
   const goInvite = useCallback(() => {
     go("invite", true);
-    note("Started a guest invite");
-  }, [go, note]);
+  }, [go]);
 
   const setInviteType = useCallback((kind: AppResidentState["inviteType"]) => dispatch({ type: "SET", patch: { inviteType: kind, guestFormError: false } }), [dispatch]);
 
@@ -275,7 +279,6 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
     const s = getState();
     if (!s.guestForm.name.trim()) {
       dispatch({ type: "SET", patch: { guestFormError: true } });
-      note("Blocked an invite with no name");
       return;
     }
     dispatch({ type: "SET", patch: { creatingPass: true } });
@@ -297,11 +300,18 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
         updater: (st) => ({ passes: [pass].concat(st.passes), newPassCode: code, creatingPass: false, guestForm: { ...st.guestForm, name: "" } }),
       });
       go("passDone");
-      note(`Created pass ${code} for ${pass.name}`);
     });
-  }, [dispatch, getState, go, note]);
+  }, [dispatch, getState, go]);
 
-  const sharePass = useCallback(() => toast("Code sent to your guest over WhatsApp."), [toast]);
+  /** Hands the code to the phone's own share sheet — the app sends nothing itself. */
+  const sharePass = useCallback(() => {
+    const s = getState();
+    const pass = s.passes.find((p) => p.code === s.newPassCode);
+    if (!pass) return;
+    const where = s.identity?.societyName ? `${pass.unit}, ${s.identity.societyName}` : pass.unit;
+    const message = pass.kind === "standing" ? `Your staff pass for ${where}: ${pass.code}` : `Your visitor code for ${where}: ${pass.code}`;
+    Share.share({ message }).catch(() => toast(`Couldn't open sharing on this phone. The code is ${pass.code}.`, "warn"));
+  }, [getState, toast]);
 
   const cancelPass = useCallback(
     (pass: VisitorPass) => {
@@ -315,9 +325,8 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
         }),
       });
       toast(standing ? `${pass.name}'s pass revoked. Attendance record closed.` : `Pass for ${pass.name} cancelled.`, "warn");
-      note(standing ? `Revoked ${pass.name}'s standing pass` : `Cancelled the pass for ${pass.name}`);
     },
-    [dispatch, note, toast]
+    [dispatch, toast]
   );
 
   // ---- Daily-help invite (standing pass + attendance, one atomic action) ----
@@ -362,26 +371,22 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
       }),
     });
     go("passDone");
-    note(`Registered ${person.name} as daily help — pass ${passNo}`);
-  }, [dispatch, getState, go, note, toast]);
+  }, [dispatch, getState, go, toast]);
 
   const goAfterPassDone = useCallback(() => {
     const s = getState();
     const isStanding = s.passes.some((p) => p.code === s.newPassCode && p.kind === "standing");
     if (isStanding) {
       go("dailyHelp");
-      note("Opened the new attendance record");
     } else {
       go("visitors");
-      note("Back to visitors");
     }
-  }, [getState, go, note]);
+  }, [getState, go]);
 
   // ---- Helpdesk / tickets ---------------------------------------------------------
   const goNewTicket = useCallback(() => {
     go("newTicket", true);
-    note("Started a new ticket");
-  }, [go, note]);
+  }, [go]);
 
   const setTicketCategory = useCallback((category: AppResidentState["ticketForm"]["category"]) => dispatch({ type: "UPDATE", updater: (s) => ({ ticketForm: { ...s.ticketForm, category } }) }), [dispatch]);
   const setTicketIssue = useCallback((issue: string) => dispatch({ type: "UPDATE", updater: (s) => ({ ticketForm: { ...s.ticketForm, issue }, ticketFormError: false }) }), [dispatch]);
@@ -391,7 +396,6 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
     const s = getState();
     if (!s.ticketForm.issue.trim()) {
       dispatch({ type: "SET", patch: { ticketFormError: true } });
-      note("Blocked an empty ticket");
       return;
     }
     dispatch({ type: "SET", patch: { submittingTicket: true } });
@@ -407,7 +411,7 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
         priority: s.ticketForm.urgent ? "urgent" : "normal",
         status: "open",
         createdAt: "Just now",
-        lastUpdate: s.ticketForm.urgent ? "Marked urgent. Supervisor paged." : "Waiting for the facility desk.",
+        lastUpdate: s.ticketForm.urgent ? "Marked urgent. Saved on this phone; the office hasn't seen it." : "Saved on this phone; the office hasn't seen it.",
         timeline: [{ at: "Just now", note: `Raised by you — ${s.ticketForm.issue.trim()}` }],
       };
       dispatch({
@@ -415,18 +419,16 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
         updater: (st) => ({ tickets: [ticket].concat(st.tickets), submittingTicket: false, activeTicketId: id, ticketForm: { ...st.ticketForm, issue: "", urgent: false } }),
       });
       go("helpdesk");
-      toast(`${id} raised. Expect a reply within 4 hours.`);
-      note(`Raised ${id} under ${s.ticketForm.category}`);
+      toast(`${id} saved on this phone. The helpdesk isn't connected yet, so call the office if it's urgent.`, "warn");
     });
-  }, [dispatch, getState, go, note, toast]);
+  }, [dispatch, getState, go, toast]);
 
   const openTicket = useCallback(
     (id: string) => {
       dispatch({ type: "SET", patch: { activeTicketId: id } });
       go("ticket", true);
-      note(`Opened ${id}`);
     },
-    [dispatch, go, note]
+    [dispatch, go]
   );
 
   const resolveTicket = useCallback(() => {
@@ -442,37 +444,35 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
       }),
     });
     toast(`${id} marked resolved.`);
-    note(`Resolved ${id}`);
-  }, [getState, note, toast, dispatch]);
+  }, [getState, toast, dispatch]);
 
   // ---- Notifications feed / preferences ---------------------------------------------------------
   const goNotifs = useCallback(() => {
     go("notifs", true);
-    note("Opened notifications");
-  }, [go, note]);
+  }, [go]);
 
-  const markAllNotifsRead = useCallback(() => {
-    dispatch({ type: "UPDATE", updater: (s) => ({ notifs: s.notifs.map((n) => ({ ...n, unread: false })) }) });
-    note("Marked all notifications read");
-  }, [dispatch, note]);
+  // ---- Email prompt ---------------------------------------------------------
+  const dismissEmailPrompt = useCallback(() => {
+    dispatch({ type: "SET", patch: { emailPromptDismissed: true } });
+  }, [dispatch]);
 
-  const toggleNotifPref = useCallback(
-    (key: string) => {
-      dispatch({ type: "UPDATE", updater: (s) => ({ prefs: s.prefs.map((p) => (p.key === key ? { ...p, on: !p.on } : p)) }) });
-      const pref = getState().prefs.find((p) => p.key === key);
-      if (pref) note(`${pref.on ? "Turned off " : "Turned on "}${pref.label.toLowerCase()}`);
-    },
-    [dispatch, getState, note]
-  );
+  /** The prompt's action: Personal details, already in edit mode with the email field open. */
+  const goAddEmail = useCallback(() => {
+    dispatch({ type: "SET", patch: { editingPersonalDetails: true } });
+    go("personal", true);
+  }, [dispatch, go]);
 
   // ---- Personal details ---------------------------------------------------------
   const toggleEditPersonal = useCallback(() => dispatch({ type: "UPDATE", updater: (s) => ({ editingPersonalDetails: !s.editingPersonalDetails }) }), [dispatch]);
   const setPersonalField = useCallback((field: keyof PersonalInfo, value: string) => dispatch({ type: "UPDATE", updater: (s) => ({ me: { ...s.me, [field]: value } }) }), [dispatch]);
-  const savePersonalDetails = useCallback(() => {
-    dispatch({ type: "SET", patch: { editingPersonalDetails: false } });
-    toast("Personal details updated.");
-    note("Saved personal details");
-  }, [dispatch, note, toast]);
+  /** Closes edit mode. Only the email is the account's; the other two fields live in this session only. */
+  const savePersonalDetails = useCallback(
+    (emailSaved: boolean) => {
+      dispatch({ type: "SET", patch: { editingPersonalDetails: false } });
+      toast(emailSaved ? "Email saved to your account." : "Kept until you close the app. Only your email reaches the society office.");
+    },
+    [dispatch, toast]
+  );
 
   // ---- Household ---------------------------------------------------------
   const setMemberNameInput = useCallback((value: string) => dispatch({ type: "SET", patch: { memberNameInput: value } }), [dispatch]);
@@ -484,10 +484,9 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
   const setDeliveryPref = useCallback(
     (pref: AppResidentState["deliveryPref"]) => {
       dispatch({ type: "SET", patch: { deliveryPref: pref } });
-      toast("The gate has been told.");
-      note(`Delivery preference: ${pref.toLowerCase()}`);
+      toast("Saved on this phone. The gate can't see it yet.");
     },
-    [dispatch, note, toast]
+    [dispatch, toast]
   );
 
   // ---- Amenities / booking ---------------------------------------------------------
@@ -495,9 +494,8 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
     (id: string) => {
       dispatch({ type: "SET", patch: { bookAmenityId: id } });
       go("book", true);
-      note(`Opened booking for ${id}`);
     },
-    [dispatch, go, note]
+    [dispatch, go]
   );
   const setBookDay = useCallback((day: string) => dispatch({ type: "SET", patch: { bookDay: day } }), [dispatch]);
   const setBookSlot = useCallback(
@@ -517,31 +515,27 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
     const unit = currentUnit(s).code;
     const booking: Booking = { id: uid("bk"), amenityId: amenity.id, unit, day: s.bookDay, slot: s.bookSlot, status: "confirmed", charge: amenity.rate };
     dispatch({ type: "UPDATE", updater: (st) => ({ bookings: [booking].concat(st.bookings) }) });
-    toast(`${amenity.name} booked for ${s.bookDay}.`);
-    note(`Booked ${amenity.name.toLowerCase()} for ${s.bookDay}`);
+    toast(`${amenity.name} for ${s.bookDay} saved on this phone. The office hasn't been told yet.`);
     go("amenities");
-  }, [dispatch, getState, go, note, toast]);
+  }, [dispatch, getState, go, toast]);
   const cancelBooking = useCallback(
     (booking: Booking, amenityName: string) => {
       dispatch({ type: "UPDATE", updater: (s) => ({ bookings: s.bookings.filter((b) => b.id !== booking.id) }) });
-      toast(`${amenityName} booking cancelled. Deposit returns in 3 days.`, "warn");
-      note(`Cancelled the ${amenityName.toLowerCase()} booking`);
+      toast(`${amenityName} booking removed.`, "warn");
     },
-    [dispatch, note, toast]
+    [dispatch, toast]
   );
 
   // ---- Votes / AGM ---------------------------------------------------------
   const goPolls = useCallback(() => {
     go("polls", true);
-    note("Opened votes");
-  }, [go, note]);
+  }, [go]);
   const openPoll = useCallback(
     (id: string) => {
       dispatch({ type: "SET", patch: { activePollId: id } });
       go("poll", true);
-      note(`Opened vote ${id}`);
     },
-    [dispatch, go, note]
+    [dispatch, go]
   );
   const castVote = useCallback(
     (pollId: string, optionKey: string) => {
@@ -552,38 +546,35 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
       }
       const unit = currentUnit(s).code;
       dispatch({ type: "UPDATE", updater: (st) => ({ votes: { ...st.votes, [pollId]: optionKey } }) });
-      toast(`Vote recorded for ${unit}.`);
-      note(`Voted on ${pollId}`);
+      toast(`Vote saved on this phone for ${unit}. AGM voting isn't connected yet, so it hasn't been counted.`, "warn");
     },
-    [dispatch, getState, note, toast]
+    [dispatch, getState, toast]
   );
 
   // ---- Statement ---------------------------------------------------------
   const goStatement = useCallback(() => {
     go("statement", true);
-    note("Opened the statement");
-  }, [go, note]);
-  const downloadStatement = useCallback(() => toast("Statement for 2026-27 saved to your phone."), [toast]);
+  }, [go]);
+  /** `fy` is the statement's financial year as the screen names it ("2026-27"). */
+  const downloadStatement = useCallback((fy: string) => toast(`The ${fy} statement can't be downloaded yet. Everything on it is on this screen.`), [toast]);
 
   // ---- Tenants ---------------------------------------------------------
   const startRenewal = useCallback(() => {
     const s = getState();
     if (s.renewed) {
-      toast("A renewal request is already with the office.", "warn");
+      toast("You've already noted a renewal on this phone.", "warn");
       return;
     }
     dispatch({ type: "SET", patch: { renewed: true } });
-    toast("Renewal started. The office will send the draft.");
-    note("Started the tenancy renewal");
-  }, [dispatch, getState, note, toast]);
+    toast("Renewal noted on this phone. The office hasn't been told, so ask them to start it.", "warn");
+  }, [dispatch, getState, toast]);
 
   // ---- Daily help attendance screen ---------------------------------------------------------
   const selectHelpPerson = useCallback(
     (passNo: string) => {
       dispatch({ type: "SET", patch: { activeHelpPassNo: passNo } });
-      note(`Viewed attendance for ${passNo}`);
     },
-    [dispatch, note]
+    [dispatch]
   );
   const markHelpPaid = useCallback(() => {
     const s = getState();
@@ -596,49 +587,22 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
     const person = s.dailyHelp.find((h) => h.passNo === passNo);
     dispatch({ type: "UPDATE", updater: (st) => ({ paidHelp: { ...st.paidHelp, [passNo]: true } }) });
     toast(`${person?.name ?? "Salary"} marked paid.`);
-    note(`Marked ${person?.name}'s salary paid`);
-  }, [dispatch, getState, note, toast]);
+  }, [dispatch, getState, toast]);
 
-  // ---- Emergency / SOS ---------------------------------------------------------
+  // ---- Emergency ---------------------------------------------------------
+  // No alert is raised from the app yet; the screen offers phone calls instead (EmergencyScreen).
   const goSos = useCallback(() => {
     go("sos", true);
-    note("Opened the emergency screen");
-  }, [go, note]);
-  const setSosKind = useCallback((kind: AppResidentState["sosKind"]) => dispatch({ type: "SET", patch: { sosKind: kind } }), [dispatch]);
-  const sosStart = useCallback(() => {
-    if (sosTick.current) clearInterval(sosTick.current);
-    sosStartedAt.current = Date.now();
-    dispatch({ type: "SET", patch: { holdingSos: true, sosPct: 0 } });
-    sosTick.current = setInterval(() => {
-      // Elapsed wall-clock time drives the fill, never a per-tick counter (README's
-      // "Hold-to-confirm... computed from elapsed wall-clock time, not by incrementing
-      // a counter per tick" — throttled frames must not silently stall the confirm).
-      const pct = Math.min(100, Math.round(((Date.now() - sosStartedAt.current) / motionDurationsMs.holdToConfirm) * 100));
-      if (pct >= 100) {
-        if (sosTick.current) clearInterval(sosTick.current);
-        dispatch({ type: "SET", patch: { holdingSos: false, sosPct: 0, sosSent: true } });
-        const kind = getState().sosKind ?? "Medical";
-        toast(`${kind} alert sent. Help is on the way.`, "warn");
-        note(`Raised a ${kind.toLowerCase()} emergency`);
-        return;
-      }
-      dispatch({ type: "SET", patch: { sosPct: pct } });
-    }, 60);
-  }, [dispatch, getState, note, toast]);
-  const sosEnd = useCallback(() => {
-    if (sosTick.current) clearInterval(sosTick.current);
-    dispatch({ type: "UPDATE", updater: (s) => (s.holdingSos ? { holdingSos: false, sosPct: 0 } : {}) });
-  }, [dispatch]);
+  }, [go]);
 
   // ---- Reset ---------------------------------------------------------
   const resetAll = useCallback(() => {
     clearAllTimers();
-    dispatch({ type: "SET", patch: createInitialState() });
-  }, [clearAllTimers, dispatch]);
+    dispatch({ type: "SET", patch: freshState() });
+  }, [clearAllTimers, dispatch, freshState]);
 
   return useMemo(
     () => ({
-      note,
       toast,
       clearAllTimers,
       go,
@@ -646,7 +610,9 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
       adoptIdentity,
       setUnit,
       setLanguage,
+      defaultLanguage,
       toggleTheme,
+      hydratePrefs,
       setDueFilter,
       openBill,
       openPay,
@@ -655,12 +621,11 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
       restartQr,
       cancelQr,
       payApp,
-      simulatePaid,
-      choosePaymentApp,
+      showPayOutcome,
+      retryPay,
       downloadReceipt,
       finishPay,
       openNotice,
-      ackNotice,
       goInvite,
       setInviteType,
       setGuestName,
@@ -684,8 +649,8 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
       openTicket,
       resolveTicket,
       goNotifs,
-      markAllNotifsRead,
-      toggleNotifPref,
+      dismissEmailPrompt,
+      goAddEmail,
       toggleEditPersonal,
       setPersonalField,
       savePersonalDetails,
@@ -708,21 +673,18 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
       selectHelpPerson,
       markHelpPaid,
       goSos,
-      setSosKind,
-      sosStart,
-      sosEnd,
       resetAll,
     }),
     [
-      note, toast, clearAllTimers, go, back, adoptIdentity, setUnit, setLanguage, toggleTheme, setDueFilter, openBill,
-      openPay, closeSheet, startQr, restartQr, cancelQr, payApp, simulatePaid, choosePaymentApp, downloadReceipt, finishPay,
-      openNotice, ackNotice, goInvite, setInviteType, setGuestName, setGuestPurpose, setGuestWindow, createGuestPass, sharePass, cancelPass,
+      toast, clearAllTimers, go, back, adoptIdentity, setUnit, setLanguage, defaultLanguage, toggleTheme, hydratePrefs, setDueFilter, openBill,
+      openPay, closeSheet, startQr, restartQr, cancelQr, payApp, showPayOutcome, retryPay, downloadReceipt, finishPay,
+      openNotice, goInvite, setInviteType, setGuestName, setGuestPurpose, setGuestWindow, createGuestPass, sharePass, cancelPass,
       setHelpName, setHelpRole, setHelpWindow, setHelpSalary, toggleHelpDay, createHelpPass, goAfterPassDone,
       goNewTicket, setTicketCategory, setTicketIssue, toggleTicketUrgent, submitTicket, openTicket, resolveTicket,
-      goNotifs, markAllNotifsRead, toggleNotifPref, toggleEditPersonal, setPersonalField, savePersonalDetails,
+      goNotifs, dismissEmailPrompt, goAddEmail, toggleEditPersonal, setPersonalField, savePersonalDetails,
       setMemberNameInput, setRelationInput, setPlateInput, setVehicleTypeInput,
       setDeliveryPref, openAmenity, setBookDay, setBookSlot, confirmBooking, cancelBooking, goPolls, openPoll, castVote,
-      goStatement, downloadStatement, startRenewal, selectHelpPerson, markHelpPaid, goSos, setSosKind, sosStart, sosEnd, resetAll,
+      goStatement, downloadStatement, startRenewal, selectHelpPerson, markHelpPaid, goSos, resetAll,
     ]
   );
 }

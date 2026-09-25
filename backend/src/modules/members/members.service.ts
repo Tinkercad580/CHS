@@ -71,8 +71,9 @@ async function unit(db: Tx, societyId: string, unitId: string) {
   return u;
 }
 
-function changed(scope: SocietyScope, unitId: string | null) {
-  events.emit({ name: "members.changed", to: { admins: scope.societyId, ...(unitId ? { unit: unitId } : {}) }, payload: { unitId } });
+function changed(scope: SocietyScope, unitId: string | null, opts: { vehicles?: boolean } = {}) {
+  // Vehicle changes go society-wide so the gate's plate lookup refreshes too.
+  events.emit({ name: "members.changed", to: { ...(opts.vehicles ? { society: scope.societyId } : { admins: scope.societyId }), ...(unitId ? { unit: unitId } : {}) }, payload: { unitId } });
 }
 
 /** Find a society's record of a person by mobile, or create one; link it to their login if they have one. */
@@ -410,7 +411,7 @@ export async function addVehicle(scope: SocietyScope, userId: string, unitId: st
     }
     const row = await createVehicle(tx, scope.societyId, unitId, body);
     await audit(tx, { action: "vehicle.create", entity: "vehicle", entityId: row.id, after: vehicleDto(row) });
-    changed(scope, unitId);
+    changed(scope, unitId, { vehicles: true });
     return vehicleDto(row);
   });
 }
@@ -444,7 +445,7 @@ async function softRemove(
     await roleForUnit(tx, scope, userId, row.unitId);
     await delegate.update({ where: { id }, data: { deletedAt: new Date() } });
     await audit(tx, { action: `${kind}.remove`, entity: kind, entityId: id, before: row });
-    changed(scope, row.unitId);
+    changed(scope, row.unitId, { vehicles: kind === "vehicle" });
     return { ok: true as const };
   });
 }
@@ -462,7 +463,7 @@ export async function vehicles(societyId: string, q: z.output<S["VehicleSearchQu
     ...(plate ? { plate: { contains: plate } } : {}),
     ...(q.q ? { OR: [{ plate: contains(q.q.toUpperCase()) }, { ownerName: contains(q.q) }, { unit: { number: contains(q.q) } }] } : {}),
   };
-  return paginate(q.limit, q.cursor, (p) => prisma.vehicle.findMany({ where, include: vehicleInclude, orderBy: [{ plate: "asc" }, { id: "asc" }], ...p }), vehicleDto);
+  return paginate(q.limit, q.cursor, (p) => prisma.vehicle.findMany({ where, include: vehicleInclude, orderBy: [{ plate: "asc" }, { id: "asc" }], ...p }), vehicleDto, () => prisma.vehicle.count({ where }));
 }
 
 // ─── Approvals ──────────────────────────────────────────────────────────────
@@ -520,7 +521,7 @@ export async function decideApproval(scope: SocietyScope, userId: string, id: st
     });
     await audit(tx, { action: `approval.${body.decision.toLowerCase()}`, entity: "member_approval", entityId: id, before: { status: "PENDING" }, after: { status: body.decision, note: body.note } });
     events.emit({ name: "approvals.changed", to: { admins: scope.societyId, user: a.requestedById }, payload: { approvalId: id, status: body.decision } });
-    if (a.unitId) changed(scope, a.unitId);
+    if (a.unitId) changed(scope, a.unitId, { vehicles: a.kind === "VEHICLE_ADD" });
     return row;
   });
   const names = await nameMap([decided.requestedById, decided.decidedById]);

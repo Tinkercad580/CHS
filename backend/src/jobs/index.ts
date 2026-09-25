@@ -4,6 +4,8 @@ import { logger } from "../core/logger";
 import { sendMessage } from "../core/messaging";
 import { defineJob, repeat } from "../core/queue";
 import { endTenancyInTx } from "../modules/members/members.service";
+import { expireCheckouts } from "../modules/payments/payments.service";
+import { dailyCollections, weeklyDigest } from "../modules/reports/reports.service";
 import { readSettings } from "../modules/society/society.service";
 
 /**
@@ -53,7 +55,20 @@ const cleanup = defineJob("system.cleanup", async () => {
   await prisma.tempPassword.deleteMany({ where: { expiresAt: { lt: addDays(now, -30) } } });
 });
 
+/** Hourly ticks that fire the digests once, at their hour in IST. */
+const istHour = () => new Date(Date.now() + 330 * 60_000).getUTCHours();
+const dailyCollectionsAt20 = defineJob("reports.daily-collections-tick", async () => {
+  if (istHour() === 20) await dailyCollections.enqueue({});
+});
+const weeklyDigestAt8 = defineJob("reports.weekly-digest-tick", async () => {
+  if (istHour() === 8) await weeklyDigest.enqueue({});
+});
+
 export async function scheduleJobs(): Promise<void> {
   await repeat(tenancyExpiry.name, 6 * 3_600_000);
   await repeat(cleanup.name, 3_600_000);
+  await repeat(expireCheckouts.name, 10 * 60_000);
+  // Checked hourly; each run acts once per day (daily: after 20:00 IST; weekly: Monday).
+  await repeat(dailyCollectionsAt20.name, 3_600_000);
+  await repeat(weeklyDigestAt8.name, 3_600_000);
 }

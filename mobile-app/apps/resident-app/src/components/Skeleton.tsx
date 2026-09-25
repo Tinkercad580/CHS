@@ -15,10 +15,11 @@ const SLICE_OPACITIES = Array.from({ length: SLICE_COUNT }, (_, i) => Math.sin((
  * `background-position -260px→260px`), built from plain Views translating across
  * the skeleton's own measured width, not a bare opacity pulse.
  *
- * Nothing renders this today. It used to sit behind the dues filter on a 520ms
- * timer, which put a placeholder in front of bills the app already had in
- * memory. It is kept for the case it is actually for: a real wait on data coming
- * from the API. See docs/LOADING_AND_MOTION.md.
+ * Rendered only for a real wait: the `loading` branch of an API query's
+ * LoadState (dues, bills, the ledger, notices, the household, the society's
+ * number on the emergency screen…), sized to the layout it stands in for. It
+ * once sat behind the dues filter on a 520ms timer, in front of bills already
+ * in memory; nothing may do that again. See docs/LOADING_AND_MOTION.md.
  */
 export function Skeleton({ height = 82, radius = 15 }: { height?: number; radius?: number }) {
   const { colors } = useTheme();

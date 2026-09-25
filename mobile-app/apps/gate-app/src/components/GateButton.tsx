@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { Pressable, Animated, ActivityIndicator, StyleSheet, type ViewStyle } from "react-native";
+import { Pressable, Animated, ActivityIndicator, Platform, StyleSheet, type ViewStyle } from "react-native";
 import Reanimated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing, useReducedMotion } from "react-native-reanimated";
 import { GateText } from "./GateText";
 import { colors } from "../theme";
@@ -26,7 +26,7 @@ function PulseRing({ radius: ringRadius }: { radius: number }) {
     transform: [{ scale: 1 + progress.value * 0.32 }],
   }));
 
-  return <Reanimated.View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.ring, { borderRadius: ringRadius }, ringStyle]} />;
+  return <Reanimated.View style={[StyleSheet.absoluteFill, styles.ring, { pointerEvents: "none" }, { borderRadius: ringRadius }, ringStyle]} />;
 }
 
 type Variant = "primary" | "secondary" | "outline" | "dangerOutline" | "disabled";
@@ -74,8 +74,9 @@ export function GateButton({
     if (!pulsing || isDisabled) return;
     const loop = Animated.loop(
       Animated.sequence([
-        Animated.timing(scale, { toValue: 1.015, duration: 900, useNativeDriver: true }),
-        Animated.timing(scale, { toValue: 1, duration: 900, useNativeDriver: true }),
+        // The web has no native animated module and warns if asked for one.
+        Animated.timing(scale, { toValue: 1.015, duration: 900, useNativeDriver: Platform.OS !== "web" }),
+        Animated.timing(scale, { toValue: 1, duration: 900, useNativeDriver: Platform.OS !== "web" }),
       ])
     );
     loop.start();

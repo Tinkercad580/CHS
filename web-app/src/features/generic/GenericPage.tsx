@@ -9,6 +9,7 @@ import { StatGrid } from "../../components/StatGrid";
 import { Pill } from "../../components/Pill";
 import { DataFormModal } from "../../components/DataFormModal";
 import { PanelModal } from "../../components/PanelModal";
+import { NotFoundPage } from "./NotFoundPage";
 
 /**
  * The generic table page: search/filter/sort/pagination/empty-state driven
@@ -41,7 +42,7 @@ export function GenericPage() {
     return rows;
   }, [all, search, chip, sortCol, sortDir, pageNo, page]);
 
-  if (!page) return null;
+  if (!page) return <NotFoundPage />;
 
   const isFiltering = Boolean(search.trim()) || chip !== null;
   const footer = isFiltering

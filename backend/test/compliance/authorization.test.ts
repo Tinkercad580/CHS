@@ -155,3 +155,32 @@ describe("idempotency", () => {
     expect(r.body.error.code).toBe("IDEMPOTENCY_KEY_REUSED");
   });
 });
+
+describe("gate app boundaries", () => {
+  it("only guards can sign in to the gate app", async () => {
+    const resident = await addUser(S.society.id, "OWNER");
+    const r = await call(api.auth.login, { body: { mobile: resident.mobile, password: "Sahaj@2026", client: "gate" } });
+    expect(r.body.error.code).toBe("SURFACE_NOT_ALLOWED");
+    const g = await addUser(S.society.id, "GUARD");
+    expect((await call(api.auth.login, { body: { mobile: g.mobile, password: "Sahaj@2026", client: "gate" } })).body.data.status).toBe("SIGNED_IN");
+  });
+
+  it("a resident's temporary password isn't spent by trying the gate app", async () => {
+    const resident = await addUser(S.society.id, "OWNER");
+    const t = await call(api.users.issueTempPassword, { params: { societyId: S.society.id, userId: resident.societyUser.id } }, adminToken);
+    const gate = await call(api.auth.login, { body: { mobile: resident.mobile, password: t.body.data.tempPassword, client: "gate" } });
+    expect(gate.body.error.code).toBe("SURFACE_NOT_ALLOWED");
+    const app = await call(api.auth.login, { body: { mobile: resident.mobile, password: t.body.data.tempPassword, client: "resident" } });
+    expect(app.body.data.status).toBe("PASSWORD_CHANGE");
+  });
+
+  it("guards don't receive financial notices or the society's tax identifiers", async () => {
+    const g = await addUser(S.society.id, "GUARD");
+    const gt = (await login(g.mobile)).token;
+    const n = await call(api.notices.create, { params: { societyId: S.society.id }, body: { title: "Audited accounts", body: "Attached.", category: "FINANCIAL", audience: { kind: "ALL" } } }, adminToken);
+    await call(api.notices.publish, { params: { societyId: S.society.id, noticeId: n.body.data.id } }, adminToken);
+    expect((await call(api.notices.feed, { params: { societyId: S.society.id } }, gt)).body.data.items.map((x: { title: string }) => x.title)).not.toContain("Audited accounts");
+    await call(api.society.update, { params: { societyId: S.society.id }, body: { pan: "AAAAS1234C" } }, adminToken);
+    expect((await call(api.society.get, { params: { societyId: S.society.id } }, gt)).body.data.pan).toBeNull();
+  });
+});

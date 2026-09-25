@@ -7,3 +7,8 @@ coverage/
 !.env.example
 backend/src/generated/
 .DS_Store
+# Firebase: client config per environment (CI writes it) and the server's service account (never commit).
+**/google-services.json
+**/GoogleService-Info.plist
+secrets/*
+!secrets/.gitkeep

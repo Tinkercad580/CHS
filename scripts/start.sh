@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The admin console (web-app) in a browser, on http://localhost:5173.
+# The admin console (web-app) in a browser, on http://localhost:5273.
 #
 #   ./scripts/start.sh
 #   ./scripts/start.sh --reinstall     # blow away node_modules and install clean

@@ -70,7 +70,7 @@ export function ParcelSheet() {
       ) : null}
 
       <View style={{ marginTop: 20, marginBottom: 10 }}>
-        <GateButton label="Save and notify resident" height={54} radius={15} fontSize={16} onPress={() => actions.saveParcel(state.parcelUnit, state.courier)} />
+        <GateButton label="Save parcel" height={54} radius={15} fontSize={16} onPress={() => actions.saveParcel(state.parcelUnit, state.courier)} />
       </View>
       <GateButton label="Cancel" variant="outline" height={48} radius={13} fontSize={14.5} weight={600} onPress={actions.closeParcel} />
     </BottomSheet>

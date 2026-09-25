@@ -14,7 +14,7 @@ const TOAST_IN_MS = 260;
 export function ToastStack({ toasts }: { toasts: AppToast[] }) {
   if (toasts.length === 0) return null;
   return (
-    <View pointerEvents="none" style={{ position: "absolute", left: 18, right: 18, bottom: 96, zIndex: 30, gap: 8 }}>
+    <View style={{ position: "absolute", left: 18, right: 18, bottom: 96, zIndex: 30, gap: 8, pointerEvents: "none" }}>
       {toasts.map((toast) => (
         <ToastRow key={toast.id} toast={toast} />
       ))}

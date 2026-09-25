@@ -1,5 +1,5 @@
-import React from "react";
-import { View } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { BackHandler, Platform, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useResident } from "../../state/ResidentProvider";
 import { useTheme } from "../../hooks/useTheme";
@@ -34,13 +34,21 @@ import { BuildingStatusScreen } from "../profile/BuildingStatusScreen";
 import { PollsScreen } from "../profile/PollsScreen";
 import { PollDetailScreen } from "../profile/PollDetailScreen";
 import { PaymentSheets } from "../payment/PaymentSheets";
+import { usePushRouting } from "../../push/bridge";
 
 const TAB_SCREENS = new Set(["home", "dues", "notices", "visitors", "profile", "helpdesk"]);
 
-/** Everything the resident sees once past the splash: the current screen, the tab bar, and any open payment sheet. */
+/**
+ * Everything the resident sees once past the splash: the current screen, the tab
+ * bar, and any open payment sheet. It also owns push routing — a tapped
+ * notification switches the screen here like any other navigation — and
+ * Android's back button.
+ */
 export function ResidentShell() {
   const { state, actions } = useResident();
   const { colors } = useTheme();
+  usePushRouting();
+  useHardwareBack();
 
   // Home's header is accent-green with white ink, so the status icons read light there
   // regardless of the app's own light/dark theme; every other screen follows the theme.
@@ -86,4 +94,37 @@ export function ResidentShell() {
       <ToastStack toasts={state.toasts} />
     </View>
   );
+}
+
+/**
+ * Android's back button walks the app's own navigation, since there is one
+ * route and expo-router has no history to pop: back through `stack`, then from
+ * any other screen to Home, and only from Home out of the app. An open payment
+ * sheet is a `Modal`, which takes the press itself (BottomSheet onRequestClose).
+ */
+function useHardwareBack() {
+  const { state, actions } = useResident();
+  const latest = useRef(state);
+  latest.current = state;
+
+  useEffect(() => {
+    if (Platform.OS !== "android") return;
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      const s = latest.current;
+      if (s.sheet) {
+        actions.closeSheet();
+        return true;
+      }
+      if (s.stack.length > 0) {
+        actions.back();
+        return true;
+      }
+      if (s.screen !== "home") {
+        actions.go("home");
+        return true;
+      }
+      return false;
+    });
+    return () => sub.remove();
+  }, [actions]);
 }

@@ -7,5 +7,8 @@
     "src",
     "**/*.ts",
     "**/*.tsx"
+  ],
+  "exclude": [
+    "app.config.ts"
   ]
 }

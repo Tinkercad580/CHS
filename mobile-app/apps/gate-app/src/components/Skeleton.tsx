@@ -18,9 +18,11 @@ const SLICE_OPACITIES = Array.from({ length: SLICE_COUNT }, (_, i) => Math.sin((
  * The sweep is also slower, because nothing here should suggest urgency the
  * guard has to react to.
  *
- * Most gate data is local by architecture — the handset caches residents, units
- * and passes for 24h offline autonomy — so in practice this appears only for the
- * few actions that genuinely reach the network.
+ * Today it appears only on the screens backed by the API (plate lookup, office
+ * notices), for as long as the first load is in flight. The fixture-backed screens
+ * have nothing to wait for. C9's offline store (residents, units and passes kept
+ * on the handset for 24h of autonomy) will keep most gate data local, so it should
+ * stay rare.
  */
 export function Skeleton({ height = 56, borderRadius = radius.card }: { height?: number; borderRadius?: number }) {
   const reduced = useReducedMotion();

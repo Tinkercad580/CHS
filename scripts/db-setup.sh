@@ -84,6 +84,11 @@ DATA_ENCRYPTION_KEY=$(secret)
 CORS_ORIGINS=http://localhost:5273,http://localhost:8181,http://localhost:8182
 LOG_LEVEL=info
 MESSAGING_PROVIDER=log
+PAYMENT_WEBHOOK_SECRET=$(secret)
+# Push and email: see docs/NOTIFICATIONS.md to switch these from log to live.
+PUSH_PROVIDER=log
+FIREBASE_SERVICE_ACCOUNT_FILE=secrets/firebase-service-account.json
+MAIL_PROVIDER=log
 EOF
   chmod 600 "$ENV_FILE"
   echo "     written (mode 600)"

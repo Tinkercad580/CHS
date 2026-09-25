@@ -109,18 +109,24 @@ export function TextField({
   inputMode,
   autoComplete,
   multiline,
+  rows = 3,
+  maxLength,
+  disabled,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
+  disabled?: boolean;
+  rows?: number;
+  maxLength?: number;
   error?: string;
   hint?: string;
   req?: boolean;
   mono?: boolean;
-  type?: "text" | "email" | "tel" | "date";
+  type?: "text" | "email" | "tel" | "date" | "month" | "datetime-local" | "time" | "password";
   placeholder?: string;
   autoFocus?: boolean;
-  inputMode?: "text" | "tel" | "numeric" | "email";
+  inputMode?: "text" | "tel" | "numeric" | "decimal" | "email";
   autoComplete?: string;
   multiline?: boolean;
 }) {
@@ -135,6 +141,7 @@ export function TextField({
     font: mono ? "600 15px/1 'IBM Plex Mono',monospace" : multiline ? "500 14px/1.5 Figtree, sans-serif" : "500 14.5px/1 Figtree, sans-serif",
     outline: "none",
     resize: "vertical" as const,
+    opacity: disabled ? 0.7 : 1,
   };
   const describedBy = error || hint ? `${id}-note` : undefined;
   return (
@@ -150,7 +157,9 @@ export function TextField({
           id={id}
           className="auth-input"
           value={value}
-          rows={3}
+          disabled={disabled}
+          rows={rows}
+          maxLength={maxLength}
           placeholder={placeholder}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
@@ -163,6 +172,7 @@ export function TextField({
           className="auth-input"
           type={type}
           value={value}
+          disabled={disabled}
           placeholder={placeholder}
           // First field of a modal takes focus so the form can be filled from the keyboard.
           autoFocus={autoFocus}
@@ -192,6 +202,7 @@ export function PickField<V extends string>({
   onPick,
   error,
   req,
+  disabled,
 }: {
   label: string;
   value: V | null;
@@ -199,6 +210,7 @@ export function PickField<V extends string>({
   onPick: (v: V) => void;
   error?: string;
   req?: boolean;
+  disabled?: boolean;
 }) {
   const id = useId();
   return (
@@ -218,6 +230,7 @@ export function PickField<V extends string>({
               type="button"
               role="radio"
               aria-checked={active}
+              disabled={disabled}
               onClick={() => onPick(o.value)}
               className="press-scale focus-ring"
               style={{
@@ -228,7 +241,8 @@ export function PickField<V extends string>({
                 background: active ? "var(--accent-wash,#E6F2EF)" : "var(--surface,#fff)",
                 color: active ? "var(--accent-ink,#0A5749)" : "var(--ink,#0F1A17)",
                 font: "600 12.5px/1 Figtree, sans-serif",
-                cursor: "pointer",
+                cursor: disabled ? "default" : "pointer",
+                opacity: disabled && !active ? 0.6 : 1,
               }}
             >
               {o.label}
@@ -248,5 +262,97 @@ export function FormError({ message }: { message: string | null }) {
     <div role="alert" style={{ padding: "11px 13px", borderRadius: 11, background: "var(--bad-wash,#FCEDEC)", border: "1px solid var(--bad-border,#F6D9D6)", font: "500 13px/1.5 Figtree, sans-serif", color: "var(--bad-ink,#9B2B22)" }}>
       {message}
     </div>
+  );
+}
+
+/** A native select in TextField's box — for long option lists (charge categories, heads) where pick buttons would wrap into a wall. */
+export function SelectField<V extends string>({
+  label,
+  value,
+  options,
+  onChange,
+  error,
+  hint,
+  req,
+  placeholder,
+  disabled,
+}: {
+  label: string;
+  disabled?: boolean;
+  value: V | "";
+  options: { value: V; label: string }[];
+  onChange: (v: V) => void;
+  error?: string;
+  hint?: string;
+  req?: boolean;
+  placeholder?: string;
+}) {
+  const id = useId();
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 7, marginBottom: 8 }}>
+        <label htmlFor={id} style={{ font: "600 12.5px/1 Figtree, sans-serif" }}>
+          {label}
+        </label>
+        <span style={{ font: "500 11.5px/1 Figtree, sans-serif", color: "var(--ink-dim,#A8B5B0)" }}>{req ? "required" : "optional"}</span>
+      </div>
+      <select
+        id={id}
+        className="auth-input"
+        value={value}
+        disabled={disabled}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error || hint ? `${id}-note` : undefined}
+        onChange={(e) => onChange(e.target.value as V)}
+        style={{
+          width: "100%",
+          height: 46,
+          padding: "0 12px",
+          border: `1px solid ${error ? "var(--bad,#C0342B)" : "var(--border-strong,#CCD6D2)"}`,
+          borderRadius: 11,
+          background: "var(--surface,#fff)",
+          color: value ? "var(--ink,#0F1A17)" : "var(--ink-muted,#8A9995)",
+          font: "500 14.5px/1 Figtree, sans-serif",
+          outline: "none",
+        }}
+      >
+        {placeholder !== undefined && (
+          <option value="" disabled>
+            {placeholder}
+          </option>
+        )}
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+      {(error || hint) && (
+        <div id={`${id}-note`} style={{ marginTop: 7, font: "500 12px/1.45 Figtree, sans-serif", color: error ? "var(--bad-ink,#9B2B22)" : "var(--ink-muted,#6B7A75)" }}>
+          {error ?? hint}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** A labelled checkbox with a line of explanation — for a yes/no choice whose consequence needs saying. */
+export function CheckField({ label, hint, checked, onChange, disabled }: { label: string; hint?: string; checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
+  const id = useId();
+  return (
+    <label htmlFor={id} style={{ display: "flex", gap: 11, alignItems: "flex-start", cursor: disabled ? "default" : "pointer", opacity: disabled ? 0.6 : 1 }}>
+      <input
+        id={id}
+        type="checkbox"
+        checked={checked}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.checked)}
+        style={{ width: 18, height: 18, marginTop: 1, flex: "none", accentColor: "var(--accent,#0E6B5C)", cursor: "inherit" }}
+      />
+      <span style={{ minWidth: 0 }}>
+        <span style={{ display: "block", font: "600 13.5px/1.35 Figtree, sans-serif" }}>{label}</span>
+        {hint && <span style={{ display: "block", marginTop: 2, font: "400 12.5px/1.45 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>{hint}</span>}
+      </span>
+    </label>
   );
 }

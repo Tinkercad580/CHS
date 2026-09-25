@@ -3,7 +3,11 @@ import { handle } from "../../core/http/bind";
 import * as svc from "./society.service";
 
 export const societyBindings = [
-  handle(api.society.get, (_i, { society }) => svc.getSociety(society.societyId)),
+  handle(api.society.get, async (_i, { society }) => {
+    const s = await svc.getSociety(society.societyId);
+    // The gate needs the society's name, not its tax and registration identifiers.
+    return society.userType === "GUARD" ? { ...s, pan: null, tan: null, gstin: null, registrationNumber: null, registrationDate: null } : s;
+  }),
   handle(api.society.update, ({ body }, { society }) => svc.updateSociety(society, body)),
   handle(api.society.settings, (_i, { society }) => svc.getSettings(society.societyId)),
   handle(api.society.updateSettings, ({ body }, { society }) => svc.updateSettings(society, body)),

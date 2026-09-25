@@ -42,6 +42,20 @@ services:
       DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:?set DATA_ENCRYPTION_KEY in .env}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080}
       TRUST_PROXY: 1
+      PAYMENT_WEBHOOK_SECRET: ${PAYMENT_WEBHOOK_SECRET:?set PAYMENT_WEBHOOK_SECRET in .env}
+      PUSH_PROVIDER: ${PUSH_PROVIDER:-log}
+      FIREBASE_SERVICE_ACCOUNT_FILE: ${FIREBASE_SERVICE_ACCOUNT_FILE:+/run/secrets/firebase-service-account.json}
+      MAIL_PROVIDER: ${MAIL_PROVIDER:-log}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      MAIL_FROM: ${MAIL_FROM:-Sahaj <no-reply@localhost>}
+      PUBLIC_WEB_URL: ${PUBLIC_WEB_URL:-http://localhost:8080}
+    volumes:
+      # The Firebase service account, read-only, never baked into the image.
+      - ./secrets:/run/secrets:ro
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }

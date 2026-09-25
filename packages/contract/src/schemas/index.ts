@@ -5,3 +5,7 @@ export * as society from "./society";
 export * as structure from "./structure";
 export * as members from "./members";
 export * as platform from "./platform";
+export * as notifications from "./notifications";
+export * as billing from "./billing";
+export * as payments from "./payments";
+export * as reports from "./reports";

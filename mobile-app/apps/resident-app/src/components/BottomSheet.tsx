@@ -14,12 +14,28 @@ const SCRIM_FADE_MS = 200;
  * prototype — QR and the success takeover deliberately don't, so `onBackdropPress` is
  * optional. Slides up from fully off-screen on `--ease-out`, rather than the platform's
  * default `Modal` slide, so the curve matches the design's rather than the OS's.
+ *
+ * While a `Modal` is up, Android's back button goes to it, not to the shell's
+ * BackHandler, so each sheet says what back means for it (`onRequestClose`);
+ * without one, back does nothing while the sheet is open.
  */
-export function BottomSheet({ visible, onBackdropPress, children, fullScreen }: { visible: boolean; onBackdropPress?: () => void; children: React.ReactNode; fullScreen?: boolean }) {
+export function BottomSheet({
+  visible,
+  onBackdropPress,
+  onRequestClose,
+  children,
+  fullScreen,
+}: {
+  visible: boolean;
+  onBackdropPress?: () => void;
+  onRequestClose?: () => void;
+  children: React.ReactNode;
+  fullScreen?: boolean;
+}) {
   const { colors } = useTheme();
   if (!visible) return null;
   return (
-    <Modal visible={visible} transparent={!fullScreen} animationType="none" statusBarTranslucent>
+    <Modal visible={visible} transparent={!fullScreen} animationType="none" statusBarTranslucent onRequestClose={onRequestClose ?? noop}>
       {fullScreen ? (
         <SheetSlide style={{ flex: 1, backgroundColor: colors.surface }}>{children}</SheetSlide>
       ) : (
@@ -34,6 +50,8 @@ export function BottomSheet({ visible, onBackdropPress, children, fullScreen }: 
     </Modal>
   );
 }
+
+function noop() {}
 
 /** Scrim fade — `fadeIn` 200ms, matching the README's dismissible-overlay convention. */
 function Scrim({ onPress }: { onPress?: () => void }) {

@@ -1,0 +1,267 @@
+// ─── Society & structure ────────────────────────────────────────────────────
+
+enum SocietyType {
+  SOCIETY_CHS
+  SOCIETY_AOA
+  UNREGISTERED
+}
+
+enum SocietyStatus {
+  DRAFT
+  LIVE
+  SUSPENDED
+}
+
+model Society {
+  id                 String        @id @default(uuid(7)) @db.Uuid
+  code               String        @unique @db.VarChar(12)
+  name               String        @db.VarChar(150)
+  type               SocietyType
+  status             SocietyStatus @default(DRAFT)
+  registrationNumber String?       @map("registration_number") @db.VarChar(60)
+  registrationDate   DateTime?     @map("registration_date") @db.Date
+  addressLine        String?       @map("address_line") @db.VarChar(300)
+  city               String?       @db.VarChar(80)
+  district           String?       @db.VarChar(80)
+  pincode            String?       @db.VarChar(6)
+  registrarOffice    String?       @map("registrar_office") @db.VarChar(150)
+  pan                String?       @db.VarChar(10)
+  tan                String?       @db.VarChar(10)
+  gstin              String?       @db.VarChar(15)
+  gstRegistered      Boolean       @default(false) @map("gst_registered")
+  fyStartMonth       Int           @default(4) @map("fy_start_month")
+  contactEmail       String?       @map("contact_email") @db.VarChar(254)
+  contactPhone       String?       @map("contact_phone") @db.VarChar(20)
+  settings           Json          @default("{}")
+  wentLiveAt         DateTime?     @map("went_live_at") @db.Timestamptz(3)
+  createdAt          DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  societyUsers        SocietyUser[]
+  permissionTemplates PermissionTemplate[]
+  buildings           Building[]
+  units               Unit[]
+  parkingSlots        ParkingSlot[]
+  bankAccounts        BankAccount[]
+  billingConfig       BillingConfig?
+  numberingSeries     NumberingSeries[]
+  persons             Person[]
+
+  @@map("societies")
+}
+
+model Building {
+  id                    String    @id @default(uuid(7)) @db.Uuid
+  societyId             String    @map("society_id") @db.Uuid
+  name                  String    @db.VarChar(60)
+  wing                  String?   @db.VarChar(20)
+  floorCount            Int       @map("floor_count")
+  liftPresent           Boolean   @map("lift_present")
+  constructionYear      Int?      @map("construction_year")
+  constructionCostPaise BigInt?   @map("construction_cost_paise")
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt             DateTime? @map("deleted_at") @db.Timestamptz(3)
+
+  society      Society       @relation(fields: [societyId], references: [id])
+  units        Unit[]
+  parkingSlots ParkingSlot[]
+
+  @@unique([societyId, name])
+  @@map("buildings")
+}
+
+enum UnitType {
+  RESIDENTIAL
+  COMMERCIAL
+  SHOP
+  OFFICE
+  PARKING_ONLY
+}
+
+enum UnitStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Unit {
+  id                 String     @id @default(uuid(7)) @db.Uuid
+  societyId          String     @map("society_id") @db.Uuid
+  buildingId         String     @map("building_id") @db.Uuid
+  number             String     @db.VarChar(20)
+  floor              Int
+  type               UnitType   @default(RESIDENTIAL)
+  status             UnitStatus @default(ACTIVE)
+  carpetAreaSqft     Decimal?   @map("carpet_area_sqft") @db.Decimal(10, 2)
+  builtUpAreaSqft    Decimal?   @map("built_up_area_sqft") @db.Decimal(10, 2)
+  waterInlets        Int        @default(1) @map("water_inlets")
+  liftServed         Boolean    @map("lift_served")
+  shareCertificateNo String?    @map("share_certificate_no") @db.VarChar(40)
+  /// Set once the unit appears on a published bill; it can then only be deactivated, never removed.
+  firstBilledAt      DateTime?  @map("first_billed_at") @db.Timestamptz(3)
+  createdAt          DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  society      Society        @relation(fields: [societyId], references: [id])
+  building     Building       @relation(fields: [buildingId], references: [id])
+  societyUsers SocietyUser[]
+  parkingSlots ParkingSlot[]
+  memberships  Membership[]
+  occupancies  Occupancy[]
+  tenancies    Tenancy[]
+  family       FamilyMember[]
+  vehicles     Vehicle[]
+  pets         Pet[]
+  approvals    MemberApproval[]
+
+  @@unique([buildingId, number])
+  @@index([societyId, buildingId])
+  @@map("units")
+}
+
+enum ParkingType {
+  CAR_COVERED
+  CAR_OPEN
+  CAR_STILT
+  TWO_WHEELER
+  VISITOR
+}
+
+model ParkingSlot {
+  id         String      @id @default(uuid(7)) @db.Uuid
+  societyId  String      @map("society_id") @db.Uuid
+  buildingId String?     @map("building_id") @db.Uuid
+  code       String      @db.VarChar(20)
+  type       ParkingType
+  unitId     String?     @map("unit_id") @db.Uuid
+  allottedAt DateTime?   @map("allotted_at") @db.Timestamptz(3)
+  active     Boolean     @default(true)
+  createdAt  DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  society  Society   @relation(fields: [societyId], references: [id])
+  building Building? @relation(fields: [buildingId], references: [id])
+  unit     Unit?     @relation(fields: [unitId], references: [id])
+  vehicles Vehicle[]
+
+  @@unique([societyId, code])
+  @@map("parking_slots")
+}
+
+enum BankPurpose {
+  OPERATIONS
+  SINKING
+  REPAIR
+  OTHER
+}
+
+enum BankAccountType {
+  SAVINGS
+  CURRENT
+}
+
+model BankAccount {
+  id                  String          @id @default(uuid(7)) @db.Uuid
+  societyId           String          @map("society_id") @db.Uuid
+  bankName            String          @map("bank_name") @db.VarChar(100)
+  accountName         String          @map("account_name") @db.VarChar(150)
+  accountNumber       String          @map("account_number") @db.VarChar(20)
+  ifsc                String          @db.VarChar(11)
+  type                BankAccountType
+  purpose             BankPurpose
+  openingBalancePaise BigInt          @default(0) @map("opening_balance_paise")
+  openingBalanceDate  DateTime?       @map("opening_balance_date") @db.Date
+  vanPrefix           String?         @map("van_prefix") @db.VarChar(20)
+  active              Boolean         @default(true)
+  createdAt           DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt           DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  society Society @relation(fields: [societyId], references: [id])
+
+  @@unique([societyId, accountNumber, ifsc])
+  @@map("bank_accounts")
+}
+
+enum BillingCycle {
+  MONTHLY
+  QUARTERLY
+  HALF_YEARLY
+}
+
+model BillingConfig {
+  id                   String       @id @default(uuid(7)) @db.Uuid
+  societyId            String       @unique @map("society_id") @db.Uuid
+  cycle                BillingCycle @default(MONTHLY)
+  generationDay        Int          @default(1) @map("generation_day")
+  dueDay               Int          @default(15) @map("due_day")
+  graceDays            Int          @default(0) @map("grace_days")
+  interestRateBps      Int          @default(0) @map("interest_rate_bps")
+  interestResolution   Json?        @map("interest_resolution")
+  roundingRule         String       @default("NEAREST_RUPEE") @map("rounding_rule") @db.VarChar(20)
+  billNumberFormat     String       @default("{CODE}/{FY}/{SEQ}") @map("bill_number_format") @db.VarChar(60)
+  receiptNumberFormat  String       @default("{CODE}/R/{FY}/{SEQ}") @map("receipt_number_format") @db.VarChar(60)
+  allowPartialPayment  Boolean      @default(true) @map("allow_partial_payment")
+  allocationOrder      String[]     @default(["INTEREST", "ARREARS", "CURRENT"]) @map("allocation_order")
+  effectiveFromPeriod  String?      @map("effective_from_period") @db.VarChar(7)
+  configuredAt         DateTime?    @map("configured_at") @db.Timestamptz(3)
+  createdAt            DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  society Society @relation(fields: [societyId], references: [id])
+
+  @@map("billing_configs")
+}
+
+/// Gapless per-FY sequences (bills, receipts, NOCs). Incremented with a row lock.
+model NumberingSeries {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  societyId String   @map("society_id") @db.Uuid
+  series    String   @db.VarChar(30)
+  fy        String   @db.VarChar(9)
+  nextValue Int      @default(1) @map("next_value")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  society Society @relation(fields: [societyId], references: [id])
+
+  @@unique([societyId, series, fy])
+  @@map("numbering_series")
+}
+
+/// Effective-dated statutory parameters (MASTER_SPEC B4). society_id null =
+/// platform default; a society row overrides it from its effective date.
+/// Billing resolves as of the billing period, never "now".
+model StatutoryConfig {
+  id                  String    @id @default(uuid(7)) @db.Uuid
+  societyId           String?   @map("society_id") @db.Uuid
+  key                 String    @db.VarChar(60)
+  value               String    @db.VarChar(200)
+  unit                String?   @db.VarChar(30)
+  effectiveFrom       DateTime  @map("effective_from") @db.Date
+  effectiveTo         DateTime? @map("effective_to") @db.Date
+  sourceReference     String?   @map("source_reference") @db.VarChar(500)
+  ruleCitation        String?   @map("rule_citation") @db.VarChar(200)
+  verifiedOn          DateTime? @map("verified_on") @db.Date
+  resolutionReference Json?     @map("resolution_reference")
+  setById             String?   @map("set_by") @db.Uuid
+  note                String?   @db.VarChar(300)
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([key, societyId, effectiveFrom])
+  @@map("statutory_config")
+}
+
+model ImportJob {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  societyId String   @map("society_id") @db.Uuid
+  kind      String   @db.VarChar(20)
+  dryRun    Boolean  @map("dry_run")
+  total     Int
+  created   Int
+  errors    Json
+  actorId   String   @map("actor_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([societyId, createdAt])
+  @@map("import_jobs")
+}

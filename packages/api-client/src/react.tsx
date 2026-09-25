@@ -10,7 +10,7 @@ import {
   type UseQueryOptions,
   type UseQueryResult,
 } from "@tanstack/react-query";
-import { createContext, useContext, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import type { ApiClient } from "./client";
 import { ApiError } from "./errors";
 import { queryKey } from "./keys";
@@ -146,10 +146,28 @@ export function useApiMutation<E extends Endpoint>(endpoint: E, options?: Mutati
   const client = useApi();
   const session = useSessionController();
   const queryClient = useQueryClient();
+  // Idempotent endpoints: the same input keeps the same Idempotency-Key until
+  // it succeeds, so a second click after a timeout replays the first request
+  // on the server instead of performing it twice.
+  const keys = useRef(new Map<string, string>());
+  const keyFor = (input: unknown) => {
+    const sig = JSON.stringify(input ?? null);
+    let k = keys.current.get(sig);
+    if (!k) {
+      k = globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+      keys.current.set(sig, k);
+    }
+    return { sig, key: k };
+  };
   return useMutation<EndpointOutput<E>, ApiError, EndpointInput<E>>({
     ...options,
-    mutationFn: (input) => client.call(endpoint, input),
+    mutationFn: (input) => {
+      if (!endpoint.idempotent) return client.call(endpoint, input);
+      const { key } = keyFor(input);
+      return client.call(endpoint, input, { idempotencyKey: key });
+    },
     onSuccess: async (...args) => {
+      if (endpoint.idempotent) keys.current.delete(JSON.stringify(args[1] ?? null));
       await Promise.all((endpoint.invalidates ?? []).map((id) => queryClient.invalidateQueries({ queryKey: [id] })));
       // useMe() reads the session, not the query cache; keep the two in step.
       if (endpoint.invalidates?.includes("me.get") && session.state.status === "signedIn") void session.refreshMe().catch(() => undefined);

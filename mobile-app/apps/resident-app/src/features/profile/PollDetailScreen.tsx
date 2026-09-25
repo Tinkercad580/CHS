@@ -64,7 +64,7 @@ export function PollDetailScreen() {
         </View>
         {!voted ? (
           <AppText variant="meta" color={colors.inkMuted} style={{ textAlign: "center" }}>
-            {t("cannotChangeVote", { unit: unit.code })}
+            A vote can't be changed once cast. It is saved on this phone for {unit.code}.
           </AppText>
         ) : (
           <View style={{ borderWidth: 1, borderColor: colors.okWash, borderRadius: 14, backgroundColor: colors.okWash, padding: 15, flexDirection: "row", alignItems: "center", gap: 12 }}>
@@ -76,7 +76,7 @@ export function PollDetailScreen() {
                 {t("voteCast")}
               </AppText>
               <AppText variant="bodySmall" color={colors.inkSoft}>
-                {t("votedLine", { unit: unit.code })}
+                Saved on this phone for {unit.code}. AGM voting isn't connected yet, so it hasn't been counted.
               </AppText>
             </View>
           </View>

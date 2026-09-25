@@ -35,7 +35,7 @@ export function stateKind(value: string): PillKind {
   const t = value.toLowerCase();
   if (/paid|ok|current|valid/.test(t)) return "ok";
   if (/failed|missed/.test(t)) return "bad";
-  if (/due|overdue|pending|failed/.test(t)) return "warn";
+  if (/due|overdue|pending/.test(t)) return "warn";
   if (/legal|breach/.test(t)) return "bad";
   return "mute";
 }

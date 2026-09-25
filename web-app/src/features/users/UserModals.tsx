@@ -1,11 +1,13 @@
-import { useState, type ReactNode } from "react";
-import { toLoadState, useApi, useApiMutation, useApiQuery } from "@chs/api-client/react";
+import { useState } from "react";
+import { toLoadState, useApiMutation, useApiQuery } from "@chs/api-client/react";
 import { ApiError } from "@chs/api-client";
 import { ADMIN_PERMISSIONS, USER_PERMISSIONS, api, schemas, type Permission, type PermissionTemplate, type SocietyUser } from "@chs/contract";
 import { ModalFooter, ModalHeader, ModalShell, GhostButton, PrimaryButton } from "../../components/ModalShell";
 import { FormError, PickField, TextField } from "../../components/FormFields";
 import { SkeletonText } from "../../components/Skeleton";
 import { DataBoundary } from "../../components/DataBoundary";
+import { Blurb, Form } from "../../components/Kit";
+import { useUnitResolver } from "../../api/units";
 import { useAdminStore } from "../../store/AdminStore";
 import { splitError } from "../../lib/apiErrors";
 import { formatDateTime, formatMobile } from "../../lib/apiFormat";
@@ -18,38 +20,6 @@ import { modulesSummary, permissionModule, permissionVerb } from "../../lib/perm
  * written. The list and record refetch on success through the contract's
  * `invalidates`, so nothing here patches a cache by hand.
  */
-
-function Blurb({ children }: { children: ReactNode }) {
-  return <div style={{ font: "400 14px/1.55 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)", marginBottom: 22 }}>{children}</div>;
-}
-
-function Form({ onSubmit, children }: { onSubmit: () => void; children: ReactNode }) {
-  return (
-    <form
-      noValidate
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSubmit();
-      }}
-    >
-      {children}
-    </form>
-  );
-}
-
-/**
- * The API takes a unit id; people type "A-1204". Resolve the label with the
- * unit search the list page uses, and only accept an exact match.
- */
-function useUnitResolver(societyId: string) {
-  const client = useApi();
-  return async (label: string): Promise<string | null | "missing"> => {
-    const want = label.trim().toUpperCase();
-    if (!want) return null;
-    const page = await client.structure.units({ params: { societyId }, query: { q: want, limit: 20 } });
-    return page.items.find((u) => u.label.toUpperCase() === want)?.id ?? "missing";
-  };
-}
 
 function TemplatePicker({ societyId, value, onPick, error }: { societyId: string; value: string | null; onPick: (t: PermissionTemplate) => void; error?: string }) {
   const templates = useApiQuery(api.users.templates, { params: { societyId } });
@@ -123,8 +93,8 @@ export function AddUserModal({ societyId, onClose, onCreated }: { societyId: str
     if (!template) return;
     setBusy(true);
     try {
-      const unitId = await resolveUnit(unit);
-      if (unitId === "missing") {
+      const found = await resolveUnit(unit);
+      if (found === "missing") {
         setField({ unit: `No unit "${unit.trim().toUpperCase()}" in this society.` });
         return;
       }
@@ -134,7 +104,7 @@ export function AddUserModal({ societyId, onClose, onCreated }: { societyId: str
           name,
           mobile,
           email: email.trim() || undefined,
-          unitId,
+          unitId: found?.id ?? null,
           // The template's role must come with it: an admin template on a USER role is refused.
           role: template.role,
           userType: template.userType,
@@ -205,14 +175,14 @@ export function EditUserModal({ societyId, user, onClose }: { societyId: string;
     setBusy(true);
     try {
       const unitChanged = unit.trim().toUpperCase() !== (user.unitLabel ?? "").toUpperCase();
-      const unitId = unitChanged ? await resolveUnit(unit) : undefined;
-      if (unitId === "missing") {
+      const found = unitChanged ? await resolveUnit(unit) : undefined;
+      if (found === "missing") {
         setField({ unit: `No unit "${unit.trim().toUpperCase()}" in this society.` });
         return;
       }
       await update.mutateAsync({
         params: { societyId, userId: user.id },
-        body: { name, email: email.trim() || null, notes: notes.trim() || null, ...(unitChanged ? { unitId } : {}) },
+        body: { name, email: email.trim() || null, notes: notes.trim() || null, ...(unitChanged ? { unitId: found?.id ?? null } : {}) },
       });
       toast(`${name.trim()} updated.`, "ok");
       onClose();

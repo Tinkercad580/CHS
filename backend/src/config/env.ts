@@ -32,6 +32,37 @@ const Env = z
     /** MASTER_SPEC A2.2: failed sign-ins per IP per hour before the IP is throttled. Raise it where many residents share one network. */
     LOGIN_IP_FAILURES_PER_HOUR: z.coerce.number().int().min(1).default(10),
     MESSAGING_PROVIDER: z.enum(["log", "none"]).default("log"),
+
+    // ── Push (Firebase Cloud Messaging, HTTP v1) — resident and gate apps ──
+    /** `log` records pushes without sending; `fcm` delivers. */
+    PUSH_PROVIDER: z.enum(["log", "fcm"]).default("log"),
+    /**
+     * The service-account JSON exactly as Firebase downloads it (Project
+     * settings → Service accounts → Generate new private key). Not
+     * google-services.json: that only lets a device receive.
+     */
+    FIREBASE_SERVICE_ACCOUNT_FILE: z.string().optional(),
+    FIREBASE_PROJECT_ID: z.string().optional(),
+    FIREBASE_CLIENT_EMAIL: z.string().optional(),
+    FIREBASE_PRIVATE_KEY: z.string().optional(),
+
+    // ── Email (nodemailer over SMTP) — reports and updates ──
+    /** `log` prints emails instead of sending; `smtp` sends. */
+    MAIL_PROVIDER: z.enum(["log", "smtp"]).default("log"),
+    SMTP_HOST: z.string().optional(),
+    SMTP_PORT: z.coerce.number().int().default(587),
+    /** true for port 465 (implicit TLS); false uses STARTTLS on 587. */
+    SMTP_SECURE: z.enum(["true", "false"]).default("false").transform((v) => v === "true"),
+    SMTP_USER: z.string().optional(),
+    SMTP_PASS: z.string().optional(),
+    MAIL_FROM: z.string().default("Sahaj <no-reply@localhost>"),
+    /** Links in emails point here (the admin console). */
+    PUBLIC_WEB_URL: z.string().default("http://localhost:5273"),
+
+    // ── Payments ──
+    /** Only `dummy` exists today: a simulated gateway for building and testing the flow end to end. */
+    PAYMENT_GATEWAY: z.enum(["dummy"]).default("dummy"),
+    PAYMENT_WEBHOOK_SECRET: z.string().min(16).optional(),
     RUN_JOBS: z
       .enum(["true", "false"])
       .default("true")
@@ -39,9 +70,10 @@ const Env = z
   })
   .superRefine((env, ctx) => {
     if (env.NODE_ENV !== "production") return;
-    for (const key of ["JWT_ACCESS_SECRET", "JWT_RESTRICTED_SECRET", "DATA_ENCRYPTION_KEY"] as const) {
+    for (const key of ["JWT_ACCESS_SECRET", "JWT_RESTRICTED_SECRET", "DATA_ENCRYPTION_KEY", "PAYMENT_WEBHOOK_SECRET"] as const) {
       if (!env[key]) ctx.addIssue({ code: "custom", path: [key], message: "required in production" });
     }
+    if (env.MAIL_PROVIDER === "smtp" && !env.SMTP_HOST) ctx.addIssue({ code: "custom", path: ["SMTP_HOST"], message: "required when MAIL_PROVIDER=smtp" });
   });
 
 function load() {
@@ -61,6 +93,7 @@ function load() {
     JWT_ACCESS_SECRET: env.JWT_ACCESS_SECRET ?? devSecret("access"),
     JWT_RESTRICTED_SECRET: env.JWT_RESTRICTED_SECRET ?? devSecret("restricted"),
     DATA_ENCRYPTION_KEY: env.DATA_ENCRYPTION_KEY ?? devSecret("encryption"),
+    PAYMENT_WEBHOOK_SECRET: env.PAYMENT_WEBHOOK_SECRET ?? devSecret("webhook"),
     isProd: env.NODE_ENV === "production",
     isTest: env.NODE_ENV === "test",
   };
