@@ -24,6 +24,8 @@ export function ScreenHeader({ title, onBack, right }: { title: string; onBack: 
     >
       <Pressable
         onPress={onBack}
+        accessibilityRole="button"
+        accessibilityLabel="Back"
         style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: colors.subtle, alignItems: "center", justifyContent: "center" }}
       >
         <Icon d={iconPaths.chevronLeft} size={19} color={colors.ink} strokeWidth={2.1} />
@@ -65,6 +67,8 @@ export function TitleHeader({ title, subtitle, right, onBack }: { title: string;
         {onBack ? (
           <Pressable
             onPress={onBack}
+            accessibilityRole="button"
+            accessibilityLabel="Back"
             style={{ width: 40, height: 40, flexShrink: 0, borderRadius: 12, backgroundColor: colors.subtle, alignItems: "center", justifyContent: "center" }}
           >
             <Icon d={iconPaths.chevronLeft} size={19} color={colors.ink} strokeWidth={2.1} />

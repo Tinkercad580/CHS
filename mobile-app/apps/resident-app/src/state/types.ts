@@ -1,13 +1,20 @@
 import type { ResidentState, ResidentToast } from "@sahaj/shared";
+import type { ResidentIdentity } from "../api/identity";
 
 /** A toast plus the severity that picks its colour — the prototype's toast() takes a "kind" the shared type doesn't carry. */
 export interface AppToast extends ResidentToast {
   kind: "ok" | "warn";
 }
 
-/** The resident prototype's state shape (README.md "State management" → Resident), widened only where toasts need a kind. */
+/**
+ * The resident prototype's state shape (README.md "State management" → Resident),
+ * widened where toasts need a kind and with the signed-in account's identity —
+ * which flats `role`/`unit` may point at, and the society they belong to. It is
+ * null until the session gate adopts an account (see SignedInApp).
+ */
 export interface AppResidentState extends Omit<ResidentState, "toasts"> {
   toasts: AppToast[];
+  identity: ResidentIdentity | null;
 }
 
 /**

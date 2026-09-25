@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { CHART_MONTHS, FUND_BALANCES, GATE_TODAY, NEEDS_ATTENTION, TOP_DEFAULTERS } from "../../mock/dashboard";
 import { PANELS } from "../../mock/panels";
 import { PanelModal } from "../../components/PanelModal";
+import { useConsoleMe } from "../../api/society";
 
 const card: CSSProperties = { background: "var(--surface,#fff)", border: "1px solid var(--border,#E3E9E6)", borderRadius: 15, padding: 18 };
 
@@ -12,12 +13,16 @@ const card: CSSProperties = { background: "var(--surface,#fff)", border: "1px so
 export function DashboardPage() {
   const navigate = useNavigate();
   const [exportOpen, setExportOpen] = useState(false);
+  // The greeting is the one line here that is about the signed-in person, not the mock society figures.
+  const firstName = useConsoleMe().name.split(/\s+/)[0];
+  const [hour] = useState(() => new Date().getHours());
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
   return (
     <div style={{ animation: "fadeUp .3s cubic-bezier(.2,.7,.3,1)" }}>
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 20, flexWrap: "wrap", marginBottom: 22 }}>
         <div>
-          <h1 style={{ margin: "0 0 6px", font: "700 27px/1.2 Figtree, sans-serif", letterSpacing: "-.024em" }}>Good morning, Sanjay</h1>
+          <h1 style={{ margin: "0 0 6px", font: "700 27px/1.2 Figtree, sans-serif", letterSpacing: "-.024em" }}>{greeting}, {firstName}</h1>
           <p style={{ margin: 0, font: "400 14.5px/1.5 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>11 September 2026 · September bills published 4 days ago</p>
         </div>
         <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>

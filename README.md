@@ -1,3 +1,25 @@
+# CHS — society management platform
+
+A SaaS for Maharashtra co-operative housing societies: an admin console, a
+resident app and a gate app on one API.
+
+- **Product spec:** [MASTER_SPEC.md](MASTER_SPEC.md)
+- **How it's built:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · **API:** [docs/API.md](docs/API.md) · **Loading & motion:** [docs/LOADING_AND_MOTION.md](docs/LOADING_AND_MOTION.md)
+- **Run it locally:** [scripts/README.md](scripts/README.md) — `./scripts/db-setup.sh` once, then `./scripts/api.sh`, `./scripts/start.sh`, `./scripts/mobile-web.sh`
+- **Compliance status:** [docs/compliance/RULES_REGISTER.md](docs/compliance/RULES_REGISTER.md)
+
+| | |
+|---|---|
+| `packages/contract` | every API endpoint, defined once |
+| `packages/api-client` | typed client, realtime, React hooks — used by all three apps |
+| `backend` | the API (Express, Prisma/PostgreSQL, Socket.io, BullMQ) |
+| `web-app` | admin console |
+| `mobile-app` | resident and gate apps (Expo) |
+| `infra` | Docker, nginx, backup/restore/migrate scripts |
+| `project`, `chats` | the design handoff (below) |
+
+---
+
 # CODING AGENTS: READ THIS FIRST
 
 This is a **handoff bundle** from Claude Design (claude.ai/design).

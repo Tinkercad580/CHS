@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    name: API · contract · client
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: chs_app
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: chs_app_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U chs_app -d chs_app_test"
+          --health-interval 5s --health-retries 20
+    env:
+      DATABASE_URL: postgresql://chs_app:ci-only-password@localhost:5432/chs_app?schema=public
+      TEST_DATABASE_URL: postgresql://chs_app:ci-only-password@localhost:5432/chs_app_test?schema=public
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20.19, cache: npm }
+      - run: npm ci
+      - run: npm run db:generate -w backend
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint and layering rules (MASTER_SPEC A4.1)
+        run: npm run lint
+      - name: Tests — unit, integration, compliance (required gate, MASTER_SPEC E4)
+        run: npm test
+      - name: Build
+        run: npm run build
+
+  web:
+    name: Admin console
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20.19, cache: npm }
+      - run: npm ci --ignore-scripts
+      - run: npm ci
+        working-directory: web-app
+      - run: npx tsc -b && npx oxlint && npx vite build
+        working-directory: web-app
+
+  mobile:
+    name: Mobile apps
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20.19, cache: npm }
+      - run: npm ci --ignore-scripts
+      - run: npm ci
+        working-directory: mobile-app
+      - run: |
+          npx tsc -p packages/shared --noEmit
+          npx tsc -p apps/resident-app --noEmit
+          npx tsc -p apps/gate-app --noEmit
+        working-directory: mobile-app
+
+  images:
+    name: Docker images
+    runs-on: ubuntu-latest
+    needs: [api, web]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with: { context: ., file: infra/docker/Dockerfile.api, push: false, build-args: "APP_VERSION=${{ github.sha }}" }
+      - uses: docker/build-push-action@v6
+        with: { context: ., file: infra/docker/Dockerfile.web, push: false }

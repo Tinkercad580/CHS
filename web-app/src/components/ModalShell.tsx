@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from "react";
+import { Spinner } from "./Spinner";
 
 /**
  * Shared overlay + card wrapper for every sheet-style modal (README: "Every
@@ -96,12 +97,13 @@ export function ModalFooter({ children }: { children: ReactNode }) {
   return <div style={{ marginTop: 24, display: "flex", gap: 10, justifyContent: "flex-end", flexWrap: "wrap" }}>{children}</div>;
 }
 
-export function GhostButton({ onClick, children }: { onClick: () => void; children: ReactNode }) {
+export function GhostButton({ onClick, children, disabled }: { onClick: () => void; children: ReactNode; disabled?: boolean }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="press-scale"
+      disabled={disabled}
+      className="press-scale focus-ring"
       style={{
         height: 44,
         padding: "0 18px",
@@ -118,25 +120,54 @@ export function GhostButton({ onClick, children }: { onClick: () => void; childr
   );
 }
 
-export function PrimaryButton({ onClick, children }: { onClick: () => void; children: ReactNode }) {
+/**
+ * `busy` is for a request the click started: the spinner sits inside the
+ * button and `busyLabel` says what is happening. `type="submit"` lets a form
+ * submit on Enter.
+ */
+export function PrimaryButton({
+  onClick,
+  children,
+  busy,
+  busyLabel,
+  disabled,
+  type = "button",
+  tone = "accent",
+}: {
+  onClick?: () => void;
+  children: ReactNode;
+  busy?: boolean;
+  busyLabel?: string;
+  disabled?: boolean;
+  type?: "button" | "submit";
+  tone?: "accent" | "bad";
+}) {
+  const off = busy || disabled;
   return (
     <button
-      type="button"
+      type={type}
       onClick={onClick}
-      className="press-scale"
+      disabled={off}
+      aria-busy={busy || undefined}
+      className="press-scale focus-ring"
       style={{
         height: 44,
         padding: "0 20px",
         border: 0,
         borderRadius: 11,
-        background: "var(--accent,#0E6B5C)",
+        background: tone === "bad" ? "var(--bad,#C0342B)" : "var(--accent,#0E6B5C)",
         color: "#fff",
         font: "600 14.5px/1 Figtree, sans-serif",
-        cursor: "pointer",
+        cursor: off ? "default" : "pointer",
+        opacity: disabled && !busy ? 0.55 : 1,
         whiteSpace: "nowrap",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 9,
       }}
     >
-      {children}
+      {busy && <Spinner size={14} />}
+      {busy && busyLabel ? busyLabel : children}
     </button>
   );
 }

@@ -1,6 +1,8 @@
 import React from "react";
 import { View } from "react-native";
-import { residentName, formatInr, FOCUS_UNIT_OWNER, FOCUS_UNIT_LET_OUT } from "@sahaj/shared";
+import { formatInr } from "@sahaj/shared";
+import { useMe } from "@chs/api-client/react";
+import { initialsOf } from "../../api/identity";
 import { useResident } from "../../state/ResidentProvider";
 import { useTheme } from "../../hooks/useTheme";
 import { useT } from "../../hooks/useT";
@@ -14,15 +16,14 @@ import { EmptyState } from "../../components/EmptyState";
 import { AnimatedPressable } from "../../components/AnimatedPressable";
 import { RevealItem } from "../../components/RevealItem";
 
-function initialsOf(name: string): string {
-  return name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
-}
-
 export function HomeScreen() {
   const { state, actions } = useResident();
   const { colors } = useTheme();
   const { t, c } = useT();
+  const me = useMe();
   const unit = currentUnit(state);
+  // The two flats of an owner who has let one out, from the account's own records.
+  const positions = state.identity?.letOutUnit ? [state.identity.homeUnit, state.identity.letOutUnit] : [];
   const due = totalDue(state);
   const unpaidCount = unpaidBillCount(state);
   const unreadNotifs = unreadNotifCount(state);
@@ -45,12 +46,12 @@ export function HomeScreen() {
           <AnimatedPressable onPress={() => actions.go("profile")} style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 12, minWidth: 0 }}>
             <View style={{ width: 42, height: 42, borderRadius: 13, backgroundColor: "rgba(255,255,255,0.16)", alignItems: "center", justifyContent: "center" }}>
               <AppText variant="cardTitleLarge" color="#FFFFFF" style={{ fontSize: 14 }} forceLatin>
-                {initialsOf(residentName)}
+                {initialsOf(me.name)}
               </AppText>
             </View>
             <View style={{ flex: 1, minWidth: 0 }}>
               <AppText variant="cardTitle" color="#FFFFFF" style={{ fontSize: 15 }}>
-                {t("greeting", { name: residentName.split(" ")[0] })}
+                {t("greeting", { name: me.name.split(" ")[0] })}
               </AppText>
               <AppText variant="meta" color="rgba(255,255,255,0.78)">
                 {unit.line}
@@ -144,7 +145,7 @@ export function HomeScreen() {
         </View>
       </RevealItem>
 
-      {state.role === "owner_tenant" ? (
+      {state.role === "owner_tenant" && positions.length === 2 ? (
         <RevealItem tier="screenBlock" style={{ paddingHorizontal: 22, marginTop: 20 }}>
           <View style={{ borderWidth: 1, borderColor: colors.accent200, borderRadius: 16, backgroundColor: colors.accentWash, padding: 15 }}>
             <AppText variant="cardTitle" color={colors.accentInk} style={{ fontSize: 13, marginBottom: 4 }}>
@@ -154,7 +155,7 @@ export function HomeScreen() {
               {t("switchLedger")}
             </AppText>
             <View style={{ flexDirection: "row", gap: 8 }}>
-              {[FOCUS_UNIT_OWNER, FOCUS_UNIT_LET_OUT].map((u) => {
+              {positions.map((u) => {
                 const active = unit.code === u;
                 return (
                   <AnimatedPressable
@@ -163,7 +164,7 @@ export function HomeScreen() {
                     style={{ flex: 1, height: 38, borderRadius: 11, borderWidth: 1, borderColor: active ? colors.accent : colors.borderStrong, backgroundColor: active ? colors.accent : colors.surface, alignItems: "center", justifyContent: "center" }}
                   >
                     <AppText variant="cardTitle" color={active ? "#FFFFFF" : colors.ink} style={{ fontSize: 12.5 }} forceLatin>
-                      {u} · {u === FOCUS_UNIT_OWNER ? t("owned") : t("rentedOut")}
+                      {u} · {u === state.identity?.homeUnit ? t("owned") : t("rentedOut")}
                     </AppText>
                   </AnimatedPressable>
                 );

@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useReducer, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, type ReactNode } from "react";
 import type { Row, ToastSpec } from "../lib/types";
 import { STAFF_SEED, type StaffPerson } from "../mock/staff";
 import { AMENITIES_SEED, BOOKINGS_SEED, type Amenity, type Booking } from "../mock/amenities";
@@ -10,7 +10,7 @@ import type { TicketCard } from "../mock/helpdesk";
  * page can be changed to at runtime lives here — `added`/`edits` for table
  * rows, `recAdd` for record-page section additions, plus the small bits of
  * bespoke screen state (staff attendance, amenities/bookings, helpdesk
- * tickets, the society switcher, toasts). Search/chip/sort/page stay local
+ * tickets, the selected society, toasts). Search/chip/sort/page stay local
  * to each page component, which is what makes them reset on navigation.
  */
 export interface AdminState {
@@ -23,7 +23,8 @@ export interface AdminState {
   bookings: Booking[];
   newTickets: TicketCard[];
   toasts: ToastSpec[];
-  societyIndex: number;
+  /** The admin membership the console is pointed at; resolved against `me` in api/society.ts. */
+  societyId: string | null;
 }
 
 type Action =
@@ -45,7 +46,7 @@ type Action =
   | { type: "confirmBooking"; id: string }
   | { type: "removeBooking"; id: string }
   | { type: "addTicket"; card: TicketCard }
-  | { type: "switchSociety"; index: number };
+  | { type: "switchSociety"; societyId: string };
 
 function isSameRow(a: Row, b: Row): boolean {
   return a.a === b.a && a.b === b.b;
@@ -121,7 +122,7 @@ function reducer(state: AdminState, action: Action): AdminState {
     case "addTicket":
       return { ...state, newTickets: [action.card].concat(state.newTickets) };
     case "switchSociety":
-      return { ...state, societyIndex: action.index };
+      return { ...state, societyId: action.societyId };
     default:
       return state;
   }
@@ -137,8 +138,28 @@ function initialState(): AdminState {
     bookings: BOOKINGS_SEED.map((b) => ({ ...b })),
     newTickets: [],
     toasts: [],
-    societyIndex: 0,
+    societyId: readStoredSociety(),
   };
+}
+
+// The switcher's choice survives a reload. Storage can be blocked (private
+// mode, a locked-down browser); then the choice lasts as long as the tab.
+const SOCIETY_KEY = "chs.admin.society";
+
+function readStoredSociety(): string | null {
+  try {
+    return globalThis.localStorage?.getItem(SOCIETY_KEY) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredSociety(id: string): void {
+  try {
+    globalThis.localStorage?.setItem(SOCIETY_KEY, id);
+  } catch {
+    // See above: in-memory only.
+  }
 }
 
 interface AdminStoreValue {
@@ -151,6 +172,10 @@ const AdminStoreContext = createContext<AdminStoreValue | null>(null);
 
 export function AdminStoreProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, undefined, initialState);
+
+  useEffect(() => {
+    if (state.societyId) writeStoredSociety(state.societyId);
+  }, [state.societyId]);
 
   const toast = useCallback((text: string, kind?: "ok" | "warn") => {
     dispatch({ type: "toast", text, kind });

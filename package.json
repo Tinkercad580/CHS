@@ -1,0 +1,22 @@
+{
+  "name": "chs-platform",
+  "private": true,
+  "description": "Society management SaaS — API, shared contract and client. The web and mobile apps keep their own installs and consume packages/* by file link.",
+  "workspaces": [
+    "backend",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "dev": "npm run dev -w backend",
+    "build": "npm run build -w backend",
+    "db:migrate": "npm run db:migrate -w backend",
+    "db:deploy": "npm run db:deploy -w backend",
+    "db:seed": "npm run db:seed -w backend",
+    "test": "npm run test -w backend",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present && node scripts/check-boundaries.mjs"
+  }
+}

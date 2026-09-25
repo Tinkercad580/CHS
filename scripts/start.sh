@@ -10,10 +10,10 @@
 # clash you get told about — whichever started first keeps serving, and you
 # review the wrong app. Override with CHS_WEB_PORT if these collide too.
 #
-# This is a UI review loop, not the product. There is no backend yet: every
-# screen reads from web-app/src/mock/*.ts, so what you are checking is layout,
-# copy, states and flow — not data. A number on screen came from a fixture and
-# means nothing.
+# The console talks to the API through Vite's proxy (/api → localhost:4100), so
+# start ./scripts/api.sh first. Sign-in, Users & access and Members & units are
+# live data; modules without a backend yet (billing onwards) still read
+# web-app/src/mock/*.ts, and a number on those screens means nothing.
 #
 # It is a script rather than `npm run dev` because two steps are easy to forget
 # and both fail in ways that look like broken code rather than a missing step:
@@ -92,9 +92,8 @@ cat <<TXT
      Not Vite's default 5173 — that port belongs to another project here.
      Override with CHS_WEB_PORT=... if 5273 is taken too.
 
-     There is no login screen and no API. The app boots straight into the
-     admin shell against mock data — that is the current state of the build,
-     not a bug. Auth is Phase 1 in MASTER_SPEC.md and has not been built.
+     Needs the API (./scripts/api.sh) — sign in as 9820011001 / Sahaj@2026.
+     Billing and later modules still show mock data until their backend lands.
 
      Edits hot-reload. If one seems not to have landed, hard-reload the tab
      (Ctrl-Shift-R) before reading any code: a tab left open across a restart

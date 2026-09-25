@@ -1,0 +1,58 @@
+# Full stack in containers: PostgreSQL, Redis, API, admin console.
+#
+#   cp .env.example .env    # set the secrets
+#   docker compose up -d --build
+#   open http://localhost:8080
+#
+# For day-to-day development you don't need this — scripts/api.sh runs the
+# API against the PostgreSQL already on the machine (see scripts/README.md).
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: chs
+      POSTGRES_USER: chs
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chs -d chs"]
+      interval: 5s
+      retries: 20
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: [redisdata:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 20
+    restart: unless-stopped
+
+  api:
+    build: { context: ., dockerfile: infra/docker/Dockerfile.api }
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://chs:${POSTGRES_PASSWORD}@postgres:5432/chs?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?set JWT_ACCESS_SECRET in .env}
+      JWT_RESTRICTED_SECRET: ${JWT_RESTRICTED_SECRET:?set JWT_RESTRICTED_SECRET in .env}
+      DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:?set DATA_ENCRYPTION_KEY in .env}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080}
+      TRUST_PROXY: 1
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    restart: unless-stopped
+
+  web:
+    build: { context: ., dockerfile: infra/docker/Dockerfile.web }
+    ports: ["8080:80"]
+    depends_on: [api]
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  redisdata:

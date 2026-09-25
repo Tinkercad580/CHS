@@ -6,6 +6,8 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GateProvider } from "../state/GateProvider";
 import { useGateFonts } from "../theme/fonts";
 import { colors } from "../theme";
+import { ApiProvider } from "@chs/api-client/react";
+import { apiClient, realtime, session } from "../api/client";
 
 /**
  * Root layout: loads the design's three Google fonts before anything renders
@@ -22,10 +24,12 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <GateProvider>
-        <StatusBar style="light" />
-        <View style={{ flex: 1, backgroundColor: colors.bg }}>{fontsLoaded ? <Slot /> : null}</View>
-      </GateProvider>
+      <ApiProvider client={apiClient} session={session} realtime={realtime}>
+        <GateProvider>
+          <StatusBar style="light" />
+          <View style={{ flex: 1, backgroundColor: colors.bg }}>{fontsLoaded ? <Slot /> : null}</View>
+        </GateProvider>
+      </ApiProvider>
     </SafeAreaProvider>
   );
 }

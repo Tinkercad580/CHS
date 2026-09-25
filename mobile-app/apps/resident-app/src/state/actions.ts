@@ -1,5 +1,6 @@
 import { useRef, useCallback, useMemo } from "react";
-import { motionDurationsMs, MAX_TOASTS, FOCUS_UNIT_OWNER, FOCUS_UNIT_TENANT, vehicleOwnerForUnit, t, type Role, type Language, type VisitorPass, type DailyHelp, type AttendanceSheet, type Ticket, type HouseholdMember, type Vehicle, type Booking, type PersonalInfo } from "@sahaj/shared";
+import { motionDurationsMs, MAX_TOASTS, t, type Role, type Language, type VisitorPass, type DailyHelp, type AttendanceSheet, type Ticket, type Booking, type PersonalInfo } from "@sahaj/shared";
+import type { ResidentIdentity } from "../api/identity";
 import type { AppResidentState, ResidentAction } from "./types";
 import { currentUnit } from "./selectors";
 import { createInitialState } from "./initialState";
@@ -93,21 +94,27 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
     });
   }, [dispatch]);
 
-  // ---- Role / unit / language / theme -------------------------------------
-  const roleLabel = (role: Role, lang: Language) => t(lang, role === "owner" ? "owner" : role === "tenant" ? "tenant" : "ownerAndTenant");
-
-  const setRole = useCallback(
-    (role: Role) => {
-      // Each role has its own home unit (README's "Roles and data scoping" table):
-      // owner and owner-and-tenant start on the occupied flat A-1204, tenant starts
-      // on the rented flat B-0702 — never leave a tenant looking at the owner's unit.
-      const unit = role === "tenant" ? FOCUS_UNIT_TENANT : FOCUS_UNIT_OWNER;
-      dispatch({ type: "SET", patch: { role, unit, dueFilter: "all" } });
-      const lang = getState().language;
-      toast(t(lang, "nowViewingAs", { role: roleLabel(role, lang).toLowerCase() }));
-      note(`Switched view to ${role}`);
+  // ---- Identity / unit / language / theme -------------------------------------
+  const adoptIdentity = useCallback(
+    (identity: ResidentIdentity, role: Role) => {
+      // A different account starts from a clean slate, so nothing one person did
+      // locally (a draft pass, a vote) is visible to the next.
+      if (getState().identity?.userId !== identity.userId) {
+        clearAllTimers();
+        dispatch({ type: "SET", patch: { ...createInitialState(), identity, role, unit: identity.homeUnit } });
+        return;
+      }
+      // Same account, fresher data (e.g. a let-out flat just arrived): keep the
+      // flat being viewed if it is still one of theirs.
+      dispatch({
+        type: "UPDATE",
+        updater: (s) => {
+          const stillTheirs = s.unit === identity.homeUnit || (role === "owner_tenant" && s.unit === identity.letOutUnit);
+          return { identity, role, unit: stillTheirs ? s.unit : identity.homeUnit };
+        },
+      });
     },
-    [dispatch, getState, note, toast]
+    [clearAllTimers, dispatch, getState]
   );
 
   const setUnit = useCallback(
@@ -470,53 +477,9 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
   // ---- Household ---------------------------------------------------------
   const setMemberNameInput = useCallback((value: string) => dispatch({ type: "SET", patch: { memberNameInput: value } }), [dispatch]);
   const setRelationInput = useCallback((value: AppResidentState["relationInput"]) => dispatch({ type: "SET", patch: { relationInput: value } }), [dispatch]);
-  const addHouseholdMember = useCallback(() => {
-    const s = getState();
-    const name = s.memberNameInput.trim();
-    if (!name) {
-      toast("A member needs a name.", "warn");
-      return;
-    }
-    const unit = currentUnit(s).code;
-    const member: HouseholdMember = { id: uid("h"), unit, name, relation: s.relationInput };
-    dispatch({ type: "UPDATE", updater: (st) => ({ household: st.household.concat([member]), memberNameInput: "" }) });
-    toast(`${name} added. The gate can verify them now.`);
-    note(`Added ${name} to the household`);
-  }, [dispatch, getState, note, toast]);
-  const removeHouseholdMember = useCallback(
-    (member: HouseholdMember) => {
-      dispatch({ type: "UPDATE", updater: (s) => ({ household: s.household.filter((m) => m.id !== member.id) }) });
-      toast(`${member.name} removed from the household.`, "warn");
-      note(`Removed ${member.name} from the household`);
-    },
-    [dispatch, note, toast]
-  );
-
   // ---- Vehicles ---------------------------------------------------------
   const setPlateInput = useCallback((value: string) => dispatch({ type: "SET", patch: { plateInput: value.toUpperCase() } }), [dispatch]);
   const setVehicleTypeInput = useCallback((value: AppResidentState["vehicleTypeInput"]) => dispatch({ type: "SET", patch: { vehicleTypeInput: value } }), [dispatch]);
-  const addVehicle = useCallback(() => {
-    const s = getState();
-    const plate = s.plateInput.trim();
-    if (plate.length < 6) {
-      toast("Enter the full registration number.", "warn");
-      return;
-    }
-    const unit = currentUnit(s).code;
-    const vehicle: Vehicle = { id: uid("v"), unit, plate, type: s.vehicleTypeInput, ownerName: vehicleOwnerForUnit(unit) ?? "", slot: undefined };
-    dispatch({ type: "UPDATE", updater: (st) => ({ vehicles: st.vehicles.concat([vehicle]), plateInput: "" }) });
-    toast(`${plate} registered. Slot follows from the office.`);
-    note(`Registered vehicle ${plate}`);
-  }, [dispatch, getState, note, toast]);
-  const removeVehicle = useCallback(
-    (vehicle: Vehicle) => {
-      dispatch({ type: "UPDATE", updater: (s) => ({ vehicles: s.vehicles.filter((v) => v.id !== vehicle.id) }) });
-      toast(`${vehicle.plate} removed.`, "warn");
-      note(`Removed vehicle ${vehicle.plate}`);
-    },
-    [dispatch, note, toast]
-  );
-
   // ---- Deliveries ---------------------------------------------------------
   const setDeliveryPref = useCallback(
     (pref: AppResidentState["deliveryPref"]) => {
@@ -680,7 +643,7 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
       clearAllTimers,
       go,
       back,
-      setRole,
+      adoptIdentity,
       setUnit,
       setLanguage,
       toggleTheme,
@@ -728,12 +691,8 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
       savePersonalDetails,
       setMemberNameInput,
       setRelationInput,
-      addHouseholdMember,
-      removeHouseholdMember,
       setPlateInput,
       setVehicleTypeInput,
-      addVehicle,
-      removeVehicle,
       setDeliveryPref,
       openAmenity,
       setBookDay,
@@ -755,13 +714,13 @@ export function useResidentActions(dispatch: Dispatch, getState: GetState) {
       resetAll,
     }),
     [
-      note, toast, clearAllTimers, go, back, setRole, setUnit, setLanguage, toggleTheme, setDueFilter, openBill,
+      note, toast, clearAllTimers, go, back, adoptIdentity, setUnit, setLanguage, toggleTheme, setDueFilter, openBill,
       openPay, closeSheet, startQr, restartQr, cancelQr, payApp, simulatePaid, choosePaymentApp, downloadReceipt, finishPay,
       openNotice, ackNotice, goInvite, setInviteType, setGuestName, setGuestPurpose, setGuestWindow, createGuestPass, sharePass, cancelPass,
       setHelpName, setHelpRole, setHelpWindow, setHelpSalary, toggleHelpDay, createHelpPass, goAfterPassDone,
       goNewTicket, setTicketCategory, setTicketIssue, toggleTicketUrgent, submitTicket, openTicket, resolveTicket,
       goNotifs, markAllNotifsRead, toggleNotifPref, toggleEditPersonal, setPersonalField, savePersonalDetails,
-      setMemberNameInput, setRelationInput, addHouseholdMember, removeHouseholdMember, setPlateInput, setVehicleTypeInput, addVehicle, removeVehicle,
+      setMemberNameInput, setRelationInput, setPlateInput, setVehicleTypeInput,
       setDeliveryPref, openAmenity, setBookDay, setBookSlot, confirmBooking, cancelBooking, goPolls, openPoll, castVote,
       goStatement, downloadStatement, startRenewal, selectHelpPerson, markHelpPaid, goSos, setSosKind, sosStart, sosEnd, resetAll,
     ]

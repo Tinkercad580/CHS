@@ -7,9 +7,11 @@ animate. Read this before adding a spinner, a skeleton or an entrance effect.
 
 **A skeleton describes a real wait. It never creates one.**
 
-There is no backend yet: every screen reads local fixtures, so nothing is
-actually being fetched and no loading state should ever appear. When the API
-arrives, the wait becomes whatever the network costs — measured, not assumed.
+Screens backed by the API (sign-in, users, members, household) wait exactly as
+long as the network does — `toLoadState(query)` from `@chs/api-client/react`
+turns a query into `LoadState<T>`, and nothing adds time on top. Screens still
+on local fixtures (modules without a backend yet) have nothing to wait for and
+must show no loading state at all.
 
 Nothing in this codebase may hold content behind a timer. An earlier version put
 a 520ms skeleton in front of admin tables whose rows were already in memory,

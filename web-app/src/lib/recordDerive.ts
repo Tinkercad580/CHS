@@ -21,6 +21,8 @@ export interface DerivedSection {
   headLabels: string[];
   type: RecordSection["type"];
   rows: DerivedRow[];
+  /** When set, an empty section says this instead of rendering an empty table. */
+  empty?: string;
 }
 
 export interface DerivedRecord {

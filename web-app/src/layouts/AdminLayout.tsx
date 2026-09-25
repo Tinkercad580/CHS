@@ -3,7 +3,9 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useTheme } from "../app/ThemeProvider";
 import { useAdminStore } from "../store/AdminStore";
 import { NAV } from "../mock/nav";
-import { SOCIETIES } from "../mock/societies";
+import { useSessionController } from "@chs/api-client/react";
+import { accessSummary, initials, societyMark, useConsoleMe, useCurrentSociety } from "../api/society";
+import { Spinner } from "../components/Spinner";
 import { NOTIFS } from "../mock/dashboard";
 import { Toaster } from "../components/Toaster";
 import { ModalShell } from "../components/ModalShell";
@@ -87,8 +89,8 @@ function Sidebar({
   onNavigate: () => void;
   onOpenSocieties: () => void;
 }) {
-  const { state } = useAdminStore();
-  const society = SOCIETIES[state.societyIndex];
+  const me = useConsoleMe();
+  const { society, societies } = useCurrentSociety();
 
   const railStyle = narrow
     ? {
@@ -125,18 +127,23 @@ function Sidebar({
         <button
           type="button"
           onClick={onOpenSocieties}
-          style={{ width: "100%", display: "flex", alignItems: "center", gap: 9, padding: "9px 11px", borderRadius: 10, border: "1px solid var(--rail-line,#E3E9E6)", background: "var(--rail-foot,#F7F9F8)", cursor: "pointer", textAlign: "left" }}
+          disabled={societies.length < 2}
+          title={societies.length < 2 ? undefined : "Switch society"}
+          className="focus-ring"
+          style={{ width: "100%", display: "flex", alignItems: "center", gap: 9, padding: "9px 11px", borderRadius: 10, border: "1px solid var(--rail-line,#E3E9E6)", background: "var(--rail-foot,#F7F9F8)", cursor: societies.length < 2 ? "default" : "pointer", textAlign: "left" }}
         >
-          <span style={{ width: 24, height: 24, flex: "none", borderRadius: 7, background: "var(--accent-wash,#E6F2EF)", display: "flex", alignItems: "center", justifyContent: "center", font: "700 10px/1 Figtree, sans-serif", color: "var(--accent-ink,#0A5749)" }}>{society.mark}</span>
+          <span style={{ width: 24, height: 24, flex: "none", borderRadius: 7, background: "var(--accent-wash,#E6F2EF)", display: "flex", alignItems: "center", justifyContent: "center", font: "700 10px/1 Figtree, sans-serif", color: "var(--accent-ink,#0A5749)" }}>{society ? societyMark(society.societyName) : "—"}</span>
           <span style={{ minWidth: 0, flex: 1 }}>
-            <span style={{ display: "block", font: "600 12.5px/1.3 Figtree, sans-serif", color: "var(--rail-ink,#0F1A17)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{society.name}</span>
+            <span style={{ display: "block", font: "600 12.5px/1.3 Figtree, sans-serif", color: "var(--rail-ink,#0F1A17)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{society ? society.societyName : "No society"}</span>
             <span style={{ display: "block", font: "500 10.5px/1.3 Figtree, sans-serif", color: "var(--rail-soft,#5A6B66)" }}>
-              {society.units} units · {society.city}
+              {society ? [`${society.unitCount} units`, society.city].filter(Boolean).join(" · ") : "Platform administrator"}
             </span>
           </span>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--rail-soft,#5A6B66)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="m7 10 5 5 5-5" />
-          </svg>
+          {societies.length > 1 && (
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--rail-soft,#5A6B66)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m7 10 5 5 5-5" />
+            </svg>
+          )}
         </button>
       </div>
 
@@ -184,12 +191,15 @@ function Sidebar({
         )}
       </nav>
 
-      <div style={{ flex: "none", padding: "14px 16px", borderTop: "1px solid var(--rail-line,#E3E9E6)", background: "var(--rail-foot,#F7F9F8)", display: "flex", alignItems: "center", gap: 10 }}>
-        <span style={{ width: 30, height: 30, flex: "none", borderRadius: "50%", background: "var(--accent-wash,#E6F2EF)", display: "flex", alignItems: "center", justifyContent: "center", font: "700 11px/1 Figtree, sans-serif", color: "var(--accent-ink,#0A5749)" }}>SP</span>
+      <div style={{ flex: "none", padding: "14px 12px 14px 16px", borderTop: "1px solid var(--rail-line,#E3E9E6)", background: "var(--rail-foot,#F7F9F8)", display: "flex", alignItems: "center", gap: 10 }}>
+        <span style={{ width: 30, height: 30, flex: "none", borderRadius: "50%", background: "var(--accent-wash,#E6F2EF)", display: "flex", alignItems: "center", justifyContent: "center", font: "700 11px/1 Figtree, sans-serif", color: "var(--accent-ink,#0A5749)" }}>{initials(me.name)}</span>
         <span style={{ minWidth: 0, flex: 1 }}>
-          <span style={{ display: "block", font: "600 12.5px/1.3 Figtree, sans-serif", color: "var(--rail-ink,#0F1A17)" }}>Sanjay Patil</span>
-          <span style={{ display: "block", font: "500 10.5px/1.3 Figtree, sans-serif", color: "var(--rail-soft,#5A6B66)" }}>Secretary · full access</span>
+          <span style={{ display: "block", font: "600 12.5px/1.3 Figtree, sans-serif", color: "var(--rail-ink,#0F1A17)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{me.name}</span>
+          <span style={{ display: "block", font: "500 10.5px/1.3 Figtree, sans-serif", color: "var(--rail-soft,#5A6B66)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {society ? accessSummary(society) : "Platform administrator"}
+          </span>
         </span>
+        <SignOutButton />
       </div>
     </aside>
   );
@@ -245,8 +255,42 @@ function TopBar({ narrow, onOpenRail, onOpenNotifs }: { narrow: boolean; onOpenR
   );
 }
 
+/**
+ * Signing out ends this session on the server and empties the cache (the
+ * session gate does that on the state change), so the next person to use
+ * this browser starts clean. The local sign-out succeeds even offline.
+ */
+function SignOutButton() {
+  const session = useSessionController();
+  const [busy, setBusy] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        setBusy(true);
+        void session.logout();
+      }}
+      disabled={busy}
+      title="Sign out"
+      aria-label="Sign out"
+      className="press-scale focus-ring"
+      style={{ width: 32, height: 32, flex: "none", border: "1px solid var(--rail-line,#E3E9E6)", borderRadius: 9, background: "var(--rail,#fff)", cursor: busy ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--rail-soft,#5A6B66)" }}
+    >
+      {busy ? (
+        <Spinner size={13} />
+      ) : (
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" />
+          <path d="M10 17l-5-5 5-5M5 12h11" />
+        </svg>
+      )}
+    </button>
+  );
+}
+
 function SocietyModal({ onClose }: { onClose: () => void }) {
-  const { state, dispatch, toast } = useAdminStore();
+  const { dispatch, toast } = useAdminStore();
+  const { society: currentSociety, societies } = useCurrentSociety();
   const navigate = useNavigate();
 
   return (
@@ -260,26 +304,27 @@ function SocietyModal({ onClose }: { onClose: () => void }) {
         </button>
       </div>
       <div style={{ font: "400 14px/1.55 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)", marginBottom: 20 }}>
-        You administer {SOCIETIES.length} societies. Switching reloads every screen against that society's data.
+        You administer {societies.length} {societies.length === 1 ? "society" : "societies"}. Switching reloads every screen against that society's data.
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-        {SOCIETIES.map((soc, i) => {
-          const current = i === state.societyIndex;
+        {societies.map((soc) => {
+          const current = soc.societyId === currentSociety?.societyId;
+          const mark = societyMark(soc.societyName);
           return (
             <button
-              key={soc.name}
+              key={soc.societyId}
               type="button"
               onClick={() => {
                 if (current) {
                   onClose();
                   return;
                 }
-                dispatch({ type: "switchSociety", index: i });
+                dispatch({ type: "switchSociety", societyId: soc.societyId });
                 onClose();
                 navigate("/");
-                toast(`Switched to ${soc.name}. Every screen now shows their data.`, "ok");
+                toast(`Switched to ${soc.societyName}. Every screen now shows their data.`, "ok");
               }}
-              className="press-scale"
+              className="press-scale focus-ring"
               style={{
                 width: "100%",
                 textAlign: "left",
@@ -293,11 +338,11 @@ function SocietyModal({ onClose }: { onClose: () => void }) {
                 gap: 13,
               }}
             >
-              <span style={{ width: 38, height: 38, flex: "none", borderRadius: 11, background: current ? "var(--accent,#0E6B5C)" : "var(--subtle,#EDF1EF)", display: "flex", alignItems: "center", justifyContent: "center", font: "700 12px/1 Figtree, sans-serif", color: current ? "#ffffff" : "var(--ink-soft,#4A5B56)" }}>{soc.mark}</span>
+              <span style={{ width: 38, height: 38, flex: "none", borderRadius: 11, background: current ? "var(--accent,#0E6B5C)" : "var(--subtle,#EDF1EF)", display: "flex", alignItems: "center", justifyContent: "center", font: "700 12px/1 Figtree, sans-serif", color: current ? "#ffffff" : "var(--ink-soft,#4A5B56)" }}>{mark}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ font: "600 14px/1.3 Figtree, sans-serif", color: "var(--ink,#0F1A17)", marginBottom: 2 }}>{soc.name}</div>
+                <div style={{ font: "600 14px/1.3 Figtree, sans-serif", color: "var(--ink,#0F1A17)", marginBottom: 2 }}>{soc.societyName}</div>
                 <div style={{ font: "400 12px/1.4 Figtree, sans-serif", color: "var(--ink-soft,#5A6B66)" }}>
-                  {soc.units} units · {soc.city} · {soc.role}
+                  {[`${soc.unitCount} units`, soc.city, accessSummary(soc)].filter(Boolean).join(" · ")}
                 </div>
               </div>
               {current && (

@@ -157,14 +157,6 @@ export interface NavItem {
 }
 export type NavEntry = NavGroup | NavItem;
 
-export interface Society {
-  name: string;
-  units: number;
-  city: string;
-  role: string;
-  mark: string;
-}
-
 export interface ToastSpec {
   id: string;
   text: string;

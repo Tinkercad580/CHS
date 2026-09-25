@@ -1,0 +1,38 @@
+# syntax=docker/dockerfile:1.7
+# CHS API — multi-stage: build with dev deps, run with production deps only.
+
+FROM node:20.19-bookworm-slim AS build
+WORKDIR /app
+COPY package.json package-lock.json tsconfig.base.json ./
+COPY packages/contract/package.json packages/contract/
+COPY packages/api-client/package.json packages/api-client/
+COPY backend/package.json backend/
+RUN npm ci --workspaces --include-workspace-root
+COPY packages packages
+COPY backend backend
+RUN npm run build -w backend
+
+FROM node:20.19-bookworm-slim AS runtime
+ENV NODE_ENV=production
+WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends tini ca-certificates && rm -rf /var/lib/apt/lists/*
+COPY package.json package-lock.json ./
+COPY packages/contract/package.json packages/contract/
+COPY packages/api-client/package.json packages/api-client/
+COPY backend/package.json backend/
+# Production deps plus the Prisma CLI, which runs migrations before the server starts.
+RUN npm ci --workspace backend --include-workspace-root --omit=dev && npm install --no-save -w backend prisma@7 && npm cache clean --force
+COPY packages/contract packages/contract
+COPY --from=build /app/backend/dist backend/dist
+COPY --from=build /app/backend/src/generated backend/src/generated
+COPY backend/prisma backend/prisma
+COPY backend/prisma.config.ts backend/
+ARG APP_VERSION=0.0.0
+ENV APP_VERSION=$APP_VERSION PORT=4100
+WORKDIR /app/backend
+USER node
+EXPOSE 4100
+HEALTHCHECK --interval=15s --timeout=3s --start-period=20s CMD node -e "fetch('http://127.0.0.1:'+process.env.PORT+'/api/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+ENTRYPOINT ["/usr/bin/tini", "--"]
+# Forward-only migrations as a pre-start step (MASTER_SPEC E6), then the server.
+CMD ["sh", "-c", "npx prisma migrate deploy && exec node dist/server.js"]

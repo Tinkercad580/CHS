@@ -1,4 +1,4 @@
-import { FOCUS_UNIT_OWNER, FOCUS_UNIT_LET_OUT, formatInr, type Bill } from "@sahaj/shared";
+import { formatInr, type Bill } from "@sahaj/shared";
 import type { AppResidentState } from "./types";
 
 /**
@@ -14,13 +14,19 @@ export interface UnitInfo {
   tag: "Owner" | "Tenant" | "Landlord";
 }
 
-/** The active unit and how its ledger reads, mirroring the prototype's `curUnit()`. */
+/**
+ * The active unit and how its ledger reads, mirroring the prototype's `curUnit()`.
+ * The flats and the society name are the signed-in account's (`state.identity`),
+ * so the same three shapes now describe whoever is actually signed in.
+ */
 export function currentUnit(state: AppResidentState): UnitInfo {
-  if (state.role === "owner") return { code: FOCUS_UNIT_OWNER, line: `${FOCUS_UNIT_OWNER} · Shanti Vihar CHS`, tag: "Owner" };
-  if (state.role === "tenant") return { code: state.unit, line: `${state.unit} · Shanti Vihar CHS · rented`, tag: "Tenant" };
-  // owner_tenant: `unit` toggles between the owned/occupied flat and the let-out flat.
-  if (state.unit === FOCUS_UNIT_LET_OUT) return { code: FOCUS_UNIT_LET_OUT, line: `${FOCUS_UNIT_LET_OUT} · owned, rented out`, tag: "Landlord" };
-  return { code: FOCUS_UNIT_OWNER, line: `${FOCUS_UNIT_OWNER} · owned, you live here`, tag: "Owner" };
+  const society = state.identity?.societyName ?? "";
+  const letOut = state.identity?.letOutUnit ?? null;
+  if (state.role === "tenant") return { code: state.unit, line: `${state.unit} · ${society} · rented`, tag: "Tenant" };
+  if (state.role === "owner") return { code: state.unit, line: `${state.unit} · ${society}`, tag: "Owner" };
+  // owner_tenant: `unit` toggles between the occupied flat and the let-out flat.
+  if (letOut && state.unit === letOut) return { code: letOut, line: `${letOut} · owned, rented out`, tag: "Landlord" };
+  return { code: state.unit, line: `${state.unit} · owned, you live here`, tag: "Owner" };
 }
 
 /**

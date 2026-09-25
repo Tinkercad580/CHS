@@ -105,3 +105,14 @@ button, input, textarea, select, table, tr, td, th {
   animation: spin .7s linear infinite;
   flex: none;
 }
+
+/* Keyboard focus for the sign-in screens and the API-backed forms. The rule
+   above removes the browser outline everywhere, which leaves a keyboard user
+   with no idea where they are; these put a visible ring back on the controls
+   that need one. The input's own border is inline, hence !important. */
+.auth-input:focus { border-color: var(--accent, #0E6B5C) !important; box-shadow: 0 0 0 3px var(--accent-wash, #E6F2EF); }
+.auth-button:focus-visible, .auth-link:focus-visible, .focus-ring:focus-visible { box-shadow: 0 0 0 3px var(--accent-200, #C9E4DC); }
+.auth-check:focus-visible { outline: 2px solid var(--accent, #0E6B5C); outline-offset: 2px; }
+.auth-button:disabled { opacity: .85; }
+.focus-row:focus-visible { outline: none; background: var(--surface-hover, #FAFCFB); box-shadow: inset 3px 0 0 var(--accent, #0E6B5C); }
+.auth-input[aria-invalid="true"]:focus { border-color: var(--bad, #C0342B) !important; box-shadow: 0 0 0 3px var(--bad-wash, #FCEDEC); }

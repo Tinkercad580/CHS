@@ -1,15 +1,11 @@
 import {
-  FOCUS_UNIT_OWNER,
   bills as billsSeed,
   notices as noticesSeed,
   notifications as notifsSeed,
   visitorPasses,
   tickets as ticketsSeed,
-  household as householdSeed,
-  vehicles as vehiclesSeed,
   amenities as amenitiesSeed,
   bookings as bookingsSeed,
-  tenantAgreements as tenantAgreementsSeed,
   dailyHelp as dailyHelpSeed,
   attendanceSheets as attendanceSheetsSeed,
   utilities as utilitiesSeed,
@@ -28,8 +24,10 @@ export function createInitialState(): AppResidentState {
   return {
     screen: "home",
     stack: [],
+    // Replaced by the signed-in account's own role and flat before any screen renders.
     role: "owner",
-    unit: FOCUS_UNIT_OWNER,
+    unit: "",
+    identity: null,
     language: "en",
     dark: false,
 
@@ -58,8 +56,10 @@ export function createInitialState(): AppResidentState {
     qrLeftSeconds: 600,
     qrState: "live",
 
-    household: clone(householdSeed),
-    vehicles: clone(vehiclesSeed),
+    // Household, vehicles and tenancies are the society's records now — read from
+    // the API's myHome (api/identity.ts), never seeded here.
+    household: [],
+    vehicles: [],
     deliveryPref: "Hand to security",
     editingPersonalDetails: false,
     me: clone(personalInfo),
@@ -74,7 +74,7 @@ export function createInitialState(): AppResidentState {
     votes: {},
     activePollId: "pl1",
     tenantAgreement: null,
-    tenantAgreements: clone(tenantAgreementsSeed),
+    tenantAgreements: [],
     renewed: false,
 
     dailyHelp: clone(dailyHelpSeed),

@@ -1,40 +1,102 @@
-import React from "react";
-import { View, TextInput } from "react-native";
-import { residentName, residentMobile, residentMemberSince, FOCUS_UNIT_OWNER } from "@sahaj/shared";
+import React, { useState } from "react";
+import { View, TextInput, type KeyboardTypeOptions } from "react-native";
+import { api } from "@chs/contract";
+import { useApiMutation, useSessionController } from "@chs/api-client/react";
 import { useResident } from "../../state/ResidentProvider";
 import { useTheme } from "../../hooks/useTheme";
 import { useT } from "../../hooks/useT";
 import { currentUnit } from "../../state/selectors";
+import { formatMobile, initialsOf, monthYear, unitByLabel, useResidentAccount } from "../../api/identity";
+import { splitError } from "../../api/errors";
 import { ScreenScroll } from "../../components/ScreenScroll";
 import { ScreenHeader } from "../../components/ScreenHeader";
 import { AppText } from "../../components/AppText";
 import { Button } from "../../components/Button";
 import { RevealItem } from "../../components/RevealItem";
+import { Skeleton } from "../../components/Skeleton";
 
-function initialsOf(name: string): string {
-  return name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
-}
-
+/**
+ * Name, mobile and email are the account's (`/me`); email saves through
+ * `me.update`. Alternate phone and emergency contact have no field in the API
+ * yet, so they stay in local state exactly as before.
+ */
 export function PersonalDetailsScreen() {
   const { state, actions } = useResident();
   const { colors, type } = useTheme();
   const { t, num } = useT();
+  const { me, home } = useResidentAccount();
+  const session = useSessionController();
+  const updateMe = useApiMutation(api.me.update);
   const unit = currentUnit(state);
   const editing = state.editingPersonalDetails;
+  const [emailDraft, setEmailDraft] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
-  const contactRows: { label: string; value: string; locked?: boolean; editable?: boolean; onChange?: (v: string) => void }[] = [
-    { label: t("mobileNumber"), value: residentMobile, locked: true },
-    { label: t("email"), value: state.me.email, editable: editing, onChange: (v) => actions.setPersonalField("email", v) },
-    { label: t("alternatePhone"), value: state.me.alt, editable: editing, onChange: (v) => actions.setPersonalField("alt", v) },
+  const overview = home.status === "ready" ? unitByLabel(home.data, unit.code) : undefined;
+  const mine = overview?.currentMembers.find((m) => m.person.userId === me.id);
+  const since =
+    state.role === "tenant"
+      ? overview?.activeTenancy
+        ? `Tenant since ${monthYear(overview.activeTenancy.startDate)}`
+        : null
+      : mine
+        ? `Member since ${monthYear(mine.admissionDate)}${mine.shareCertificateNo ? ` · share cert. ${mine.shareCertificateNo}` : ""}`
+        : null;
+
+  const toggleEdit = () => {
+    setEmailDraft(editing ? null : (me.email ?? ""));
+    setEmailError(null);
+    actions.toggleEditPersonal();
+  };
+
+  const save = () => {
+    // No draft means the field was never touched (or edit mode outlived a visit to another screen).
+    const email = (emailDraft ?? me.email ?? "").trim();
+    if (email === (me.email ?? "")) {
+      setEmailDraft(null);
+      actions.savePersonalDetails();
+      return;
+    }
+    updateMe.mutate(
+      { body: { email: email || null } },
+      {
+        onSuccess: async () => {
+          // The session holds its own copy of /me; the query cache the contract invalidates isn't what useMe() reads.
+          await session.refreshMe().catch(() => undefined);
+          setEmailDraft(null);
+          actions.savePersonalDetails();
+        },
+        onError: (err) => {
+          const { fields, message } = splitError(err);
+          setEmailError(fields.email ?? message);
+        },
+      }
+    );
+  };
+
+  const contactRows: { label: string; value: string; locked?: boolean; editable?: boolean; onChange?: (v: string) => void; error?: string | null; keyboardType?: KeyboardTypeOptions }[] = [
+    { label: t("mobileNumber"), value: formatMobile(me.mobile), locked: true },
+    {
+      label: t("email"),
+      value: editing ? (emailDraft ?? me.email ?? "") : (me.email ?? "Not added"),
+      editable: editing,
+      onChange: (v) => {
+        setEmailDraft(v);
+        if (emailError) setEmailError(null);
+      },
+      error: emailError,
+      keyboardType: "email-address",
+    },
+    { label: t("alternatePhone"), value: state.me.alt, editable: editing, onChange: (v) => actions.setPersonalField("alt", v), keyboardType: "phone-pad" },
     { label: t("emergencyContact"), value: state.me.emergency, editable: editing, onChange: (v) => actions.setPersonalField("emergency", v) },
   ];
 
-  const residenceRows = [
+  const residenceRows: { label: string; value: string | null }[] = [
     { label: t("flatLabel"), value: unit.code },
-    { label: t("societyLabel"), value: "Shanti Vihar CHS" },
+    { label: t("societyLabel"), value: state.identity?.societyName ?? "" },
     { label: t("heldAs"), value: unit.tag },
-    { label: t("carpetArea"), value: unit.code === FOCUS_UNIT_OWNER ? "1,180 sq ft" : "850 sq ft" },
-    { label: t("parkingSlots"), value: t("slotsAllotted", { n: num(state.vehicles.filter((v) => v.unit === unit.code).length) }) },
+    { label: t("carpetArea"), value: overview ? (overview.unit.carpetAreaSqft !== null ? `${overview.unit.carpetAreaSqft.toLocaleString("en-IN")} sq ft` : "Not recorded") : null },
+    { label: t("parkingSlots"), value: overview ? t("slotsAllotted", { n: num(overview.parkingSlots.length) }) : null },
   ];
 
   return (
@@ -42,22 +104,28 @@ export function PersonalDetailsScreen() {
       <ScreenHeader
         title={t("personalTitle")}
         onBack={actions.back}
-        right={<Button label={editing ? t("cancelEdit") : t("edit")} kind="secondary" height={36} fontSize={12.5} weight={600} onPress={actions.toggleEditPersonal} style={{ paddingHorizontal: 13 }} />}
+        right={<Button label={editing ? t("cancelEdit") : t("edit")} kind="secondary" height={36} fontSize={12.5} weight={600} onPress={toggleEdit} style={{ paddingHorizontal: 13 }} />}
       />
-      <ScreenScroll>
+      <ScreenScroll keyboardShouldPersistTaps="handled">
         <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 18, backgroundColor: colors.surface, padding: 18, flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 16 }}>
           <View style={{ width: 58, height: 58, borderRadius: 18, backgroundColor: colors.accentWash, alignItems: "center", justifyContent: "center" }}>
             <AppText variant="cardTitleLarge" color={colors.accentInk} style={{ fontSize: 20 }} forceLatin>
-              {initialsOf(residentName)}
+              {initialsOf(me.name)}
             </AppText>
           </View>
           <View style={{ flex: 1, minWidth: 0 }}>
             <AppText variant="cardTitleLarge" style={{ fontSize: 18 }}>
-              {residentName}
+              {me.name}
             </AppText>
-            <AppText variant="bodySmall" color={colors.inkSoft}>
-              {residentMemberSince}
-            </AppText>
+            {home.status === "loading" ? (
+              <View style={{ width: "75%", marginTop: 4 }}>
+                <Skeleton height={12} radius={6} />
+              </View>
+            ) : since ? (
+              <AppText variant="bodySmall" color={colors.inkSoft}>
+                {since}
+              </AppText>
+            ) : null}
           </View>
         </View>
 
@@ -81,11 +149,22 @@ export function PersonalDetailsScreen() {
                   ) : null}
                 </View>
                 {row.editable ? (
-                  <TextInput
-                    value={row.value}
-                    onChangeText={row.onChange}
-                    style={[{ height: 44, paddingHorizontal: 12, borderWidth: 1, borderColor: colors.accent, borderRadius: 10, backgroundColor: colors.surface, color: colors.ink }, type("body")]}
-                  />
+                  <>
+                    <TextInput
+                      value={row.value}
+                      onChangeText={row.onChange}
+                      accessibilityLabel={row.label}
+                      keyboardType={row.keyboardType}
+                      autoCapitalize={row.keyboardType === "email-address" ? "none" : "sentences"}
+                      autoCorrect={row.keyboardType !== "email-address"}
+                      style={[{ height: 44, paddingHorizontal: 12, borderWidth: 1, borderColor: row.error ? colors.bad : colors.accent, borderRadius: 10, backgroundColor: colors.surface, color: colors.ink }, type("body")]}
+                    />
+                    {row.error ? (
+                      <AppText variant="meta" color={colors.badInk} style={{ marginTop: 6 }}>
+                        {row.error}
+                      </AppText>
+                    ) : null}
+                  </>
                 ) : (
                   <AppText variant="body" style={{ color: colors.ink }} forceLatin>
                     {row.value}
@@ -102,13 +181,23 @@ export function PersonalDetailsScreen() {
         <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.surface, overflow: "hidden", marginBottom: 16 }}>
           {residenceRows.map((row, i) => (
             <RevealItem key={row.label} tier="listRow">
-              <View style={{ padding: 14, paddingHorizontal: 16, borderBottomWidth: i === residenceRows.length - 1 ? 0 : 1, borderBottomColor: colors.borderSoft, flexDirection: "row", justifyContent: "space-between", gap: 12 }}>
+              <View style={{ padding: 14, paddingHorizontal: 16, borderBottomWidth: i === residenceRows.length - 1 ? 0 : 1, borderBottomColor: colors.borderSoft, flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
                 <AppText variant="bodySmall" color={colors.inkSoft}>
                   {row.label}
                 </AppText>
-                <AppText variant="cardTitle" style={{ fontSize: 13.5 }} forceLatin>
-                  {row.value}
-                </AppText>
+                {row.value !== null ? (
+                  <AppText variant="cardTitle" style={{ fontSize: 13.5 }} forceLatin>
+                    {row.value}
+                  </AppText>
+                ) : home.status === "loading" ? (
+                  <View style={{ width: 72 }}>
+                    <Skeleton height={12} radius={6} />
+                  </View>
+                ) : (
+                  <AppText variant="cardTitle" color={colors.inkMuted} style={{ fontSize: 13.5 }}>
+                    —
+                  </AppText>
+                )}
               </View>
             </RevealItem>
           ))}
@@ -116,7 +205,7 @@ export function PersonalDetailsScreen() {
 
         {editing ? (
           <>
-            <Button label={t("saveChanges")} onPress={actions.savePersonalDetails} />
+            <Button label={updateMe.isPending ? "Saving…" : t("saveChanges")} onPress={save} loading={updateMe.isPending} />
             <AppText variant="meta" color={colors.inkMuted} style={{ textAlign: "center", marginTop: 11 }}>
               {t("mobileIsLoginNote")}
             </AppText>

@@ -6,6 +6,8 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ResidentProvider } from "../state/ResidentProvider";
 import { useResidentFonts } from "../theme/fonts";
 import { lightColors } from "@sahaj/shared";
+import { ApiProvider } from "@chs/api-client/react";
+import { apiClient, realtime, session } from "../api/client";
 
 /**
  * Root layout: loads the design's three Google fonts before anything renders
@@ -23,10 +25,12 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <ResidentProvider>
-        <StatusBar style="dark" />
-        <View style={{ flex: 1, backgroundColor: lightColors.canvas }}>{fontsLoaded ? <Slot /> : null}</View>
-      </ResidentProvider>
+      <ApiProvider client={apiClient} session={session} realtime={realtime}>
+        <ResidentProvider>
+          <StatusBar style="dark" />
+          <View style={{ flex: 1, backgroundColor: lightColors.canvas }}>{fontsLoaded ? <Slot /> : null}</View>
+        </ResidentProvider>
+      </ApiProvider>
     </SafeAreaProvider>
   );
 }
